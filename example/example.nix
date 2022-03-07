@@ -15,7 +15,7 @@
     # 30 second intervals.
     update = {
       stagger = 30*1000000000;
-      max_parallel = 2;
+      maxParallel = 2;
     };
 
     # A group defines a series of tasks that should be co-located

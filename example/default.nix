@@ -5,5 +5,4 @@ in
 
 (lib.mkNomadJob ({
   imports = [ ./example.nix ];
-  jobs.myjob.groups.foo.count = pkgs.lib.mkForce 5;
 })).config
