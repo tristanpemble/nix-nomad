@@ -1,0 +1,41 @@
+types:
+{
+  affinity = types.submodule (import ./affinity.nix);
+  artifact = types.submodule (import ./artifact.nix);
+  checkRestart = types.submodule (import ./check-restart.nix);
+  connect = types.submodule (import ./connect.nix);
+  constraint = types.submodule (import ./constraint.nix);
+  csiPlugin = types.submodule (import ./csi-plugin.nix);
+  device = types.submodule (import ./device.nix);
+  dispatchPayload = types.submodule (import ./dispatch-payload.nix);
+  env = types.submodule (import ./env.nix);
+  ephemeralDisk = types.submodule (import ./ephemeral-disk.nix);
+  expose = types.submodule (import ./expose.nix);
+  gateway = types.submodule (import ./gateway.nix);
+  group = types.submodule (import ./group.nix);
+  job = types.submodule (import ./job.nix);
+  lifecycle = types.submodule (import ./lifecycle.nix);
+  logs = types.submodule (import ./logs.nix);
+  meta = types.submodule (import ./meta.nix);
+  migrate = types.submodule (import ./migrate.nix);
+  multiregion = types.submodule (import ./multiregion.nix);
+  network = types.submodule (import ./network.nix);
+  parameterized = types.submodule (import ./parameterized.nix);
+  periodic = types.submodule (import ./periodic.nix);
+  proxy = types.submodule (import ./proxy.nix);
+  reschedule = types.submodule (import ./reschedule.nix);
+  resources = types.submodule (import ./resources.nix);
+  restart = types.submodule (import ./restart.nix);
+  scaling = types.submodule (import ./scaling.nix);
+  service = types.submodule (import ./service.nix);
+  sidecarService = types.submodule (import ./sidecar-service.nix);
+  sidecarTask = types.submodule (import ./sidecar-task.nix);
+  spread = types.submodule (import ./spread.nix);
+  task = types.submodule (import ./task.nix);
+  template = types.submodule (import ./template.nix);
+  update = types.submodule (import ./update.nix);
+  upstreams = types.submodule (import ./upstreams.nix);
+  vault = types.submodule (import ./vault.nix);
+  volume = types.submodule (import ./volume.nix);
+  volumeMount = types.submodule (import ./volume-mount.nix);
+}
