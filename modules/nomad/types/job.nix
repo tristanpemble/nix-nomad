@@ -197,7 +197,38 @@ in
     };
   };
 
-  # TODO: options.vault
-  # TODO: options.vault_token
-  # TODO: options.consul_token
+  options.vault = mkOption {
+    type = types.nullOr nomad.vault;
+    default = null;
+    description = ''
+      Specifies the set of Vault policies required by all tasks in this job.
+    '';
+  };
+
+  options.vaultToken = mkOption {
+    type = types.str;
+    default = "";
+    description = ''
+      Specifies the Vault token that proves the submitter of the job has access to the specified policies in the vault
+      stanza. This field is only used to transfer the token and is not stored after job submission.
+
+      It is strongly discouraged to place the token as a configuration parameter like this, since the token could be
+      checked into source control accidentally. Users should set the VAULT_TOKEN environment variable when running the
+      job instead.
+    '';
+  };
+
+ options.consulToken = mkOption {
+   type = types.str;
+   default = "";
+   description = ''
+     Specifies the Consul token that proves the submitter of the job has access to the Service Identity policies
+     associated with the job's Consul Connect enabled services. This field is only used to transfer the token and is not
+     stored after job submission.
+
+     It is strongly discouraged to place the token as a configuration parameter like this, since the token could be
+     checked into source control accidentally. Users should set the CONSUL_HTTP_TOKEN environment variable when running
+     the job instead.
+   '';
+ };
 }

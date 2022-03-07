@@ -160,8 +160,32 @@ in
     '';
   };
 
-  # TODO: options.shutdown_delay
-  # TODO: options.stop_after_client_connect
+  options.shutdownDelay = mkOption {
+    type = types.ints.unsigned;
+    default = 0;
+    description = ''
+      Specifies the duration to wait when stopping a group's tasks. The delay occurs between Consul deregistration and
+      sending each task a shutdown signal. Ideally, services would fail healthchecks once they receive a shutdown
+      signal. Alternatively shutdown_delay may be set to give in-flight requests time to complete before shutting down.
+      A group level shutdown_delay will run regardless if there are any defined group services. In addition, tasks may
+      have their own shutdown_delay which waits between deregistering task services and stopping the task.
+    '';
+  };
+
+  options.stopAfterClientDisconnect = mkOption {
+    type = types.nullOr types.ints.unsigned;
+    default = null;
+    description = ''
+      Specifies a duration after which a Nomad client that cannot communicate with the servers will stop allocations
+      based on this task group. By default, a client will not stop an allocation until explicitly told to by a server. A
+      client that fails to heartbeat to a server within the heartbeat_grace window and any allocations running on it
+      will be marked "lost" and Nomad will schedule replacement allocations. However, these replaced allocations will
+      continue to run on the non-responsive client; an operator may desire that these replaced allocations are also
+      stopped in this case — for example, allocations requiring exclusive access to an external resource. When
+      specified, the Nomad client will stop them after this duration. The Nomad client process must be running for this
+      to occur.
+    '';
+  };
 
   options.tasks = mkOption {
     type = types.attrsOf nomad.task;
@@ -182,6 +206,20 @@ in
     '';
   };
 
-  # TODO: options.vault
-  # TODO: options.volume
+  options.vault = mkOption {
+    type = types.nullOr nomad.vault;
+    default = null;
+    description = ''
+      Specifies the set of Vault policies required by all tasks in this group. Overrides a vault block set at the job
+      level.
+    '';
+  };
+
+  options.volumes = mkOption {
+    type = types.attrsOf nomad.volume;
+    default = {};
+    description = ''
+      Specifies the volumes that are required by tasks within the group.
+    '';
+  };
 }

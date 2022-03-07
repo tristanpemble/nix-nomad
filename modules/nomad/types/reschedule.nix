@@ -24,8 +24,10 @@ in
   };
 
   options.delay = mkOption {
-    # TODO: validate to 5s min
-    type = types.nullOr types.ints.unsigned;
+    type = types.nullOr types.addCheck types.ints.unsigned (x: x >= 5000000000) // {
+      name = "intAtLeast";
+      description = "interval must be greater than or equal to 5s";
+    };
     default = null;
     description = ''
        Specifies the duration to wait before attempting to reschedule a failed task. This is specified using a label
