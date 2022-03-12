@@ -3,6 +3,4 @@ let
   lib = (import ../.).lib.${builtins.currentSystem};
 in
 
-(lib.mkNomadJob ({
-  imports = [ ./example.nix ];
-})).config
+lib.mkNomadJobSet ./example.nix

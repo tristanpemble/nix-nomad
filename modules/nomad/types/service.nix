@@ -40,9 +40,9 @@ let
         warning, or any other value for a failing health check. This is required for script-based health checks.
 
         Caveat: The command must be the path to the command on disk, and no shell exists by default. That means
-        operators like || or && are not available. Additionally, all arguments must be supplied via the args parameter.
-        To achieve the behavior of shell operators, specify the command as a shell, like /bin/bash and then use args to
-        run the check.
+        operators like || or &amp;&amp; are not available. Additionally, all arguments must be supplied via the args
+        parameter. To achieve the behavior of shell operators, specify the command as a shell, like /bin/bash and then
+        use args to run the check.
       '';
     };
 
@@ -250,7 +250,7 @@ in
 
   options.name = mkOption {
     type = types.str;
-    default = "$${BASE}";
+    default = "\${BASE}";
     description = ''
       Specifies the name this service will be advertised as in Consul. If not supplied, this will default to the name of
       the job, group, and task concatenated together with a dash, like "docs-example-server". Each service must have a

@@ -2,7 +2,7 @@
   jobs.docs = {
     # Specify this job should run in the region named "us". Regions
     # are defined by the Nomad servers' configuration.
-    region = "us";
+    # region = "us";
 
     # Spread the tasks in this job between us-west-1 and us-east-1.
     datacenters = ["us-west-1" "us-east-1"];
