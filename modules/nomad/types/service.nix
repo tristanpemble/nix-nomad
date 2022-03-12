@@ -63,6 +63,8 @@ let
       '';
     };
 
+    # TODO: header https://www.nomadproject.io/docs/job-specification/service#header-stanza
+
     options.initialStatus = mkOption {
       type = types.enum ["passing" "warning" "critical"];
       default = "critical";
@@ -231,6 +233,14 @@ let
   };
 in
 {
+  options.checkRestart = mkOption {
+    type = types.nullOr nomad.checkRestart;
+    default = null;
+    description = ''
+      Instructs Nomad when to restart tasks when the check is unhealthy.
+    '';
+  };
+
   options.checks = mkOption {
     type = types.listOf check;
     default = [];

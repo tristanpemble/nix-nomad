@@ -23,6 +23,16 @@ in
     '';
   };
 
+  # Not in docs, but is defined here: https://github.com/hashicorp/nomad/blob/ddbbda65617626da6af57b152df4e70669c9f898/api/resources.go#L14
+  options.disk = mkOption {
+    type = types.nullOr types.ints.unsigned;
+    default = null;
+    description = ''
+      Optionally, specifies the maximum memory the task may use, if the client has excess memory capacity, in MB.
+      See Memory Oversubscription for more details.
+    '';
+  };
+
   options.memory = mkOption {
     type = types.ints.unsigned;
     default = 300;
@@ -47,4 +57,6 @@ in
        Specifies the device requirements. Multiple keys can be set to request multiple device types.
     '';
   };
+
+  # TODO: networks? https://github.com/hashicorp/nomad/blob/ddbbda65617626da6af57b152df4e70669c9f898/api/resources.go#L15
 }

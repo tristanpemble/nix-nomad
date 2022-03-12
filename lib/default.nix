@@ -71,12 +71,28 @@ let
     else attrs;
 
   affinityTransform = transform [
+    (rename "attribute" "LTarget")
+    (rename "value" "RTarget")
+    (rename "operator" "operand")
     titleCaseAttrs
   ];
   artifactTransform = transform [
+    (rename "source" "getterSource")
+    (rename "options" "getterOptions")
+    (rename "headers" "getterHeaders")
+    (rename "mode" "getterMode")
+    (rename "destination" "relativeDest")
     titleCaseAttrs
   ];
   checkRestartTransform = transform [
+    titleCaseAttrs
+  ];
+  checkTransform = transform [
+    (rename "grpcService" "GRPCService")
+    (rename "grpcUseTls" "GRPCUseTLS")
+    (rename "port" "PortLabel")
+    (rename "tlsSkipVerify" "TLSSkipVerify")
+    (rename "task" "TaskName")
     titleCaseAttrs
   ];
   connectTransform = transform [
@@ -86,6 +102,9 @@ let
     titleCaseAttrs
   ];
   constraintTransform = transform [
+    (rename "attribute" "LTarget")
+    (rename "value" "RTarget")
+    (rename "operator" "operand")
     titleCaseAttrs
   ];
   csiPluginTransform = transform [
@@ -103,6 +122,7 @@ let
     titleCaseAttrs
   ];
   ephemeralDiskTransform = transform [
+    (rename "size" "sizeMB")
     titleCaseAttrs
   ];
   exposeTransform = transform [
@@ -123,29 +143,33 @@ let
     (update "consul" titleCaseAttrs)
     (update "ephemeralDisk" ephemeralDiskTransform)
     (update "migrate" migrateTransform)
-    (update "network" networkTransform)
+    (update "networks" (map networkTransform))
     (update "reschedule" rescheduleTransform)
     (update "restart" restartTransform)
+    (update "scaling" scalingTransform)
     (update "services" (map serviceTransform))
     (update "spreads" (map spreadTransform))
     (update "tasks" (mapAttrsToList taskTransform))
     (update "update" updateTransform)
     (update "vault" vaultTransform)
     (update "volumes" (mapAttrs volumeTransform))
+    (rename "reschedule" "reschedulePolicy")
+    (rename "restart" "restartPolicy")
     titleCaseAttrs
   ];
   jobTransform = name: transform [
-    (rename "groups" "taskGroups")
     (update "affinities" (map affinityTransform))
     (update "constraints" (map constraintTransform))
+    (update "groups" (mapAttrsToList groupTransform))
     (update "migrate" migrateTransform)
     (update "parameterized" parameterizedTransform)
     (update "periodic" periodicTransform)
     (update "reschedule" rescheduleTransform)
     (update "spreads" (map spreadTransform))
-    (update "taskGroups" (mapAttrsToList groupTransform))
     (update "update" updateTransform)
     (update "vault" vaultTransform)
+    (rename "groups" "taskGroups")
+    (rename "parameterized" "parameterizedJob")
     titleCaseAttrs
     (add "ID" name)
     (add "Name" name)
@@ -164,19 +188,24 @@ let
     (update "strategy" titleCaseAttrs)
   ];
   networkTransform = transform [
+    (update "dns" titleCaseAttrs)
     (update "ports" (mapAttrsToList portTransform))
     (copy "ports" "dynamicPorts")
-    (copy "ports" "staticPorts")
+    (copy "ports" "reservedPorts")
     (update "dynamicPorts" (filter (v: !(v ? Value) || (v.Value == 0))))
-    (update "staticPorts" (filter (v: (v ? Value) && (v.Value != 0))))
+    (update "reservedPorts" (filter (v: (v ? Value) && (v.Value != 0))))
     (delete "ports")
+    (rename "dns" "DNS")
+    (rename "cidr" "CIDR")
+    (rename "ip" "IP")
+    (rename "mbits" "MBits")
     titleCaseAttrs
-    (rename "Dns" "DNS")
   ];
   parameterizedTransform = transform [
     titleCaseAttrs
   ];
   periodicTransform = transform [
+    (rename "cron" "Spec")
     titleCaseAttrs
   ];
   portTransform = label: transform [
@@ -195,6 +224,10 @@ let
   ];
   resourcesTransform = transform [
     (update "devices" (mapAttrsToList deviceTransform))
+    (rename "cpu" "CPU")
+    (rename "disk" "DiskMB")
+    (rename "memory" "MemoryMB")
+    (rename "memoryMax" "MemoryMaxMB")
     titleCaseAttrs
   ];
   restartTransform = transform [
@@ -204,8 +237,11 @@ let
     titleCaseAttrs
   ];
   serviceTransform = transform [
-    (update "checks" (map titleCaseAttrs))
+    (update "checkRestart" checkRestartTransform)
+    (update "checks" (map checkTransform))
     (update "connect" connectTransform)
+    (rename "port" "PortLabel")
+    (rename "task" "TaskName")
     titleCaseAttrs
   ];
   sidecarServiceTransform = transform [
@@ -218,25 +254,41 @@ let
     titleCaseAttrs
   ];
   spreadTransform = transform [
-    (update "target" titleCaseAttrs)
+    (update "targets" (mapAttrsToList spreadTargetTransform))
+    (rename "targets" "spreadTarget")
+    titleCaseAttrs
+  ];
+  spreadTargetTransform = label: transform [
+    (add "value" label)
     titleCaseAttrs
   ];
   taskTransform = name: transform [
     (add "name" name)
     (update "affinities" (map affinityTransform))
-    (update "artifact" artifactTransform)
+    (update "artifacts" (map artifactTransform))
     (update "constraints" (map constraintTransform))
     (update "dispatchPayload" dispatchPayloadTransform)
     (update "lifecycle" lifecycleTransform)
     (update "logs" logsTransform)
     (update "resources" resourcesTransform)
+    (update "restart" restartTransform)
     (update "services" (map serviceTransform))
-    (update "template" templateTransform)
+    (update "spreads" (map spreadTransform))
+    (update "templates" (map templateTransform))
     (update "vault" vaultTransform)
     (update "volumeMounts" (map volumeMountTransform))
+    (rename "logs" "logConfig")
+    (rename "restart" "RestartPolicy")
     titleCaseAttrs
   ];
   templateTransform = transform [
+    (update "wait" titleCaseAttrs)
+    (rename "source" "SourcePath")
+    (rename "destination" "DestPath")
+    (rename "data" "EmbeddedTmpl")
+    (rename "leftDelimiter" "LeftDelim")
+    (rename "rightDelimiter" "RightDelim")
+    (rename "env" "Envvars")
     titleCaseAttrs
   ];
   updateTransform = transform [

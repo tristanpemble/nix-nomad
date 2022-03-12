@@ -107,9 +107,9 @@ in
     };
   };
 
-  options.network = mkOption {
-    type = types.nullOr nomad.network;
-    default = null;
+  options.networks = mkOption {
+    type = types.listOf nomad.network;
+    default = [];
     description = ''
       Specifies the network requirements and configuration, including static and dynamic port allocations, for the
       group.

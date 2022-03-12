@@ -91,17 +91,6 @@ in
     };
   };
 
-  options.spreads = mkOption {
-    type = types.listOf nomad.spread;
-    default = [];
-    description = ''
-      A list to define allocation spread across attributes.
-    '';
-    example = {
-
-    };
-  };
-
   options.dispatchPayload = mkOption {
     type = types.nullOr nomad.dispatchPayload;
     default = null;
@@ -172,7 +161,7 @@ in
     };
   };
 
-  options.logConfig = mkOption {
+  options.logs = mkOption {
     type = types.nullOr nomad.logs;
     default = null;
     description = ''
@@ -207,7 +196,7 @@ in
     };
   };
 
-  options.restartPolicy = mkOption {
+  options.restart = mkOption {
     type = types.nullOr nomad.restart;
     default = null;
     description = ''
@@ -268,4 +257,10 @@ in
       user = "stanley";
     };
   };
+
+  # TODO: lifecycle
+  # TODO: kind
+  # TODO: scaling
+  # TODO: volumeMounts
+  # TODO: vault
 }

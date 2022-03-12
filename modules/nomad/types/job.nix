@@ -108,9 +108,13 @@ in
     };
   };
 
-  #options.parameterized = mkOption {
-  #
-  #};
+  options.parameterized = mkOption {
+    type = types.nullOr nomad.parameterized;
+    default = null;
+    description = ''
+      Specifies the job as a parameterized job such that it can be dispatched against.
+    '';
+  };
 
   options.periodic = mkOption {
     type = types.nullOr nomad.periodic;

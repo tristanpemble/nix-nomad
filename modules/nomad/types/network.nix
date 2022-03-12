@@ -103,6 +103,27 @@ in
     '';
   };
 
+  # This is not in the HCL docs, but is defined here:
+  # https://github.com/hashicorp/nomad/blob/ddbbda65617626da6af57b152df4e70669c9f898/api/resources.go#L116
+  options.device = mkOption {
+    type = types.nullOr types.str;
+    default = null;
+  };
+
+  # This is not in the HCL docs, but is defined here:
+  # https://github.com/hashicorp/nomad/blob/ddbbda65617626da6af57b152df4e70669c9f898/api/resources.go#L118
+  options.ip = mkOption {
+    type = types.nullOr types.str;
+    default = null;
+  };
+
+  # This is not in the HCL docs, but is defined here:
+  # https://github.com/hashicorp/nomad/blob/ddbbda65617626da6af57b152df4e70669c9f898/api/resources.go#L117
+  options.cidr = mkOption {
+    type = types.nullOr types.str;
+    default = null;
+  };
+
   options.dns = mkOption {
     type = types.nullOr dnsConfig;
     default = null;

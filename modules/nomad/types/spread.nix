@@ -5,6 +5,7 @@ let
   nomad = import ./. types;
 
   target = types.submodule {
+    # TODO: nomad docs not clear here.. is this the block label?
     options.value = mkOption {
       type = types.str;
       default = "";

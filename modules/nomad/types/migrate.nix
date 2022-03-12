@@ -15,7 +15,7 @@ in
   };
 
   options.healthCheck = mkOption {
-    type = types.enum ["check" "task_states"];
+    type = types.enum ["checks" "task_states"];
     default = "checks";
     description = ''
       Specifies the mechanism in which allocations health is determined. The potential values are:
