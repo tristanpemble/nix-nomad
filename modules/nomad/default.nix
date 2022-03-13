@@ -1,12 +1,13 @@
 { lib, ... }:
 
 let
-  inherit (lib) mkMerge mkOption types;
-  nomad = import ./types types;
+  inherit (lib) mkOption;
+  inherit (lib.types) attrsOf;
+  nomad = import ./lib.nix { inherit lib; overrides = {}; };
 in
 {
   options.jobs = mkOption {
-    type = types.attrsOf nomad.job;
+    type = attrsOf nomad.Job;
     description = ''
       An attribute set to define job descriptions.
     '';
