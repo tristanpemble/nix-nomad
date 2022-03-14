@@ -16,7 +16,7 @@ type NomadType struct {
 	nixTypeName      string
 	nixTransformName string
 
-	label      *NomadField
+	isLabeled  bool
 	references []NomadType
 	fields     []NomadField
 }
@@ -43,18 +43,18 @@ type NomadField struct {
 }
 
 func main() {
-	job := reflect.TypeOf(api.Job{})
+	job := api.Job{}
+	jobType := reflect.TypeOf(job)
+
 	fmt.Printf("{ lib, overrides, ... }:\n\n")
 	fmt.Printf("rec {\n")
-	for _, t := range findAllTypes(job) {
+	for _, t := range findAllTypes(jobType) {
 		nt := parseNomadType(t)
 		fmt.Printf("  %s = %s;\n", nt.nixTypeName, strings.TrimSpace(indent(generateTypeModule(nt), 4)))
-		fmt.Printf("\n")
 	}
-	for _, t := range findAllTypes(job) {
+	for _, t := range findAllTypes(jobType) {
 		nt := parseNomadType(t)
 		fmt.Printf("  %s = %s;\n", nt.nixTransformName, strings.TrimSpace(indent(generateTransformer(nt), 2)))
-		fmt.Printf("\n")
 	}
 	fmt.Printf("}\n")
 }
@@ -90,42 +90,69 @@ func generateTypeModule(t *NomadType) string {
 func generateTransformer(t *NomadType) string {
 	var o string
 
-	o += fmt.Sprintf("attrs: if !(builtins.isAttrs attrs) then null else (\n")
+	if t.isLabeled {
+		o += fmt.Sprintf("label: attrs: if !(builtins.isAttrs attrs) then null else (\n")
+	} else {
+		o += fmt.Sprintf("attrs: if !(builtins.isAttrs attrs) then null else (\n")
+	}
+
 	o += fmt.Sprintf("  {}\n")
 	for _, f := range t.fields {
-		if f.isLabel {
-			continue
-		}
-
-		if f.isLabeled {
-			o += fmt.Sprintf("  // (if attrs ? %s && builtins.isAttrs attrs.%s then ", f.nixName, f.nixName)
-			o += fmt.Sprintf("{ %s = lib.mapAttrsToList (k: v: (%s (v // { %s = k; }))) attrs.%s; }", f.goName, f.nomadType.nixTransformName, f.nomadType.label.goName, f.nixName)
-			o += fmt.Sprintf(" else {})\n")
-			continue
-		}
-
-		if f.isList && f.nomadType != nil {
-			o += fmt.Sprintf("  // (if attrs ? %s && builtins.isList attrs.%s then", f.nixName, f.nixName)
-			o += fmt.Sprintf(" { %s = builtins.map %s (attrs.%s or []); }", f.goName, f.nomadType.nixTransformName, f.nixName)
-			o += fmt.Sprintf(" else {})\n")
-			continue
-		}
-
-		if f.nomadType != nil {
-			o += fmt.Sprintf("  // (if attrs ? %s then", f.nixName)
-			o += fmt.Sprintf(" { %s = %s attrs.%s; }", f.goName, f.nomadType.nixTransformName, f.nixName)
-			o += fmt.Sprintf(" else {})\n")
-
-			continue
-		}
-
-		o += fmt.Sprintf("  // (if attrs ? %s then", f.nixName)
-		o += fmt.Sprintf(" { %s = attrs.%s; }", f.goName, f.nixName)
-		o += fmt.Sprintf(" else {})\n")
+		o += fmt.Sprintf("  // (%s)\n", generateFieldTransformer(f))
 	}
+
 	o += fmt.Sprintf(")")
 
 	return o
+}
+
+func generateFieldTransformer(f NomadField) string {
+	if f.isLabel {
+		return fmt.Sprintf("{ %s = label; }", f.goName)
+	}
+
+	if f.isLabeled {
+		return fmt.Sprintf(""+
+			"if attrs ? %s && builtins.isAttrs attrs.%s "+
+			"then { %s = lib.mapAttrsToList %s attrs.%s; } "+
+			"else {}",
+			f.nixName,
+			f.nixName,
+			f.goName,
+			f.nomadType.nixTransformName,
+			f.nixName,
+		)
+	}
+
+	if f.isList && f.nomadType != nil {
+		return fmt.Sprintf(""+
+			"if attrs ? %s && builtins.isList attrs.%s then { %s = builtins.map %s attrs.%s; } else {}",
+			f.nixName,
+			f.nixName,
+			f.goName,
+			f.nomadType.nixTransformName,
+			f.nixName,
+		)
+	}
+
+	if f.nomadType != nil {
+		return fmt.Sprintf(
+			"if attrs ? %s && attrs.%s != null then { %s = %s attrs.%s; } else {}",
+			f.nixName,
+			f.nixName,
+			f.goName,
+			f.nomadType.nixTransformName,
+			f.nixName,
+		)
+	}
+
+	return fmt.Sprintf(
+		"if attrs ? %s && attrs.%s != null then { %s = attrs.%s; } else {}",
+		f.nixName,
+		f.nixName,
+		f.goName,
+		f.nixName,
+	)
 }
 
 func parseNomadType(t reflect.Type) *NomadType {
@@ -140,12 +167,17 @@ func parseNomadType(t reflect.Type) *NomadType {
 	}
 
 	for _, f := range reflect.VisibleFields(t) {
-		nf := parseNomadField(f)
+		nf := parseNomadField(t, f)
+
+		// Job ID/Name are specially handled in the Nomad code, so we have to manually set them as labels
+		if t.Name() == "Job" && (f.Name == "ID" || f.Name == "Name") {
+			nf.isLabel = true
+		}
 		if nf == nil {
 			continue
 		}
 		if nf.isLabel {
-			o.label = nf
+			o.isLabeled = true
 		}
 		o.fields = append(o.fields, *nf)
 	}
@@ -160,7 +192,7 @@ func parseNomadType(t reflect.Type) *NomadType {
 	return &o
 }
 
-func parseNomadField(f reflect.StructField) *NomadField {
+func parseNomadField(t reflect.Type, f reflect.StructField) *NomadField {
 	hcl := f.Tag.Get("hcl")
 
 	if hcl == "" {
