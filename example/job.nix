@@ -1,10 +1,11 @@
+{ lib, ... }:
 {
   jobs.docs = {
     type = "batch";
     datacenters = ["dc1"];
 
     groups.webs = {
-      count = 1;
+      count = lib.mkDefault 1;
 
       tasks.frontend = {
         driver = "raw_exec";

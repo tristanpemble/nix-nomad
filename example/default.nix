@@ -3,4 +3,4 @@ let
   lib = (import ../.).lib.${builtins.currentSystem};
 in
 
-lib.mkNomadJobSet ./example.nix
+lib.mkNomadJobSet [ ./job.nix ./overrides.nix ]
