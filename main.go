@@ -46,15 +46,15 @@ func main() {
 	job := api.Job{}
 	jobType := reflect.TypeOf(job)
 
-	fmt.Printf("{ lib, overrides, ... }:\n\n")
+	fmt.Printf("{ lib }:\n\n")
 	fmt.Printf("rec {\n")
 	for _, t := range findAllTypes(jobType) {
 		nt := parseNomadType(t)
-		fmt.Printf("  %s = %s;\n", nt.nixTypeName, strings.TrimSpace(indent(generateTypeModule(nt), 4)))
+		fmt.Printf("  %s = with lib; %s;\n", nt.nixTypeName, strings.TrimSpace(indent(generateTypeModule(nt), 2)))
 	}
 	for _, t := range findAllTypes(jobType) {
 		nt := parseNomadType(t)
-		fmt.Printf("  %s = %s;\n", nt.nixTransformName, strings.TrimSpace(indent(generateTransformer(nt), 2)))
+		fmt.Printf("  %s = with lib; %s;\n", nt.nixTransformName, strings.TrimSpace(indent(generateTransformer(nt), 2)))
 	}
 	fmt.Printf("}\n")
 }
@@ -62,27 +62,20 @@ func main() {
 func generateTypeModule(t *NomadType) string {
 	var o string
 
-	o += fmt.Sprintf("lib.types.submodule ({ lib, ... }:\n")
-	if len(t.references) > 0 {
-		var s []string
-		for _, rt := range t.references {
-			s = append(s, rt.nixTypeName)
-		}
-	}
 	o += fmt.Sprintf("with lib.types; {\n")
 
 	for _, f := range t.fields {
 		if f.isLabel {
 			continue
 		}
-		o += fmt.Sprintf("  options.%s = lib.mkOption ({\n", f.nixName)
+		o += fmt.Sprintf("  options.%s = mkOption {\n", f.nixName)
 		o += fmt.Sprintf("    type = %s;\n", f.nixType)
 		if f.nixDefault != "" {
 			o += fmt.Sprintf("    default = %s;\n", f.nixDefault)
 		}
-		o += fmt.Sprintf("  } // ((overrides.%s or {}).%s or {}));\n", t.nixTypeName, f.nixName)
+		o += fmt.Sprintf("  };\n")
 	}
-	o += fmt.Sprintf("})")
+	o += fmt.Sprintf("}")
 
 	return o
 }
@@ -114,7 +107,7 @@ func generateFieldTransformer(f NomadField) string {
 	if f.isLabeled {
 		return fmt.Sprintf(""+
 			"if attrs ? %s && builtins.isAttrs attrs.%s "+
-			"then { %s = lib.mapAttrsToList %s attrs.%s; } "+
+			"then { %s = mapAttrsToList %s attrs.%s; } "+
 			"else {}",
 			f.nixName,
 			f.nixName,
@@ -266,9 +259,13 @@ func parseNomadField(t reflect.Type, f reflect.StructField) *NomadField {
 		o.nixType = "ints.unsigned"
 	}
 
+	if o.nomadType != nil {
+		o.nixType = fmt.Sprintf("(submodule %s)", o.nixType)
+	}
+
 	if (o.isMap || o.isList) && o.goType.Kind() == reflect.Struct {
 		o.nixName = pluralize.NewClient().Plural(o.nixName)
-		o.nixType = strcase.ToCamel(o.nixType)
+		o.nixType = o.nixType
 	}
 	if o.isMap {
 		o.nixType = fmt.Sprintf("(attrsOf %s)", o.nixType)

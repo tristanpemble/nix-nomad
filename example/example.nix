@@ -1,17 +1,17 @@
 {
   jobs.docs = {
-    type = "service";
-    datacenters = ["us-west-1" "us-east-1"];
+    type = "batch";
+    datacenters = ["dc1"];
 
     groups.webs = {
       count = 1;
 
       tasks.frontend = {
-        driver = "docker";
+        driver = "raw_exec";
 
         config = {
-          image = "hashicorp/web-frontend";
-          ports = ["http" "https"];
+          command = "echo";
+          args = ["hello"];
         };
       };
     };

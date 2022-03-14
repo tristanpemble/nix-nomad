@@ -19,5 +19,5 @@ rec {
   mkNomadJobSet = configuration:
     if builtins.isPath configuration
     then mkNomadJobSet (import configuration)
-    else lib.mapAttrs (k: v: { Job = nomad.mkJobAPI k v; }) (evaluateConfiguration configuration).config.jobs;
+    else lib.mapAttrs (name: v: v.toJSON name) (evaluateConfiguration configuration).config.jobs;
 }
