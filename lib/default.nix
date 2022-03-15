@@ -1,19 +1,16 @@
-{ pkgs }:
+{ self, nixpkgs, nixpkgs-lib }:
 
-let
-  inherit (pkgs) lib;
-  inherit (pkgs.lib) evalModules;
+let nomad = import ./nomad.nix {
+  inherit (nixpkgs-lib) lib;
+}; in
 
-  evaluateConfiguration = configuration:
-    evalModules {
-      modules = [
-        { imports = [ ../modules/nomad ]; }
-        { _module.args = { inherit pkgs; }; }
-      ] ++ (lib.toList configuration);
-    };
-
-  nomad = import ../modules/nomad/lib.nix { inherit lib; overrides = {}; };
-in
-rec {
-  mkNomadJobSet = configuration: lib.mapAttrs (name: v: v.toJSON name) (evaluateConfiguration configuration).config.jobs;
+nomad // {
+  evalNomadJobs = import ./evalNomadJobs.nix {
+    inherit nomad;
+    inherit (nixpkgs-lib) lib;
+  };
+  mkNomadJobs = import ./mkNomadJobs.nix {
+    inherit nixpkgs;
+    inherit (self.lib) evalNomadJobs;
+  };
 }

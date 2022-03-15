@@ -1,11 +1,15 @@
-{ lib, ... }:
-{
-  jobs.docs = {
+# nix-nomad
+
+Generate Nomad JSON jobs files by writing Nix/NixOS modules.
+
+```nix
+let jobs = mkNomadJobs {
+  jobs.hello = {
     type = "batch";
     datacenters = ["dc1"];
 
     groups.webs = {
-      count = lib.mkDefault 1;
+      count = 1;
 
       tasks.frontend = {
         driver = "raw_exec";
@@ -17,4 +21,5 @@
       };
     };
   };
-}
+}; in jobs.hello
+```

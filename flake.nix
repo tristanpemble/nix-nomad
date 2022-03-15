@@ -1,36 +1,26 @@
 {
-  description = "A very basic flake";
+  inputs = {
+    flake-compat.url = "github:edolstra/flake-compat";
+    flake-compat.flake = false;
+    flake-utils.url = "github:numtide/flake-utils";
+    gomod2nix.url = "github:tweag/gomod2nix";
+    nixpkgs-lib.url = "github:nix-community/nixpkgs.lib";
+    nixpkgs.url = "github:nixos/nixpkgs/release-22.05";
+  };
 
-  inputs.flake-compat.url = "github:edolstra/flake-compat";
-  inputs.flake-compat.flake = false;
-  inputs.flake-utils.url = "github:numtide/flake-utils";
-  inputs.gomod2nix.url = "github:tweag/gomod2nix";
-
-  outputs = { self, nixpkgs, flake-utils, gomod2nix, ... }: flake-utils.lib.eachDefaultSystem (system: let
-    inherit (pkgs) callPackage mkShell;
-    pkgs = import nixpkgs {
-      inherit system;
-      overlays = [
-        gomod2nix.overlay
-      ];
-    };
-  in rec {
-    defaultPackage = pkgs.buildGoApplication {
-      pname = "nix-nomad";
-      version = "0.1";
-      src = ./.;
-      modules = ./gomod2nix.toml;
-    };
-    devShell = pkgs.mkShell {
-      buildInputs = [ pkgs.go pkgs.gomod2nix pkgs.jq pkgs.nomad ];
-    };
-    defaultApp = {
-      type = "app";
-      program = "${defaultPackage}/bin/nix-nomad";
-    };
-    overlay = self: super: {
-      nix-nomad = defaultPackage;
-    };
-    lib = callPackage ./lib {};
-  });
+  outputs = { self, nixpkgs, nixpkgs-lib, flake-utils, gomod2nix, ... }: flake-utils.lib.eachDefaultSystem (system: let
+    pkgs = import nixpkgs { inherit system; overlays = [ gomod2nix.overlays.default ]; };
+  in {
+    packages.default = self.packages.${system}.generator;
+    packages.generator = pkgs.callPackage ./generator {};
+    packages.docs = pkgs.callPackage ./docs { inherit self; };
+    devShells.default = pkgs.callPackage ./shell.nix {};
+    checks.hello = pkgs.linkFarmFromDrvs "hello-goodbye" (builtins.attrValues (self.lib.mkNomadJobs {
+       inherit system;
+       config = [ ./examples/hello.nix ./examples/goodbye.nix ];
+    }));
+  }) // {
+    lib = import ./lib { inherit self nixpkgs nixpkgs-lib; };
+    overlays.default = _: _: { nomadLib = self.lib; };
+  };
 }

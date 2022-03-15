@@ -1,10 +1,11 @@
-{ pkgs ? import <nixpkgs> {}
+{ pkgs
+, lib
+, fetchFromGitLab
+, self
 }:
 
 let
-  inherit (pkgs) lib;
-
-  nmdSrc = pkgs.fetchFromGitLab {
+  nmdSrc = fetchFromGitLab {
     name = "nmd";
     owner = "rycee";
     repo = "nmd";
@@ -18,7 +19,7 @@ let
     moduleRootPaths = [ ../modules ];
     mkModuleUrl = path: "https://github.com/tristanpemble/nix-nomad/blob/main/${path}#blob-path";
     channelName = "nix-nomad";
-    modules = import ../modules/modules.nix;
+    modules = [ (import ../modules/core.nix { inherit lib; nomad = self.lib; }) ];
     docBook.id = "nix-nomad-options";
   };
 
@@ -35,4 +36,4 @@ let
       </toc>
     '';
   };
-in docs
+in docs.html
