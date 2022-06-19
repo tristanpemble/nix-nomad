@@ -1,11 +1,11 @@
 {
-  jobs.goodbye.type = "batch";
-  jobs.goodbye.datacenters = ["dc1"];
+  job.goodbye.type = "batch";
+  job.goodbye.datacenters = ["dc1"];
 
-  jobs.goodbye.groups.webs = {
+  job.goodbye.group.webs = {
     count = 1;
 
-    tasks.frontend = {
+    task.frontend = {
       driver = "raw_exec";
 
       config = {

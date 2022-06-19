@@ -82,8 +82,8 @@ rec {
     };
   };
   ConsulExposeConfig = with lib; with lib.types; {
-    options.paths = mkOption {
-      type = (nullOr (listOf (submodule ConsulExposePath)));
+    options.path = mkOption {
+      type = (nullOr (listOf (either (listOf (submodule ConsulExposePath)) (attrsOf (submodule ConsulExposePath)))));
       default = null;
     };
   };
@@ -147,7 +147,7 @@ rec {
       default = null;
     };
     options.envoyGatewayBindAddresses = mkOption {
-      type = (nullOr (attrsOf (submodule ConsulGatewayBindAddress)));
+      type = (nullOr (either (listOf (submodule ConsulGatewayBindAddress)) (attrsOf (submodule ConsulGatewayBindAddress))));
       default = null;
     };
     options.envoyGatewayBindTaggedAddresses = mkOption {
@@ -166,8 +166,8 @@ rec {
     };
   };
   ConsulIngressConfigEntry = with lib; with lib.types; {
-    options.listeners = mkOption {
-      type = (nullOr (listOf (submodule ConsulIngressListener)));
+    options.listener = mkOption {
+      type = (nullOr (listOf (either (listOf (submodule ConsulIngressListener)) (attrsOf (submodule ConsulIngressListener)))));
       default = null;
     };
     options.tls = mkOption {
@@ -184,8 +184,8 @@ rec {
       type = (nullOr str);
       default = null;
     };
-    options.services = mkOption {
-      type = (nullOr (listOf (submodule ConsulIngressService)));
+    options.service = mkOption {
+      type = (nullOr (listOf (either (listOf (submodule ConsulIngressService)) (attrsOf (submodule ConsulIngressService)))));
       default = null;
     };
   };
@@ -247,7 +247,7 @@ rec {
       default = null;
     };
     options.upstreams = mkOption {
-      type = (nullOr (listOf (submodule ConsulUpstream)));
+      type = (nullOr (listOf (either (listOf (submodule ConsulUpstream)) (attrsOf (submodule ConsulUpstream)))));
       default = null;
     };
   };
@@ -270,8 +270,8 @@ rec {
     };
   };
   ConsulTerminatingConfigEntry = with lib; with lib.types; {
-    options.services = mkOption {
-      type = (nullOr (listOf (submodule ConsulLinkedService)));
+    options.service = mkOption {
+      type = (nullOr (listOf (either (listOf (submodule ConsulLinkedService)) (attrsOf (submodule ConsulLinkedService)))));
       default = null;
     };
   };
@@ -332,16 +332,16 @@ rec {
     };
   };
   Job = with lib; with lib.types; {
-    options.affinities = mkOption {
-      type = (nullOr (listOf (submodule Affinity)));
+    options.affinity = mkOption {
+      type = (nullOr (listOf (either (listOf (submodule Affinity)) (attrsOf (submodule Affinity)))));
       default = null;
     };
     options.allAtOnce = mkOption {
       type = (nullOr bool);
       default = null;
     };
-    options.constraints = mkOption {
-      type = (nullOr (listOf (submodule Constraint)));
+    options.constraint = mkOption {
+      type = (nullOr (listOf (either (listOf (submodule Constraint)) (attrsOf (submodule Constraint)))));
       default = null;
     };
     options.consulToken = mkOption {
@@ -352,8 +352,8 @@ rec {
       type = (nullOr (listOf str));
       default = null;
     };
-    options.groups = mkOption {
-      type = (nullOr (attrsOf (submodule TaskGroup)));
+    options.group = mkOption {
+      type = (nullOr (either (listOf (submodule TaskGroup)) (attrsOf (submodule TaskGroup))));
       default = null;
     };
     options.meta = mkOption {
@@ -392,8 +392,8 @@ rec {
       type = (nullOr (submodule ReschedulePolicy));
       default = null;
     };
-    options.spreads = mkOption {
-      type = (nullOr (listOf (submodule Spread)));
+    options.spread = mkOption {
+      type = (nullOr (listOf (either (listOf (submodule Spread)) (attrsOf (submodule Spread)))));
       default = null;
     };
     options.type = mkOption {
@@ -438,8 +438,8 @@ rec {
     };
   };
   Multiregion = with lib; with lib.types; {
-    options.regions = mkOption {
-      type = (nullOr (attrsOf (submodule MultiregionRegion)));
+    options.region = mkOption {
+      type = (nullOr (either (listOf (submodule MultiregionRegion)) (attrsOf (submodule MultiregionRegion))));
       default = null;
     };
     options.strategy = mkOption {
@@ -500,12 +500,12 @@ rec {
       type = (nullOr str);
       default = null;
     };
-    options.ports = mkOption {
-      type = (nullOr (attrsOf (submodule Port)));
+    options.port = mkOption {
+      type = (nullOr (either (listOf (submodule Port)) (attrsOf (submodule Port))));
       default = null;
     };
     options.reservedPorts = mkOption {
-      type = (nullOr (attrsOf (submodule Port)));
+      type = (nullOr (either (listOf (submodule Port)) (attrsOf (submodule Port))));
       default = null;
     };
   };
@@ -556,12 +556,12 @@ rec {
     };
   };
   RequestedDevice = with lib; with lib.types; {
-    options.affinities = mkOption {
-      type = (nullOr (listOf (submodule Affinity)));
+    options.affinity = mkOption {
+      type = (nullOr (listOf (either (listOf (submodule Affinity)) (attrsOf (submodule Affinity)))));
       default = null;
     };
-    options.constraints = mkOption {
-      type = (nullOr (listOf (submodule Constraint)));
+    options.constraint = mkOption {
+      type = (nullOr (listOf (either (listOf (submodule Constraint)) (attrsOf (submodule Constraint)))));
       default = null;
     };
     options.count = mkOption {
@@ -604,8 +604,8 @@ rec {
       type = (nullOr int);
       default = null;
     };
-    options.devices = mkOption {
-      type = (nullOr (attrsOf (submodule RequestedDevice)));
+    options.device = mkOption {
+      type = (nullOr (either (listOf (submodule RequestedDevice)) (attrsOf (submodule RequestedDevice))));
       default = null;
     };
     options.disk = mkOption {
@@ -624,8 +624,8 @@ rec {
       type = (nullOr int);
       default = null;
     };
-    options.networks = mkOption {
-      type = (nullOr (listOf (submodule NetworkResource)));
+    options.network = mkOption {
+      type = (nullOr (listOf (either (listOf (submodule NetworkResource)) (attrsOf (submodule NetworkResource)))));
       default = null;
     };
   };
@@ -682,12 +682,12 @@ rec {
       type = (nullOr (listOf str));
       default = null;
     };
-    options.checkRestart = mkOption {
-      type = (nullOr (submodule CheckRestart));
+    options.check = mkOption {
+      type = (nullOr (listOf (either (listOf (submodule ServiceCheck)) (attrsOf (submodule ServiceCheck)))));
       default = null;
     };
-    options.checks = mkOption {
-      type = (nullOr (listOf (submodule ServiceCheck)));
+    options.checkRestart = mkOption {
+      type = (nullOr (submodule CheckRestart));
       default = null;
     };
     options.connect = mkOption {
@@ -876,8 +876,8 @@ rec {
       type = (nullOr str);
       default = null;
     };
-    options.targets = mkOption {
-      type = (nullOr (attrsOf (submodule SpreadTarget)));
+    options.target = mkOption {
+      type = (nullOr (either (listOf (submodule SpreadTarget)) (attrsOf (submodule SpreadTarget))));
       default = null;
     };
     options.weight = mkOption {
@@ -892,20 +892,20 @@ rec {
     };
   };
   Task = with lib; with lib.types; {
-    options.affinities = mkOption {
-      type = (nullOr (listOf (submodule Affinity)));
+    options.affinity = mkOption {
+      type = (nullOr (listOf (either (listOf (submodule Affinity)) (attrsOf (submodule Affinity)))));
       default = null;
     };
-    options.artifacts = mkOption {
-      type = (nullOr (listOf (submodule TaskArtifact)));
+    options.artifact = mkOption {
+      type = (nullOr (listOf (either (listOf (submodule TaskArtifact)) (attrsOf (submodule TaskArtifact)))));
       default = null;
     };
     options.config = mkOption {
       type = (nullOr (attrsOf anything));
       default = null;
     };
-    options.constraints = mkOption {
-      type = (nullOr (listOf (submodule Constraint)));
+    options.constraint = mkOption {
+      type = (nullOr (listOf (either (listOf (submodule Constraint)) (attrsOf (submodule Constraint)))));
       default = null;
     };
     options.csiPlugin = mkOption {
@@ -960,20 +960,20 @@ rec {
       type = (nullOr (submodule RestartPolicy));
       default = null;
     };
-    options.scalings = mkOption {
-      type = (nullOr (listOf (submodule ScalingPolicy)));
+    options.scaling = mkOption {
+      type = (nullOr (listOf (either (listOf (submodule ScalingPolicy)) (attrsOf (submodule ScalingPolicy)))));
       default = null;
     };
-    options.services = mkOption {
-      type = (nullOr (listOf (submodule Service)));
+    options.service = mkOption {
+      type = (nullOr (listOf (either (listOf (submodule Service)) (attrsOf (submodule Service)))));
       default = null;
     };
     options.shutdownDelay = mkOption {
       type = (nullOr int);
       default = null;
     };
-    options.templates = mkOption {
-      type = (nullOr (listOf (submodule Template)));
+    options.template = mkOption {
+      type = (nullOr (listOf (either (listOf (submodule Template)) (attrsOf (submodule Template)))));
       default = null;
     };
     options.user = mkOption {
@@ -984,8 +984,8 @@ rec {
       type = (nullOr (submodule Vault));
       default = null;
     };
-    options.volumeMounts = mkOption {
-      type = (nullOr (listOf (submodule VolumeMount)));
+    options.volumeMount = mkOption {
+      type = (nullOr (listOf (either (listOf (submodule VolumeMount)) (attrsOf (submodule VolumeMount)))));
       default = null;
     };
   };
@@ -1026,12 +1026,12 @@ rec {
     };
   };
   TaskGroup = with lib; with lib.types; {
-    options.affinities = mkOption {
-      type = (nullOr (listOf (submodule Affinity)));
+    options.affinity = mkOption {
+      type = (nullOr (listOf (either (listOf (submodule Affinity)) (attrsOf (submodule Affinity)))));
       default = null;
     };
-    options.constraints = mkOption {
-      type = (nullOr (listOf (submodule Constraint)));
+    options.constraint = mkOption {
+      type = (nullOr (listOf (either (listOf (submodule Constraint)) (attrsOf (submodule Constraint)))));
       default = null;
     };
     options.consul = mkOption {
@@ -1054,8 +1054,8 @@ rec {
       type = (nullOr (submodule MigrateStrategy));
       default = null;
     };
-    options.networks = mkOption {
-      type = (nullOr (listOf (submodule NetworkResource)));
+    options.network = mkOption {
+      type = (nullOr (listOf (either (listOf (submodule NetworkResource)) (attrsOf (submodule NetworkResource)))));
       default = null;
     };
     options.reschedule = mkOption {
@@ -1070,32 +1070,32 @@ rec {
       type = (nullOr (submodule ScalingPolicy));
       default = null;
     };
-    options.services = mkOption {
-      type = (nullOr (listOf (submodule Service)));
+    options.service = mkOption {
+      type = (nullOr (listOf (either (listOf (submodule Service)) (attrsOf (submodule Service)))));
       default = null;
     };
     options.shutdownDelay = mkOption {
       type = (nullOr int);
       default = null;
     };
-    options.spreads = mkOption {
-      type = (nullOr (listOf (submodule Spread)));
+    options.spread = mkOption {
+      type = (nullOr (listOf (either (listOf (submodule Spread)) (attrsOf (submodule Spread)))));
       default = null;
     };
     options.stopAfterClientDisconnect = mkOption {
       type = (nullOr int);
       default = null;
     };
-    options.tasks = mkOption {
-      type = (nullOr (attrsOf (submodule Task)));
+    options.task = mkOption {
+      type = (nullOr (either (listOf (submodule Task)) (attrsOf (submodule Task))));
       default = null;
     };
     options.update = mkOption {
       type = (nullOr (submodule UpdateStrategy));
       default = null;
     };
-    options.volumes = mkOption {
-      type = (nullOr (attrsOf (submodule VolumeRequest)));
+    options.volume = mkOption {
+      type = (nullOr (either (listOf (submodule VolumeRequest)) (attrsOf (submodule VolumeRequest))));
       default = null;
     };
   };
@@ -1312,7 +1312,7 @@ rec {
   );
   mkConsulExposeConfigAPI = with lib; attrs: if !(builtins.isAttrs attrs) then null else (
     {}
-    // (if attrs ? paths && builtins.isList attrs.paths then { Path = builtins.map mkConsulExposePathAPI attrs.paths; } else {})
+    // (if attrs ? path && builtins.isList attrs.path then { Path = builtins.map mkConsulExposePathAPI attrs.path; } else {})
   );
   mkConsulExposePathAPI = with lib; attrs: if !(builtins.isAttrs attrs) then null else (
     {}
@@ -1349,14 +1349,14 @@ rec {
   );
   mkConsulIngressConfigEntryAPI = with lib; attrs: if !(builtins.isAttrs attrs) then null else (
     {}
-    // (if attrs ? listeners && builtins.isList attrs.listeners then { Listeners = builtins.map mkConsulIngressListenerAPI attrs.listeners; } else {})
+    // (if attrs ? listener && builtins.isList attrs.listener then { Listeners = builtins.map mkConsulIngressListenerAPI attrs.listener; } else {})
     // (if attrs ? tls && attrs.tls != null then { TLS = mkConsulGatewayTLSConfigAPI attrs.tls; } else {})
   );
   mkConsulIngressListenerAPI = with lib; attrs: if !(builtins.isAttrs attrs) then null else (
     {}
     // (if attrs ? port && attrs.port != null then { Port = attrs.port; } else {})
     // (if attrs ? protocol && attrs.protocol != null then { Protocol = attrs.protocol; } else {})
-    // (if attrs ? services && builtins.isList attrs.services then { Services = builtins.map mkConsulIngressServiceAPI attrs.services; } else {})
+    // (if attrs ? service && builtins.isList attrs.service then { Services = builtins.map mkConsulIngressServiceAPI attrs.service; } else {})
   );
   mkConsulIngressServiceAPI = with lib; attrs: if !(builtins.isAttrs attrs) then null else (
     {}
@@ -1395,7 +1395,7 @@ rec {
   );
   mkConsulTerminatingConfigEntryAPI = with lib; attrs: if !(builtins.isAttrs attrs) then null else (
     {}
-    // (if attrs ? services && builtins.isList attrs.services then { Services = builtins.map mkConsulLinkedServiceAPI attrs.services; } else {})
+    // (if attrs ? service && builtins.isList attrs.service then { Services = builtins.map mkConsulLinkedServiceAPI attrs.service; } else {})
   );
   mkConsulUpstreamAPI = with lib; attrs: if !(builtins.isAttrs attrs) then null else (
     {}
@@ -1423,12 +1423,12 @@ rec {
   );
   mkJobAPI = with lib; label: attrs: if !(builtins.isAttrs attrs) then null else (
     {}
-    // (if attrs ? affinities && builtins.isList attrs.affinities then { Affinities = builtins.map mkAffinityAPI attrs.affinities; } else {})
+    // (if attrs ? affinity && builtins.isList attrs.affinity then { Affinities = builtins.map mkAffinityAPI attrs.affinity; } else {})
     // (if attrs ? allAtOnce && attrs.allAtOnce != null then { AllAtOnce = attrs.allAtOnce; } else {})
-    // (if attrs ? constraints && builtins.isList attrs.constraints then { Constraints = builtins.map mkConstraintAPI attrs.constraints; } else {})
+    // (if attrs ? constraint && builtins.isList attrs.constraint then { Constraints = builtins.map mkConstraintAPI attrs.constraint; } else {})
     // (if attrs ? consulToken && attrs.consulToken != null then { ConsulToken = attrs.consulToken; } else {})
     // (if attrs ? datacenters && attrs.datacenters != null then { Datacenters = attrs.datacenters; } else {})
-    // (if attrs ? groups && builtins.isAttrs attrs.groups then { TaskGroups = mapAttrsToList mkTaskGroupAPI attrs.groups; } else {})
+    // (if attrs ? group && builtins.isAttrs attrs.group then { TaskGroups = mapAttrsToList mkTaskGroupAPI attrs.group; } else {})
     // ({ ID = label; })
     // (if attrs ? meta && attrs.meta != null then { Meta = attrs.meta; } else {})
     // (if attrs ? migrate && attrs.migrate != null then { Migrate = mkMigrateStrategyAPI attrs.migrate; } else {})
@@ -1440,7 +1440,7 @@ rec {
     // (if attrs ? priority && attrs.priority != null then { Priority = attrs.priority; } else {})
     // (if attrs ? region && attrs.region != null then { Region = attrs.region; } else {})
     // (if attrs ? reschedule && attrs.reschedule != null then { Reschedule = mkReschedulePolicyAPI attrs.reschedule; } else {})
-    // (if attrs ? spreads && builtins.isList attrs.spreads then { Spreads = builtins.map mkSpreadAPI attrs.spreads; } else {})
+    // (if attrs ? spread && builtins.isList attrs.spread then { Spreads = builtins.map mkSpreadAPI attrs.spread; } else {})
     // (if attrs ? type && attrs.type != null then { Type = attrs.type; } else {})
     // (if attrs ? update && attrs.update != null then { Update = mkUpdateStrategyAPI attrs.update; } else {})
     // (if attrs ? vaultToken && attrs.vaultToken != null then { VaultToken = attrs.vaultToken; } else {})
@@ -1459,7 +1459,7 @@ rec {
   );
   mkMultiregionAPI = with lib; attrs: if !(builtins.isAttrs attrs) then null else (
     {}
-    // (if attrs ? regions && builtins.isAttrs attrs.regions then { Regions = mapAttrsToList mkMultiregionRegionAPI attrs.regions; } else {})
+    // (if attrs ? region && builtins.isAttrs attrs.region then { Regions = mapAttrsToList mkMultiregionRegionAPI attrs.region; } else {})
     // (if attrs ? strategy && attrs.strategy != null then { Strategy = mkMultiregionStrategyAPI attrs.strategy; } else {})
   );
   mkMultiregionRegionAPI = with lib; label: attrs: if !(builtins.isAttrs attrs) then null else (
@@ -1483,7 +1483,7 @@ rec {
     // (if attrs ? ip && attrs.ip != null then { IP = attrs.ip; } else {})
     // (if attrs ? mbits && attrs.mbits != null then { MBits = attrs.mbits; } else {})
     // (if attrs ? mode && attrs.mode != null then { Mode = attrs.mode; } else {})
-    // (if attrs ? ports && builtins.isAttrs attrs.ports then { DynamicPorts = mapAttrsToList mkPortAPI attrs.ports; } else {})
+    // (if attrs ? port && builtins.isAttrs attrs.port then { DynamicPorts = mapAttrsToList mkPortAPI attrs.port; } else {})
     // (if attrs ? reservedPorts && builtins.isAttrs attrs.reservedPorts then { ReservedPorts = mapAttrsToList mkPortAPI attrs.reservedPorts; } else {})
   );
   mkParameterizedJobConfigAPI = with lib; attrs: if !(builtins.isAttrs attrs) then null else (
@@ -1509,8 +1509,8 @@ rec {
   mkRequestedDeviceAPI = with lib; label: attrs: if !(builtins.isAttrs attrs) then null else (
     {}
     // ({ Name = label; })
-    // (if attrs ? affinities && builtins.isList attrs.affinities then { Affinities = builtins.map mkAffinityAPI attrs.affinities; } else {})
-    // (if attrs ? constraints && builtins.isList attrs.constraints then { Constraints = builtins.map mkConstraintAPI attrs.constraints; } else {})
+    // (if attrs ? affinity && builtins.isList attrs.affinity then { Affinities = builtins.map mkAffinityAPI attrs.affinity; } else {})
+    // (if attrs ? constraint && builtins.isList attrs.constraint then { Constraints = builtins.map mkConstraintAPI attrs.constraint; } else {})
     // (if attrs ? count && attrs.count != null then { Count = attrs.count; } else {})
   );
   mkReschedulePolicyAPI = with lib; attrs: if !(builtins.isAttrs attrs) then null else (
@@ -1526,12 +1526,12 @@ rec {
     {}
     // (if attrs ? cores && attrs.cores != null then { Cores = attrs.cores; } else {})
     // (if attrs ? cpu && attrs.cpu != null then { CPU = attrs.cpu; } else {})
-    // (if attrs ? devices && builtins.isAttrs attrs.devices then { Devices = mapAttrsToList mkRequestedDeviceAPI attrs.devices; } else {})
+    // (if attrs ? device && builtins.isAttrs attrs.device then { Devices = mapAttrsToList mkRequestedDeviceAPI attrs.device; } else {})
     // (if attrs ? disk && attrs.disk != null then { DiskMB = attrs.disk; } else {})
     // (if attrs ? iops && attrs.iops != null then { IOPS = attrs.iops; } else {})
     // (if attrs ? memory && attrs.memory != null then { MemoryMB = attrs.memory; } else {})
     // (if attrs ? memoryMax && attrs.memoryMax != null then { MemoryMaxMB = attrs.memoryMax; } else {})
-    // (if attrs ? networks && builtins.isList attrs.networks then { Networks = builtins.map mkNetworkResourceAPI attrs.networks; } else {})
+    // (if attrs ? network && builtins.isList attrs.network then { Networks = builtins.map mkNetworkResourceAPI attrs.network; } else {})
   );
   mkRestartPolicyAPI = with lib; attrs: if !(builtins.isAttrs attrs) then null else (
     {}
@@ -1553,8 +1553,8 @@ rec {
     // (if attrs ? addressMode && attrs.addressMode != null then { AddressMode = attrs.addressMode; } else {})
     // (if attrs ? canaryMeta && attrs.canaryMeta != null then { CanaryMeta = attrs.canaryMeta; } else {})
     // (if attrs ? canaryTags && attrs.canaryTags != null then { CanaryTags = attrs.canaryTags; } else {})
+    // (if attrs ? check && builtins.isList attrs.check then { Checks = builtins.map mkServiceCheckAPI attrs.check; } else {})
     // (if attrs ? checkRestart && attrs.checkRestart != null then { CheckRestart = mkCheckRestartAPI attrs.checkRestart; } else {})
-    // (if attrs ? checks && builtins.isList attrs.checks then { Checks = builtins.map mkServiceCheckAPI attrs.checks; } else {})
     // (if attrs ? connect && attrs.connect != null then { Connect = mkConsulConnectAPI attrs.connect; } else {})
     // (if attrs ? enableTagOverride && attrs.enableTagOverride != null then { EnableTagOverride = attrs.enableTagOverride; } else {})
     // (if attrs ? id && attrs.id != null then { Id = attrs.id; } else {})
@@ -1609,7 +1609,7 @@ rec {
   mkSpreadAPI = with lib; attrs: if !(builtins.isAttrs attrs) then null else (
     {}
     // (if attrs ? attribute && attrs.attribute != null then { Attribute = attrs.attribute; } else {})
-    // (if attrs ? targets && builtins.isAttrs attrs.targets then { SpreadTarget = mapAttrsToList mkSpreadTargetAPI attrs.targets; } else {})
+    // (if attrs ? target && builtins.isAttrs attrs.target then { SpreadTarget = mapAttrsToList mkSpreadTargetAPI attrs.target; } else {})
     // (if attrs ? weight && attrs.weight != null then { Weight = attrs.weight; } else {})
   );
   mkSpreadTargetAPI = with lib; label: attrs: if !(builtins.isAttrs attrs) then null else (
@@ -1619,10 +1619,10 @@ rec {
   );
   mkTaskAPI = with lib; label: attrs: if !(builtins.isAttrs attrs) then null else (
     {}
-    // (if attrs ? affinities && builtins.isList attrs.affinities then { Affinities = builtins.map mkAffinityAPI attrs.affinities; } else {})
-    // (if attrs ? artifacts && builtins.isList attrs.artifacts then { Artifacts = builtins.map mkTaskArtifactAPI attrs.artifacts; } else {})
+    // (if attrs ? affinity && builtins.isList attrs.affinity then { Affinities = builtins.map mkAffinityAPI attrs.affinity; } else {})
+    // (if attrs ? artifact && builtins.isList attrs.artifact then { Artifacts = builtins.map mkTaskArtifactAPI attrs.artifact; } else {})
     // (if attrs ? config && attrs.config != null then { Config = attrs.config; } else {})
-    // (if attrs ? constraints && builtins.isList attrs.constraints then { Constraints = builtins.map mkConstraintAPI attrs.constraints; } else {})
+    // (if attrs ? constraint && builtins.isList attrs.constraint then { Constraints = builtins.map mkConstraintAPI attrs.constraint; } else {})
     // (if attrs ? csiPlugin && attrs.csiPlugin != null then { CSIPluginConfig = mkTaskCSIPluginConfigAPI attrs.csiPlugin; } else {})
     // (if attrs ? dispatchPayload && attrs.dispatchPayload != null then { DispatchPayload = mkDispatchPayloadConfigAPI attrs.dispatchPayload; } else {})
     // (if attrs ? driver && attrs.driver != null then { Driver = attrs.driver; } else {})
@@ -1637,13 +1637,13 @@ rec {
     // ({ Name = label; })
     // (if attrs ? resources && attrs.resources != null then { Resources = mkResourcesAPI attrs.resources; } else {})
     // (if attrs ? restart && attrs.restart != null then { RestartPolicy = mkRestartPolicyAPI attrs.restart; } else {})
-    // (if attrs ? scalings && builtins.isList attrs.scalings then { ScalingPolicies = builtins.map mkScalingPolicyAPI attrs.scalings; } else {})
-    // (if attrs ? services && builtins.isList attrs.services then { Services = builtins.map mkServiceAPI attrs.services; } else {})
+    // (if attrs ? scaling && builtins.isList attrs.scaling then { ScalingPolicies = builtins.map mkScalingPolicyAPI attrs.scaling; } else {})
+    // (if attrs ? service && builtins.isList attrs.service then { Services = builtins.map mkServiceAPI attrs.service; } else {})
     // (if attrs ? shutdownDelay && attrs.shutdownDelay != null then { ShutdownDelay = attrs.shutdownDelay; } else {})
-    // (if attrs ? templates && builtins.isList attrs.templates then { Templates = builtins.map mkTemplateAPI attrs.templates; } else {})
+    // (if attrs ? template && builtins.isList attrs.template then { Templates = builtins.map mkTemplateAPI attrs.template; } else {})
     // (if attrs ? user && attrs.user != null then { User = attrs.user; } else {})
     // (if attrs ? vault && attrs.vault != null then { Vault = mkVaultAPI attrs.vault; } else {})
-    // (if attrs ? volumeMounts && builtins.isList attrs.volumeMounts then { VolumeMounts = builtins.map mkVolumeMountAPI attrs.volumeMounts; } else {})
+    // (if attrs ? volumeMount && builtins.isList attrs.volumeMount then { VolumeMounts = builtins.map mkVolumeMountAPI attrs.volumeMount; } else {})
   );
   mkTaskArtifactAPI = with lib; attrs: if !(builtins.isAttrs attrs) then null else (
     {}
@@ -1661,25 +1661,25 @@ rec {
   );
   mkTaskGroupAPI = with lib; label: attrs: if !(builtins.isAttrs attrs) then null else (
     {}
-    // (if attrs ? affinities && builtins.isList attrs.affinities then { Affinities = builtins.map mkAffinityAPI attrs.affinities; } else {})
-    // (if attrs ? constraints && builtins.isList attrs.constraints then { Constraints = builtins.map mkConstraintAPI attrs.constraints; } else {})
+    // (if attrs ? affinity && builtins.isList attrs.affinity then { Affinities = builtins.map mkAffinityAPI attrs.affinity; } else {})
+    // (if attrs ? constraint && builtins.isList attrs.constraint then { Constraints = builtins.map mkConstraintAPI attrs.constraint; } else {})
     // (if attrs ? consul && attrs.consul != null then { Consul = mkConsulAPI attrs.consul; } else {})
     // (if attrs ? count && attrs.count != null then { Count = attrs.count; } else {})
     // (if attrs ? ephemeralDisk && attrs.ephemeralDisk != null then { EphemeralDisk = mkEphemeralDiskAPI attrs.ephemeralDisk; } else {})
     // (if attrs ? meta && attrs.meta != null then { Meta = attrs.meta; } else {})
     // (if attrs ? migrate && attrs.migrate != null then { Migrate = mkMigrateStrategyAPI attrs.migrate; } else {})
     // ({ Name = label; })
-    // (if attrs ? networks && builtins.isList attrs.networks then { Networks = builtins.map mkNetworkResourceAPI attrs.networks; } else {})
+    // (if attrs ? network && builtins.isList attrs.network then { Networks = builtins.map mkNetworkResourceAPI attrs.network; } else {})
     // (if attrs ? reschedule && attrs.reschedule != null then { ReschedulePolicy = mkReschedulePolicyAPI attrs.reschedule; } else {})
     // (if attrs ? restart && attrs.restart != null then { RestartPolicy = mkRestartPolicyAPI attrs.restart; } else {})
     // (if attrs ? scaling && attrs.scaling != null then { Scaling = mkScalingPolicyAPI attrs.scaling; } else {})
-    // (if attrs ? services && builtins.isList attrs.services then { Services = builtins.map mkServiceAPI attrs.services; } else {})
+    // (if attrs ? service && builtins.isList attrs.service then { Services = builtins.map mkServiceAPI attrs.service; } else {})
     // (if attrs ? shutdownDelay && attrs.shutdownDelay != null then { ShutdownDelay = attrs.shutdownDelay; } else {})
-    // (if attrs ? spreads && builtins.isList attrs.spreads then { Spreads = builtins.map mkSpreadAPI attrs.spreads; } else {})
+    // (if attrs ? spread && builtins.isList attrs.spread then { Spreads = builtins.map mkSpreadAPI attrs.spread; } else {})
     // (if attrs ? stopAfterClientDisconnect && attrs.stopAfterClientDisconnect != null then { StopAfterClientDisconnect = attrs.stopAfterClientDisconnect; } else {})
-    // (if attrs ? tasks && builtins.isAttrs attrs.tasks then { Tasks = mapAttrsToList mkTaskAPI attrs.tasks; } else {})
+    // (if attrs ? task && builtins.isAttrs attrs.task then { Tasks = mapAttrsToList mkTaskAPI attrs.task; } else {})
     // (if attrs ? update && attrs.update != null then { Update = mkUpdateStrategyAPI attrs.update; } else {})
-    // (if attrs ? volumes && builtins.isAttrs attrs.volumes then { Volumes = mapAttrsToList mkVolumeRequestAPI attrs.volumes; } else {})
+    // (if attrs ? volume && builtins.isAttrs attrs.volume then { Volumes = mapAttrsToList mkVolumeRequestAPI attrs.volume; } else {})
   );
   mkTaskLifecycleAPI = with lib; attrs: if !(builtins.isAttrs attrs) then null else (
     {}

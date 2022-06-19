@@ -1,11 +1,11 @@
 {
-  jobs.hello.type = "batch";
-  jobs.hello.datacenters = ["dc1"];
+  job.hello.type = "batch";
+  job.hello.datacenters = ["dc1"];
 
-  jobs.hello.groups.webs = {
+  job.hello.group.webs = {
     count = 1;
 
-    tasks.frontend = {
+    task.frontend = {
       driver = "raw_exec";
 
       config = {

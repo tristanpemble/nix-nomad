@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"github.com/gertd/go-pluralize"
 	"github.com/hashicorp/nomad/api"
 	"github.com/iancoleman/strcase"
 	"reflect"
@@ -264,10 +263,8 @@ func parseNomadField(t reflect.Type, f reflect.StructField) *NomadField {
 	}
 
 	if (o.isMap || o.isList) && o.goType.Kind() == reflect.Struct {
-		o.nixName = pluralize.NewClient().Plural(o.nixName)
-		o.nixType = o.nixType
-	}
-	if o.isMap {
+		o.nixType = fmt.Sprintf("(either (listOf %s) (attrsOf %s))", o.nixType, o.nixType)
+	} else if o.isMap {
 		o.nixType = fmt.Sprintf("(attrsOf %s)", o.nixType)
 	}
 	if o.isMap || o.isBlock {

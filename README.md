@@ -21,14 +21,14 @@ Module options are enumerated in [the documentation](https://tristanpemble.githu
 
 ```nix
 let myJobs = mkNomadJobs {
-  jobs.hello = {
+  job.hello = {
     type = "batch";
     datacenters = ["dc1"];
 
-    groups.webs = {
+    group.webs = {
       count = 1;
 
-      tasks.frontend = {
+      task.frontend = {
         driver = "raw_exec";
 
         config = {
