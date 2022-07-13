@@ -1,16 +1,17 @@
 { self, nixpkgs, nixpkgs-lib }:
 
-let nomad = import ./nomad.nix {
+let generated = import ./generated.nix {
   inherit (nixpkgs-lib) lib;
 }; in
-
-nomad // {
+let nomad = nixpkgs-lib.lib.recursiveUpdate generated {
   evalNomadJobs = import ./evalNomadJobs.nix {
-    inherit nomad;
+    inherit nixpkgs nomad;
     inherit (nixpkgs-lib) lib;
   };
   mkNomadJobs = import ./mkNomadJobs.nix {
-    inherit nixpkgs;
+    inherit nixpkgs nomad;
     inherit (self.lib) evalNomadJobs;
+    inherit (nixpkgs-lib) lib;
   };
-}
+};
+in nomad

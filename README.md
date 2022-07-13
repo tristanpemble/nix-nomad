@@ -21,19 +21,22 @@ Module options are enumerated in [the documentation](https://tristanpemble.githu
 
 ```nix
 let myJobs = mkNomadJobs {
-  job.hello = {
-    type = "batch";
-    datacenters = ["dc1"];
+  pkgs = import <nixpkgs> {};
+  config = {
+    job.hello = {
+      type = "batch";
+      datacenters = ["dc1"];
 
-    group.webs = {
-      count = 1;
+      group.webs = {
+        count = 1;
 
-      task.frontend = {
-        driver = "raw_exec";
+        task.frontend = {
+          driver = "raw_exec";
 
-        config = {
-          command = "echo";
-          args = ["hello"];
+          config = {
+            command = "echo";
+            args = ["hello"];
+          };
         };
       };
     };

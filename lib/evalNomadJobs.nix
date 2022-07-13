@@ -1,9 +1,14 @@
-{ lib, nomad }:
+{ lib, nixpkgs, nomad }:
 
-configuration:
+{ system ? null
+, pkgs ? import nixpkgs { inherit system; }
+, config
+}:
 
 let evaluated = lib.evalModules {
-  modules = [ ({ _module.args = { inherit nomad; }; }) ../modules/core.nix ] ++ (lib.toList configuration);
+  modules = [
+    ({ _module.args = { inherit nomad pkgs; }; })
+    ../modules/core.nix
+  ] ++ (lib.toList config);
 }; in
-let jobs = lib.mapAttrs nomad.mkJobAPI evaluated.config.job; in
-jobs
+evaluated.config

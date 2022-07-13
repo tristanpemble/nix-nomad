@@ -1,9 +1,10 @@
-{ nixpkgs, evalNomadJobs }:
+{ nixpkgs, lib, nomad, evalNomadJobs }:
 
-{ system, config }:
+{ system ? null
+, pkgs ? import nixpkgs { inherit system; }
+, config
+}:
 
-let pkgs = import nixpkgs { inherit system; }; in
-let jobs = evalNomadJobs config; in
-let mkJobDrv = name: job: pkgs.writeText "${name}.json" (builtins.toJSON job); in
-let drvs = builtins.mapAttrs mkJobDrv jobs; in
-drvs
+let evaluatedConfig = evalNomadJobs { inherit config pkgs system; }; in
+let jobs = lib.mapAttrs (_: job: job.drv) evaluatedConfig.job; in
+jobs
