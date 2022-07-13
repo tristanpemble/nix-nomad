@@ -39,6 +39,11 @@ let myJobs = mkNomadJobs {
           };
         };
       };
+
+      update = with time; {
+        healthyDeadline = 15 * minute;
+        progressDeadline = 1 * hour;
+      };
     };
   };
 }; in myJobs.hello
@@ -72,7 +77,11 @@ been prettified for readability):
       ]
     }
   ],
-  "Type": "batch"
+  "Type": "batch",
+  "Update": {
+    "HealthyDeadline": 900000000000,
+    "ProgressDeadline": 3600000000000
+  }
 }
 ```
 

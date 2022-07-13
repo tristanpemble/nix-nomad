@@ -1,3 +1,5 @@
+{ time, ... }:
+
 {
   job.goodbye.type = "batch";
   job.goodbye.datacenters = ["dc1"];
@@ -13,5 +15,10 @@
         args = ["goodbye"];
       };
     };
+  };
+
+  job.goodbye.update = with time; {
+    healthyDeadline = 15 * minute;
+    progressDeadline = 1 * hour;
   };
 }

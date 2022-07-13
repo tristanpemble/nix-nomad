@@ -7,7 +7,7 @@
 
 let evaluated = lib.evalModules {
   modules = [
-    ({ _module.args = { inherit nomad pkgs; }; })
+    ({ _module.args = { inherit nomad pkgs; inherit (nomad) time; }; })
     ../modules/core.nix
   ] ++ (lib.toList config);
 }; in
