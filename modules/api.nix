@@ -19,7 +19,7 @@ with lib;
   };
 
   config.nomad.build = rec {
-    apiJob = mapAttrs nomad.mkJobAPI config.job;
+    apiJob = mapAttrs (_: config._module.transformers.mkJobAPI) config.job;
     apiJobFile = mapAttrs (name: job:
       pkgs.writeText "${name}.json" (builtins.toJSON job)
     ) apiJob;

@@ -1,7 +1,7 @@
-{ lib }:
+{ config, lib, ... }:
 
-rec {
-  Affinity = with lib; with lib.types; {
+{
+  _module.types.Affinity = with lib; with config._module.types; with lib.types; submodule ({
     options.attribute = mkOption {
       type = (nullOr str);
       default = null;
@@ -18,8 +18,8 @@ rec {
       type = (nullOr int);
       default = null;
     };
-  };
-  CSIMountOptions = with lib; with lib.types; {
+  });
+  _module.types.CSIMountOptions = with lib; with config._module.types; with lib.types; submodule ({
     options.fsType = mkOption {
       type = (nullOr str);
       default = null;
@@ -28,8 +28,8 @@ rec {
       type = (nullOr (listOf str));
       default = null;
     };
-  };
-  CheckRestart = with lib; with lib.types; {
+  });
+  _module.types.CheckRestart = with lib; with config._module.types; with lib.types; submodule ({
     options.grace = mkOption {
       type = (nullOr int);
       default = null;
@@ -42,8 +42,8 @@ rec {
       type = (nullOr int);
       default = null;
     };
-  };
-  Constraint = with lib; with lib.types; {
+  });
+  _module.types.Constraint = with lib; with config._module.types; with lib.types; submodule ({
     options.attribute = mkOption {
       type = (nullOr str);
       default = null;
@@ -56,16 +56,16 @@ rec {
       type = (nullOr str);
       default = null;
     };
-  };
-  Consul = with lib; with lib.types; {
+  });
+  _module.types.Consul = with lib; with config._module.types; with lib.types; submodule ({
     options.namespace = mkOption {
       type = (nullOr str);
       default = null;
     };
-  };
-  ConsulConnect = with lib; with lib.types; {
+  });
+  _module.types.ConsulConnect = with lib; with config._module.types; with lib.types; submodule ({
     options.gateway = mkOption {
-      type = (nullOr (submodule ConsulGateway));
+      type = (nullOr ConsulGateway);
       default = null;
     };
     options.native = mkOption {
@@ -73,21 +73,21 @@ rec {
       default = null;
     };
     options.sidecarService = mkOption {
-      type = (nullOr (submodule ConsulSidecarService));
+      type = (nullOr ConsulSidecarService);
       default = null;
     };
     options.sidecarTask = mkOption {
-      type = (nullOr (submodule SidecarTask));
+      type = (nullOr SidecarTask);
       default = null;
     };
-  };
-  ConsulExposeConfig = with lib; with lib.types; {
+  });
+  _module.types.ConsulExposeConfig = with lib; with config._module.types; with lib.types; submodule ({
     options.paths = mkOption {
-      type = (nullOr (listOf (submodule ConsulExposePath)));
+      type = (nullOr (listOf ConsulExposePath));
       default = null;
     };
-  };
-  ConsulExposePath = with lib; with lib.types; {
+  });
+  _module.types.ConsulExposePath = with lib; with config._module.types; with lib.types; submodule ({
     options.listenerPort = mkOption {
       type = (nullOr str);
       default = null;
@@ -104,36 +104,43 @@ rec {
       type = (nullOr str);
       default = null;
     };
-  };
-  ConsulGateway = with lib; with lib.types; {
+  });
+  _module.types.ConsulGateway = with lib; with config._module.types; with lib.types; submodule ({
     options.ingress = mkOption {
-      type = (nullOr (submodule ConsulIngressConfigEntry));
+      type = (nullOr ConsulIngressConfigEntry);
       default = null;
     };
     options.mesh = mkOption {
-      type = (nullOr (submodule ConsulMeshConfigEntry));
+      type = (nullOr ConsulMeshConfigEntry);
       default = null;
     };
     options.proxy = mkOption {
-      type = (nullOr (submodule ConsulGatewayProxy));
+      type = (nullOr ConsulGatewayProxy);
       default = null;
     };
     options.terminating = mkOption {
-      type = (nullOr (submodule ConsulTerminatingConfigEntry));
+      type = (nullOr ConsulTerminatingConfigEntry);
       default = null;
     };
-  };
-  ConsulGatewayBindAddress = with lib; with lib.types; {
+  });
+  _module.types.ConsulGatewayBindAddress = with lib; with config._module.types; with lib.types; submodule ({ name, ... }: {
     options.address = mkOption {
       type = (nullOr str);
       default = null;
+    };
+    options.name = mkOption {
+      type = str;
+      default = name;
+      internal = true;
+      readOnly = true;
+      visible = false;
     };
     options.port = mkOption {
       type = (nullOr int);
       default = null;
     };
-  };
-  ConsulGatewayProxy = with lib; with lib.types; {
+  });
+  _module.types.ConsulGatewayProxy = with lib; with config._module.types; with lib.types; submodule ({
     options.config = mkOption {
       type = (nullOr (attrsOf anything));
       default = null;
@@ -147,7 +154,7 @@ rec {
       default = null;
     };
     options.envoyGatewayBindAddresses = mkOption {
-      type = (nullOr (attrsOf (submodule ConsulGatewayBindAddress)));
+      type = (nullOr (attrsOf ConsulGatewayBindAddress));
       default = null;
     };
     options.envoyGatewayBindTaggedAddresses = mkOption {
@@ -158,24 +165,24 @@ rec {
       type = (nullOr bool);
       default = null;
     };
-  };
-  ConsulGatewayTLSConfig = with lib; with lib.types; {
+  });
+  _module.types.ConsulGatewayTLSConfig = with lib; with config._module.types; with lib.types; submodule ({
     options.enabled = mkOption {
       type = (nullOr bool);
       default = null;
     };
-  };
-  ConsulIngressConfigEntry = with lib; with lib.types; {
+  });
+  _module.types.ConsulIngressConfigEntry = with lib; with config._module.types; with lib.types; submodule ({
     options.listeners = mkOption {
-      type = (nullOr (listOf (submodule ConsulIngressListener)));
+      type = (nullOr (listOf ConsulIngressListener));
       default = null;
     };
     options.tls = mkOption {
-      type = (nullOr (submodule ConsulGatewayTLSConfig));
+      type = (nullOr ConsulGatewayTLSConfig);
       default = null;
     };
-  };
-  ConsulIngressListener = with lib; with lib.types; {
+  });
+  _module.types.ConsulIngressListener = with lib; with config._module.types; with lib.types; submodule ({
     options.port = mkOption {
       type = (nullOr int);
       default = null;
@@ -185,11 +192,11 @@ rec {
       default = null;
     };
     options.services = mkOption {
-      type = (nullOr (listOf (submodule ConsulIngressService)));
+      type = (nullOr (listOf ConsulIngressService));
       default = null;
     };
-  };
-  ConsulIngressService = with lib; with lib.types; {
+  });
+  _module.types.ConsulIngressService = with lib; with config._module.types; with lib.types; submodule ({
     options.hosts = mkOption {
       type = (nullOr (listOf str));
       default = null;
@@ -198,8 +205,8 @@ rec {
       type = (nullOr str);
       default = null;
     };
-  };
-  ConsulLinkedService = with lib; with lib.types; {
+  });
+  _module.types.ConsulLinkedService = with lib; with config._module.types; with lib.types; submodule ({
     options.caFile = mkOption {
       type = (nullOr str);
       default = null;
@@ -220,22 +227,22 @@ rec {
       type = (nullOr str);
       default = null;
     };
-  };
-  ConsulMeshConfigEntry = with lib; with lib.types; {
-  };
-  ConsulMeshGateway = with lib; with lib.types; {
+  });
+  _module.types.ConsulMeshConfigEntry = with lib; with config._module.types; with lib.types; submodule ({
+  });
+  _module.types.ConsulMeshGateway = with lib; with config._module.types; with lib.types; submodule ({
     options.mode = mkOption {
       type = (nullOr str);
       default = null;
     };
-  };
-  ConsulProxy = with lib; with lib.types; {
+  });
+  _module.types.ConsulProxy = with lib; with config._module.types; with lib.types; submodule ({
     options.config = mkOption {
       type = (nullOr (attrsOf anything));
       default = null;
     };
     options.expose = mkOption {
-      type = (nullOr (submodule ConsulExposeConfig));
+      type = (nullOr ConsulExposeConfig);
       default = null;
     };
     options.localServiceAddress = mkOption {
@@ -247,11 +254,11 @@ rec {
       default = null;
     };
     options.upstreams = mkOption {
-      type = (nullOr (listOf (submodule ConsulUpstream)));
+      type = (nullOr (listOf ConsulUpstream));
       default = null;
     };
-  };
-  ConsulSidecarService = with lib; with lib.types; {
+  });
+  _module.types.ConsulSidecarService = with lib; with config._module.types; with lib.types; submodule ({
     options.disableDefaultTcpCheck = mkOption {
       type = (nullOr bool);
       default = null;
@@ -261,21 +268,21 @@ rec {
       default = null;
     };
     options.proxy = mkOption {
-      type = (nullOr (submodule ConsulProxy));
+      type = (nullOr ConsulProxy);
       default = null;
     };
     options.tags = mkOption {
       type = (nullOr (listOf str));
       default = null;
     };
-  };
-  ConsulTerminatingConfigEntry = with lib; with lib.types; {
+  });
+  _module.types.ConsulTerminatingConfigEntry = with lib; with config._module.types; with lib.types; submodule ({
     options.services = mkOption {
-      type = (nullOr (listOf (submodule ConsulLinkedService)));
+      type = (nullOr (listOf ConsulLinkedService));
       default = null;
     };
-  };
-  ConsulUpstream = with lib; with lib.types; {
+  });
+  _module.types.ConsulUpstream = with lib; with config._module.types; with lib.types; submodule ({
     options.datacenter = mkOption {
       type = (nullOr str);
       default = null;
@@ -293,11 +300,11 @@ rec {
       default = null;
     };
     options.meshGateway = mkOption {
-      type = (nullOr (submodule ConsulMeshGateway));
+      type = (nullOr ConsulMeshGateway);
       default = null;
     };
-  };
-  DNSConfig = with lib; with lib.types; {
+  });
+  _module.types.DNSConfig = with lib; with config._module.types; with lib.types; submodule ({
     options.options = mkOption {
       type = (nullOr (listOf str));
       default = null;
@@ -310,14 +317,14 @@ rec {
       type = (nullOr (listOf str));
       default = null;
     };
-  };
-  DispatchPayloadConfig = with lib; with lib.types; {
+  });
+  _module.types.DispatchPayloadConfig = with lib; with config._module.types; with lib.types; submodule ({
     options.file = mkOption {
       type = (nullOr str);
       default = null;
     };
-  };
-  EphemeralDisk = with lib; with lib.types; {
+  });
+  _module.types.EphemeralDisk = with lib; with config._module.types; with lib.types; submodule ({
     options.migrate = mkOption {
       type = (nullOr bool);
       default = null;
@@ -330,10 +337,10 @@ rec {
       type = (nullOr bool);
       default = null;
     };
-  };
-  Job = with lib; with lib.types; {
+  });
+  _module.types.Job = with lib; with config._module.types; with lib.types; submodule ({ name, ... }: {
     options.affinities = mkOption {
-      type = (nullOr (listOf (submodule Affinity)));
+      type = (nullOr (listOf Affinity));
       default = null;
     };
     options.allAtOnce = mkOption {
@@ -341,7 +348,7 @@ rec {
       default = null;
     };
     options.constraints = mkOption {
-      type = (nullOr (listOf (submodule Constraint)));
+      type = (nullOr (listOf Constraint));
       default = null;
     };
     options.consulToken = mkOption {
@@ -353,31 +360,45 @@ rec {
       default = null;
     };
     options.group = mkOption {
-      type = (nullOr (attrsOf (submodule TaskGroup)));
+      type = (nullOr (attrsOf TaskGroup));
       default = null;
+    };
+    options.id = mkOption {
+      type = (nullOr str);
+      default = name;
+      internal = true;
+      readOnly = true;
+      visible = false;
     };
     options.meta = mkOption {
       type = (nullOr (attrsOf str));
       default = null;
     };
     options.migrate = mkOption {
-      type = (nullOr (submodule MigrateStrategy));
+      type = (nullOr MigrateStrategy);
       default = null;
     };
     options.multiregion = mkOption {
-      type = (nullOr (submodule Multiregion));
+      type = (nullOr Multiregion);
       default = null;
+    };
+    options.name = mkOption {
+      type = (nullOr str);
+      default = name;
+      internal = true;
+      readOnly = true;
+      visible = false;
     };
     options.namespace = mkOption {
       type = (nullOr str);
       default = null;
     };
     options.parameterized = mkOption {
-      type = (nullOr (submodule ParameterizedJobConfig));
+      type = (nullOr ParameterizedJobConfig);
       default = null;
     };
     options.periodic = mkOption {
-      type = (nullOr (submodule PeriodicConfig));
+      type = (nullOr PeriodicConfig);
       default = null;
     };
     options.priority = mkOption {
@@ -389,11 +410,11 @@ rec {
       default = null;
     };
     options.reschedule = mkOption {
-      type = (nullOr (submodule ReschedulePolicy));
+      type = (nullOr ReschedulePolicy);
       default = null;
     };
     options.spreads = mkOption {
-      type = (nullOr (listOf (submodule Spread)));
+      type = (nullOr (listOf Spread));
       default = null;
     };
     options.type = mkOption {
@@ -401,15 +422,15 @@ rec {
       default = null;
     };
     options.update = mkOption {
-      type = (nullOr (submodule UpdateStrategy));
+      type = (nullOr UpdateStrategy);
       default = null;
     };
     options.vaultToken = mkOption {
       type = (nullOr str);
       default = null;
     };
-  };
-  LogConfig = with lib; with lib.types; {
+  });
+  _module.types.LogConfig = with lib; with config._module.types; with lib.types; submodule ({
     options.maxFileSize = mkOption {
       type = (nullOr int);
       default = null;
@@ -418,8 +439,8 @@ rec {
       type = (nullOr int);
       default = null;
     };
-  };
-  MigrateStrategy = with lib; with lib.types; {
+  });
+  _module.types.MigrateStrategy = with lib; with config._module.types; with lib.types; submodule ({
     options.healthCheck = mkOption {
       type = (nullOr str);
       default = null;
@@ -436,18 +457,18 @@ rec {
       type = (nullOr int);
       default = null;
     };
-  };
-  Multiregion = with lib; with lib.types; {
+  });
+  _module.types.Multiregion = with lib; with config._module.types; with lib.types; submodule ({
     options.region = mkOption {
-      type = (nullOr (attrsOf (submodule MultiregionRegion)));
+      type = (nullOr (attrsOf MultiregionRegion));
       default = null;
     };
     options.strategy = mkOption {
-      type = (nullOr (submodule MultiregionStrategy));
+      type = (nullOr MultiregionStrategy);
       default = null;
     };
-  };
-  MultiregionRegion = with lib; with lib.types; {
+  });
+  _module.types.MultiregionRegion = with lib; with config._module.types; with lib.types; submodule ({ name, ... }: {
     options.count = mkOption {
       type = (nullOr int);
       default = null;
@@ -460,8 +481,15 @@ rec {
       type = (nullOr (attrsOf str));
       default = null;
     };
-  };
-  MultiregionStrategy = with lib; with lib.types; {
+    options.name = mkOption {
+      type = str;
+      default = name;
+      internal = true;
+      readOnly = true;
+      visible = false;
+    };
+  });
+  _module.types.MultiregionStrategy = with lib; with config._module.types; with lib.types; submodule ({
     options.maxParallel = mkOption {
       type = (nullOr int);
       default = null;
@@ -470,8 +498,8 @@ rec {
       type = (nullOr str);
       default = null;
     };
-  };
-  NetworkResource = with lib; with lib.types; {
+  });
+  _module.types.NetworkResource = with lib; with config._module.types; with lib.types; submodule ({
     options.cidr = mkOption {
       type = (nullOr str);
       default = null;
@@ -481,7 +509,7 @@ rec {
       default = null;
     };
     options.dns = mkOption {
-      type = (nullOr (submodule DNSConfig));
+      type = (nullOr DNSConfig);
       default = null;
     };
     options.hostname = mkOption {
@@ -501,15 +529,15 @@ rec {
       default = null;
     };
     options.port = mkOption {
-      type = (nullOr (attrsOf (submodule Port)));
+      type = (nullOr (attrsOf Port));
       default = null;
     };
     options.reservedPorts = mkOption {
-      type = (nullOr (attrsOf (submodule Port)));
+      type = (nullOr (attrsOf Port));
       default = null;
     };
-  };
-  ParameterizedJobConfig = with lib; with lib.types; {
+  });
+  _module.types.ParameterizedJobConfig = with lib; with config._module.types; with lib.types; submodule ({
     options.metaOptional = mkOption {
       type = (nullOr (listOf str));
       default = null;
@@ -522,8 +550,8 @@ rec {
       type = (nullOr str);
       default = null;
     };
-  };
-  PeriodicConfig = with lib; with lib.types; {
+  });
+  _module.types.PeriodicConfig = with lib; with config._module.types; with lib.types; submodule ({
     options.cron = mkOption {
       type = (nullOr str);
       default = null;
@@ -540,11 +568,18 @@ rec {
       type = (nullOr str);
       default = null;
     };
-  };
-  Port = with lib; with lib.types; {
+  });
+  _module.types.Port = with lib; with config._module.types; with lib.types; submodule ({ name, ... }: {
     options.hostNetwork = mkOption {
       type = (nullOr str);
       default = null;
+    };
+    options.label = mkOption {
+      type = str;
+      default = name;
+      internal = true;
+      readOnly = true;
+      visible = false;
     };
     options.static = mkOption {
       type = (nullOr int);
@@ -554,22 +589,29 @@ rec {
       type = (nullOr int);
       default = null;
     };
-  };
-  RequestedDevice = with lib; with lib.types; {
+  });
+  _module.types.RequestedDevice = with lib; with config._module.types; with lib.types; submodule ({ name, ... }: {
     options.affinities = mkOption {
-      type = (nullOr (listOf (submodule Affinity)));
+      type = (nullOr (listOf Affinity));
       default = null;
     };
     options.constraints = mkOption {
-      type = (nullOr (listOf (submodule Constraint)));
+      type = (nullOr (listOf Constraint));
       default = null;
     };
     options.count = mkOption {
       type = (nullOr ints.unsigned);
       default = null;
     };
-  };
-  ReschedulePolicy = with lib; with lib.types; {
+    options.name = mkOption {
+      type = str;
+      default = name;
+      internal = true;
+      readOnly = true;
+      visible = false;
+    };
+  });
+  _module.types.ReschedulePolicy = with lib; with config._module.types; with lib.types; submodule ({
     options.attempts = mkOption {
       type = (nullOr int);
       default = null;
@@ -594,8 +636,8 @@ rec {
       type = (nullOr bool);
       default = null;
     };
-  };
-  Resources = with lib; with lib.types; {
+  });
+  _module.types.Resources = with lib; with config._module.types; with lib.types; submodule ({
     options.cores = mkOption {
       type = (nullOr int);
       default = null;
@@ -605,7 +647,7 @@ rec {
       default = null;
     };
     options.device = mkOption {
-      type = (nullOr (attrsOf (submodule RequestedDevice)));
+      type = (nullOr (attrsOf RequestedDevice));
       default = null;
     };
     options.disk = mkOption {
@@ -625,11 +667,11 @@ rec {
       default = null;
     };
     options.networks = mkOption {
-      type = (nullOr (listOf (submodule NetworkResource)));
+      type = (nullOr (listOf NetworkResource));
       default = null;
     };
-  };
-  RestartPolicy = with lib; with lib.types; {
+  });
+  _module.types.RestartPolicy = with lib; with config._module.types; with lib.types; submodule ({
     options.attempts = mkOption {
       type = (nullOr int);
       default = null;
@@ -646,8 +688,8 @@ rec {
       type = (nullOr str);
       default = null;
     };
-  };
-  ScalingPolicy = with lib; with lib.types; {
+  });
+  _module.types.ScalingPolicy = with lib; with config._module.types; with lib.types; submodule ({
     options.enabled = mkOption {
       type = (nullOr bool);
       default = null;
@@ -668,8 +710,8 @@ rec {
       type = (nullOr str);
       default = null;
     };
-  };
-  Service = with lib; with lib.types; {
+  });
+  _module.types.Service = with lib; with config._module.types; with lib.types; submodule ({
     options.addressMode = mkOption {
       type = (nullOr str);
       default = null;
@@ -683,15 +725,15 @@ rec {
       default = null;
     };
     options.checkRestart = mkOption {
-      type = (nullOr (submodule CheckRestart));
+      type = (nullOr CheckRestart);
       default = null;
     };
     options.checks = mkOption {
-      type = (nullOr (listOf (submodule ServiceCheck)));
+      type = (nullOr (listOf ServiceCheck));
       default = null;
     };
     options.connect = mkOption {
-      type = (nullOr (submodule ConsulConnect));
+      type = (nullOr ConsulConnect);
       default = null;
     };
     options.enableTagOverride = mkOption {
@@ -726,8 +768,8 @@ rec {
       type = (nullOr str);
       default = null;
     };
-  };
-  ServiceCheck = with lib; with lib.types; {
+  });
+  _module.types.ServiceCheck = with lib; with config._module.types; with lib.types; submodule ({
     options.addressMode = mkOption {
       type = (nullOr str);
       default = null;
@@ -741,7 +783,7 @@ rec {
       default = null;
     };
     options.checkRestart = mkOption {
-      type = (nullOr (submodule CheckRestart));
+      type = (nullOr CheckRestart);
       default = null;
     };
     options.command = mkOption {
@@ -824,8 +866,8 @@ rec {
       type = (nullOr str);
       default = null;
     };
-  };
-  SidecarTask = with lib; with lib.types; {
+  });
+  _module.types.SidecarTask = with lib; with config._module.types; with lib.types; submodule ({
     options.config = mkOption {
       type = (nullOr (attrsOf anything));
       default = null;
@@ -847,7 +889,7 @@ rec {
       default = null;
     };
     options.logs = mkOption {
-      type = (nullOr (submodule LogConfig));
+      type = (nullOr LogConfig);
       default = null;
     };
     options.meta = mkOption {
@@ -859,7 +901,7 @@ rec {
       default = null;
     };
     options.resources = mkOption {
-      type = (nullOr (submodule Resources));
+      type = (nullOr Resources);
       default = null;
     };
     options.shutdownDelay = mkOption {
@@ -870,34 +912,41 @@ rec {
       type = (nullOr str);
       default = null;
     };
-  };
-  Spread = with lib; with lib.types; {
+  });
+  _module.types.Spread = with lib; with config._module.types; with lib.types; submodule ({
     options.attribute = mkOption {
       type = (nullOr str);
       default = null;
     };
     options.target = mkOption {
-      type = (nullOr (attrsOf (submodule SpreadTarget)));
+      type = (nullOr (attrsOf SpreadTarget));
       default = null;
     };
     options.weight = mkOption {
       type = (nullOr int);
       default = null;
     };
-  };
-  SpreadTarget = with lib; with lib.types; {
+  });
+  _module.types.SpreadTarget = with lib; with config._module.types; with lib.types; submodule ({ name, ... }: {
     options.percent = mkOption {
       type = (nullOr ints.unsigned);
       default = null;
     };
-  };
-  Task = with lib; with lib.types; {
+    options.value = mkOption {
+      type = str;
+      default = name;
+      internal = true;
+      readOnly = true;
+      visible = false;
+    };
+  });
+  _module.types.Task = with lib; with config._module.types; with lib.types; submodule ({ name, ... }: {
     options.affinities = mkOption {
-      type = (nullOr (listOf (submodule Affinity)));
+      type = (nullOr (listOf Affinity));
       default = null;
     };
     options.artifacts = mkOption {
-      type = (nullOr (listOf (submodule TaskArtifact)));
+      type = (nullOr (listOf TaskArtifact));
       default = null;
     };
     options.config = mkOption {
@@ -905,15 +954,15 @@ rec {
       default = null;
     };
     options.constraints = mkOption {
-      type = (nullOr (listOf (submodule Constraint)));
+      type = (nullOr (listOf Constraint));
       default = null;
     };
     options.csiPlugin = mkOption {
-      type = (nullOr (submodule TaskCSIPluginConfig));
+      type = (nullOr TaskCSIPluginConfig);
       default = null;
     };
     options.dispatchPayload = mkOption {
-      type = (nullOr (submodule DispatchPayloadConfig));
+      type = (nullOr DispatchPayloadConfig);
       default = null;
     };
     options.driver = mkOption {
@@ -941,31 +990,38 @@ rec {
       default = null;
     };
     options.lifecycle = mkOption {
-      type = (nullOr (submodule TaskLifecycle));
+      type = (nullOr TaskLifecycle);
       default = null;
     };
     options.logs = mkOption {
-      type = (nullOr (submodule LogConfig));
+      type = (nullOr LogConfig);
       default = null;
     };
     options.meta = mkOption {
       type = (nullOr (attrsOf str));
       default = null;
     };
+    options.name = mkOption {
+      type = str;
+      default = name;
+      internal = true;
+      readOnly = true;
+      visible = false;
+    };
     options.resources = mkOption {
-      type = (nullOr (submodule Resources));
+      type = (nullOr Resources);
       default = null;
     };
     options.restart = mkOption {
-      type = (nullOr (submodule RestartPolicy));
+      type = (nullOr RestartPolicy);
       default = null;
     };
     options.scalings = mkOption {
-      type = (nullOr (listOf (submodule ScalingPolicy)));
+      type = (nullOr (listOf ScalingPolicy));
       default = null;
     };
     options.services = mkOption {
-      type = (nullOr (listOf (submodule Service)));
+      type = (nullOr (listOf Service));
       default = null;
     };
     options.shutdownDelay = mkOption {
@@ -973,7 +1029,7 @@ rec {
       default = null;
     };
     options.templates = mkOption {
-      type = (nullOr (listOf (submodule Template)));
+      type = (nullOr (listOf Template));
       default = null;
     };
     options.user = mkOption {
@@ -981,15 +1037,15 @@ rec {
       default = null;
     };
     options.vault = mkOption {
-      type = (nullOr (submodule Vault));
+      type = (nullOr Vault);
       default = null;
     };
     options.volumeMounts = mkOption {
-      type = (nullOr (listOf (submodule VolumeMount)));
+      type = (nullOr (listOf VolumeMount));
       default = null;
     };
-  };
-  TaskArtifact = with lib; with lib.types; {
+  });
+  _module.types.TaskArtifact = with lib; with config._module.types; with lib.types; submodule ({
     options.destination = mkOption {
       type = (nullOr str);
       default = null;
@@ -1010,8 +1066,8 @@ rec {
       type = (nullOr str);
       default = null;
     };
-  };
-  TaskCSIPluginConfig = with lib; with lib.types; {
+  });
+  _module.types.TaskCSIPluginConfig = with lib; with config._module.types; with lib.types; submodule ({
     options.id = mkOption {
       type = (nullOr str);
       default = null;
@@ -1024,18 +1080,18 @@ rec {
       type = (nullOr str);
       default = null;
     };
-  };
-  TaskGroup = with lib; with lib.types; {
+  });
+  _module.types.TaskGroup = with lib; with config._module.types; with lib.types; submodule ({ name, ... }: {
     options.affinities = mkOption {
-      type = (nullOr (listOf (submodule Affinity)));
+      type = (nullOr (listOf Affinity));
       default = null;
     };
     options.constraints = mkOption {
-      type = (nullOr (listOf (submodule Constraint)));
+      type = (nullOr (listOf Constraint));
       default = null;
     };
     options.consul = mkOption {
-      type = (nullOr (submodule Consul));
+      type = (nullOr Consul);
       default = null;
     };
     options.count = mkOption {
@@ -1043,7 +1099,7 @@ rec {
       default = null;
     };
     options.ephemeralDisk = mkOption {
-      type = (nullOr (submodule EphemeralDisk));
+      type = (nullOr EphemeralDisk);
       default = null;
     };
     options.meta = mkOption {
@@ -1051,27 +1107,34 @@ rec {
       default = null;
     };
     options.migrate = mkOption {
-      type = (nullOr (submodule MigrateStrategy));
+      type = (nullOr MigrateStrategy);
       default = null;
     };
+    options.name = mkOption {
+      type = str;
+      default = name;
+      internal = true;
+      readOnly = true;
+      visible = false;
+    };
     options.networks = mkOption {
-      type = (nullOr (listOf (submodule NetworkResource)));
+      type = (nullOr (listOf NetworkResource));
       default = null;
     };
     options.reschedule = mkOption {
-      type = (nullOr (submodule ReschedulePolicy));
+      type = (nullOr ReschedulePolicy);
       default = null;
     };
     options.restart = mkOption {
-      type = (nullOr (submodule RestartPolicy));
+      type = (nullOr RestartPolicy);
       default = null;
     };
     options.scaling = mkOption {
-      type = (nullOr (submodule ScalingPolicy));
+      type = (nullOr ScalingPolicy);
       default = null;
     };
     options.services = mkOption {
-      type = (nullOr (listOf (submodule Service)));
+      type = (nullOr (listOf Service));
       default = null;
     };
     options.shutdownDelay = mkOption {
@@ -1079,7 +1142,7 @@ rec {
       default = null;
     };
     options.spreads = mkOption {
-      type = (nullOr (listOf (submodule Spread)));
+      type = (nullOr (listOf Spread));
       default = null;
     };
     options.stopAfterClientDisconnect = mkOption {
@@ -1087,19 +1150,19 @@ rec {
       default = null;
     };
     options.task = mkOption {
-      type = (nullOr (attrsOf (submodule Task)));
+      type = (nullOr (attrsOf Task));
       default = null;
     };
     options.update = mkOption {
-      type = (nullOr (submodule UpdateStrategy));
+      type = (nullOr UpdateStrategy);
       default = null;
     };
     options.volume = mkOption {
-      type = (nullOr (attrsOf (submodule VolumeRequest)));
+      type = (nullOr (attrsOf VolumeRequest));
       default = null;
     };
-  };
-  TaskLifecycle = with lib; with lib.types; {
+  });
+  _module.types.TaskLifecycle = with lib; with config._module.types; with lib.types; submodule ({
     options.hook = mkOption {
       type = (nullOr str);
       default = null;
@@ -1108,8 +1171,8 @@ rec {
       type = (nullOr bool);
       default = null;
     };
-  };
-  Template = with lib; with lib.types; {
+  });
+  _module.types.Template = with lib; with config._module.types; with lib.types; submodule ({
     options.changeMode = mkOption {
       type = (nullOr str);
       default = null;
@@ -1155,11 +1218,11 @@ rec {
       default = null;
     };
     options.wait = mkOption {
-      type = (nullOr (submodule WaitConfig));
+      type = (nullOr WaitConfig);
       default = null;
     };
-  };
-  UpdateStrategy = with lib; with lib.types; {
+  });
+  _module.types.UpdateStrategy = with lib; with config._module.types; with lib.types; submodule ({
     options.autoPromote = mkOption {
       type = (nullOr bool);
       default = null;
@@ -1196,8 +1259,8 @@ rec {
       type = (nullOr int);
       default = null;
     };
-  };
-  Vault = with lib; with lib.types; {
+  });
+  _module.types.Vault = with lib; with config._module.types; with lib.types; submodule ({
     options.changeMode = mkOption {
       type = (nullOr str);
       default = null;
@@ -1218,8 +1281,8 @@ rec {
       type = (nullOr (listOf str));
       default = null;
     };
-  };
-  VolumeMount = with lib; with lib.types; {
+  });
+  _module.types.VolumeMount = with lib; with config._module.types; with lib.types; submodule ({
     options.destination = mkOption {
       type = (nullOr str);
       default = null;
@@ -1236,8 +1299,8 @@ rec {
       type = (nullOr str);
       default = null;
     };
-  };
-  VolumeRequest = with lib; with lib.types; {
+  });
+  _module.types.VolumeRequest = with lib; with config._module.types; with lib.types; submodule ({ name, ... }: {
     options.accessMode = mkOption {
       type = (nullOr str);
       default = null;
@@ -1247,8 +1310,15 @@ rec {
       default = null;
     };
     options.mountOptions = mkOption {
-      type = (nullOr (submodule CSIMountOptions));
+      type = (nullOr CSIMountOptions);
       default = null;
+    };
+    options.name = mkOption {
+      type = str;
+      default = name;
+      internal = true;
+      readOnly = true;
+      visible = false;
     };
     options.perAlloc = mkOption {
       type = (nullOr bool);
@@ -1266,104 +1336,104 @@ rec {
       type = (nullOr str);
       default = null;
     };
-  };
-  WaitConfig = with lib; with lib.types; {
+  });
+  _module.types.WaitConfig = with lib; with config._module.types; with lib.types; submodule ({
     options.max = mkOption {
       type = int;
     };
     options.min = mkOption {
       type = int;
     };
-  };
-  mkAffinityAPI = with lib; attrs: if !(builtins.isAttrs attrs) then null else (
+  });
+  _module.transformers.mkAffinityAPI = with lib; with config._module.transformers; attrs: if !(builtins.isAttrs attrs) then null else (
     {}
     // (if attrs ? attribute && attrs.attribute != null then { LTarget = attrs.attribute; } else {})
     // (if attrs ? operator && attrs.operator != null then { Operand = attrs.operator; } else {})
     // (if attrs ? value && attrs.value != null then { RTarget = attrs.value; } else {})
     // (if attrs ? weight && attrs.weight != null then { Weight = attrs.weight; } else {})
   );
-  mkCSIMountOptionsAPI = with lib; attrs: if !(builtins.isAttrs attrs) then null else (
+  _module.transformers.mkCSIMountOptionsAPI = with lib; with config._module.transformers; attrs: if !(builtins.isAttrs attrs) then null else (
     {}
     // (if attrs ? fsType && attrs.fsType != null then { FSType = attrs.fsType; } else {})
     // (if attrs ? mountFlags && attrs.mountFlags != null then { MountFlags = attrs.mountFlags; } else {})
   );
-  mkCheckRestartAPI = with lib; attrs: if !(builtins.isAttrs attrs) then null else (
+  _module.transformers.mkCheckRestartAPI = with lib; with config._module.transformers; attrs: if !(builtins.isAttrs attrs) then null else (
     {}
     // (if attrs ? grace && attrs.grace != null then { Grace = attrs.grace; } else {})
     // (if attrs ? ignoreWarnings && attrs.ignoreWarnings != null then { IgnoreWarnings = attrs.ignoreWarnings; } else {})
     // (if attrs ? limit && attrs.limit != null then { Limit = attrs.limit; } else {})
   );
-  mkConstraintAPI = with lib; attrs: if !(builtins.isAttrs attrs) then null else (
+  _module.transformers.mkConstraintAPI = with lib; with config._module.transformers; attrs: if !(builtins.isAttrs attrs) then null else (
     {}
     // (if attrs ? attribute && attrs.attribute != null then { LTarget = attrs.attribute; } else {})
     // (if attrs ? operator && attrs.operator != null then { Operand = attrs.operator; } else {})
     // (if attrs ? value && attrs.value != null then { RTarget = attrs.value; } else {})
   );
-  mkConsulAPI = with lib; attrs: if !(builtins.isAttrs attrs) then null else (
+  _module.transformers.mkConsulAPI = with lib; with config._module.transformers; attrs: if !(builtins.isAttrs attrs) then null else (
     {}
     // (if attrs ? namespace && attrs.namespace != null then { Namespace = attrs.namespace; } else {})
   );
-  mkConsulConnectAPI = with lib; attrs: if !(builtins.isAttrs attrs) then null else (
+  _module.transformers.mkConsulConnectAPI = with lib; with config._module.transformers; attrs: if !(builtins.isAttrs attrs) then null else (
     {}
     // (if attrs ? gateway && attrs.gateway != null then { Gateway = mkConsulGatewayAPI attrs.gateway; } else {})
     // (if attrs ? native && attrs.native != null then { Native = attrs.native; } else {})
     // (if attrs ? sidecarService && attrs.sidecarService != null then { SidecarService = mkConsulSidecarServiceAPI attrs.sidecarService; } else {})
     // (if attrs ? sidecarTask && attrs.sidecarTask != null then { SidecarTask = mkSidecarTaskAPI attrs.sidecarTask; } else {})
   );
-  mkConsulExposeConfigAPI = with lib; attrs: if !(builtins.isAttrs attrs) then null else (
+  _module.transformers.mkConsulExposeConfigAPI = with lib; with config._module.transformers; attrs: if !(builtins.isAttrs attrs) then null else (
     {}
     // (if attrs ? paths && builtins.isList attrs.paths then { Path = builtins.map mkConsulExposePathAPI attrs.paths; } else {})
   );
-  mkConsulExposePathAPI = with lib; attrs: if !(builtins.isAttrs attrs) then null else (
+  _module.transformers.mkConsulExposePathAPI = with lib; with config._module.transformers; attrs: if !(builtins.isAttrs attrs) then null else (
     {}
     // (if attrs ? listenerPort && attrs.listenerPort != null then { ListenerPort = attrs.listenerPort; } else {})
     // (if attrs ? localPathPort && attrs.localPathPort != null then { LocalPathPort = attrs.localPathPort; } else {})
     // (if attrs ? path && attrs.path != null then { Path = attrs.path; } else {})
     // (if attrs ? protocol && attrs.protocol != null then { Protocol = attrs.protocol; } else {})
   );
-  mkConsulGatewayAPI = with lib; attrs: if !(builtins.isAttrs attrs) then null else (
+  _module.transformers.mkConsulGatewayAPI = with lib; with config._module.transformers; attrs: if !(builtins.isAttrs attrs) then null else (
     {}
     // (if attrs ? ingress && attrs.ingress != null then { Ingress = mkConsulIngressConfigEntryAPI attrs.ingress; } else {})
     // (if attrs ? mesh && attrs.mesh != null then { Mesh = mkConsulMeshConfigEntryAPI attrs.mesh; } else {})
     // (if attrs ? proxy && attrs.proxy != null then { Proxy = mkConsulGatewayProxyAPI attrs.proxy; } else {})
     // (if attrs ? terminating && attrs.terminating != null then { Terminating = mkConsulTerminatingConfigEntryAPI attrs.terminating; } else {})
   );
-  mkConsulGatewayBindAddressAPI = with lib; label: attrs: if !(builtins.isAttrs attrs) then null else (
+  _module.transformers.mkConsulGatewayBindAddressAPI = with lib; with config._module.transformers; attrs: if !(builtins.isAttrs attrs) then null else (
     {}
-    // ({ Name = label; })
     // (if attrs ? address && attrs.address != null then { Address = attrs.address; } else {})
+    // (if attrs ? name && attrs.name != null then { Name = attrs.name; } else {})
     // (if attrs ? port && attrs.port != null then { Port = attrs.port; } else {})
   );
-  mkConsulGatewayProxyAPI = with lib; attrs: if !(builtins.isAttrs attrs) then null else (
+  _module.transformers.mkConsulGatewayProxyAPI = with lib; with config._module.transformers; attrs: if !(builtins.isAttrs attrs) then null else (
     {}
     // (if attrs ? config && attrs.config != null then { Config = attrs.config; } else {})
     // (if attrs ? connectTimeout && attrs.connectTimeout != null then { ConnectTimeout = attrs.connectTimeout; } else {})
     // (if attrs ? envoyDnsDiscoveryType && attrs.envoyDnsDiscoveryType != null then { EnvoyDNSDiscoveryType = attrs.envoyDnsDiscoveryType; } else {})
-    // (if attrs ? envoyGatewayBindAddresses && builtins.isAttrs attrs.envoyGatewayBindAddresses then { EnvoyGatewayBindAddresses = mapAttrsToList mkConsulGatewayBindAddressAPI attrs.envoyGatewayBindAddresses; } else {})
+    // (if attrs ? envoyGatewayBindAddresses && builtins.isAttrs attrs.envoyGatewayBindAddresses then { EnvoyGatewayBindAddresses = mapAttrsToList (_: mkConsulGatewayBindAddressAPI) attrs.envoyGatewayBindAddresses; } else {})
     // (if attrs ? envoyGatewayBindTaggedAddresses && attrs.envoyGatewayBindTaggedAddresses != null then { EnvoyGatewayBindTaggedAddresses = attrs.envoyGatewayBindTaggedAddresses; } else {})
     // (if attrs ? envoyGatewayNoDefaultBind && attrs.envoyGatewayNoDefaultBind != null then { EnvoyGatewayNoDefaultBind = attrs.envoyGatewayNoDefaultBind; } else {})
   );
-  mkConsulGatewayTLSConfigAPI = with lib; attrs: if !(builtins.isAttrs attrs) then null else (
+  _module.transformers.mkConsulGatewayTLSConfigAPI = with lib; with config._module.transformers; attrs: if !(builtins.isAttrs attrs) then null else (
     {}
     // (if attrs ? enabled && attrs.enabled != null then { Enabled = attrs.enabled; } else {})
   );
-  mkConsulIngressConfigEntryAPI = with lib; attrs: if !(builtins.isAttrs attrs) then null else (
+  _module.transformers.mkConsulIngressConfigEntryAPI = with lib; with config._module.transformers; attrs: if !(builtins.isAttrs attrs) then null else (
     {}
     // (if attrs ? listeners && builtins.isList attrs.listeners then { Listeners = builtins.map mkConsulIngressListenerAPI attrs.listeners; } else {})
     // (if attrs ? tls && attrs.tls != null then { TLS = mkConsulGatewayTLSConfigAPI attrs.tls; } else {})
   );
-  mkConsulIngressListenerAPI = with lib; attrs: if !(builtins.isAttrs attrs) then null else (
+  _module.transformers.mkConsulIngressListenerAPI = with lib; with config._module.transformers; attrs: if !(builtins.isAttrs attrs) then null else (
     {}
     // (if attrs ? port && attrs.port != null then { Port = attrs.port; } else {})
     // (if attrs ? protocol && attrs.protocol != null then { Protocol = attrs.protocol; } else {})
     // (if attrs ? services && builtins.isList attrs.services then { Services = builtins.map mkConsulIngressServiceAPI attrs.services; } else {})
   );
-  mkConsulIngressServiceAPI = with lib; attrs: if !(builtins.isAttrs attrs) then null else (
+  _module.transformers.mkConsulIngressServiceAPI = with lib; with config._module.transformers; attrs: if !(builtins.isAttrs attrs) then null else (
     {}
     // (if attrs ? hosts && attrs.hosts != null then { Hosts = attrs.hosts; } else {})
     // (if attrs ? name && attrs.name != null then { Name = attrs.name; } else {})
   );
-  mkConsulLinkedServiceAPI = with lib; attrs: if !(builtins.isAttrs attrs) then null else (
+  _module.transformers.mkConsulLinkedServiceAPI = with lib; with config._module.transformers; attrs: if !(builtins.isAttrs attrs) then null else (
     {}
     // (if attrs ? caFile && attrs.caFile != null then { CAFile = attrs.caFile; } else {})
     // (if attrs ? certFile && attrs.certFile != null then { CertFile = attrs.certFile; } else {})
@@ -1371,14 +1441,14 @@ rec {
     // (if attrs ? name && attrs.name != null then { Name = attrs.name; } else {})
     // (if attrs ? sni && attrs.sni != null then { SNI = attrs.sni; } else {})
   );
-  mkConsulMeshConfigEntryAPI = with lib; attrs: if !(builtins.isAttrs attrs) then null else (
+  _module.transformers.mkConsulMeshConfigEntryAPI = with lib; with config._module.transformers; attrs: if !(builtins.isAttrs attrs) then null else (
     {}
   );
-  mkConsulMeshGatewayAPI = with lib; attrs: if !(builtins.isAttrs attrs) then null else (
+  _module.transformers.mkConsulMeshGatewayAPI = with lib; with config._module.transformers; attrs: if !(builtins.isAttrs attrs) then null else (
     {}
     // (if attrs ? mode && attrs.mode != null then { Mode = attrs.mode; } else {})
   );
-  mkConsulProxyAPI = with lib; attrs: if !(builtins.isAttrs attrs) then null else (
+  _module.transformers.mkConsulProxyAPI = with lib; with config._module.transformers; attrs: if !(builtins.isAttrs attrs) then null else (
     {}
     // (if attrs ? config && attrs.config != null then { Config = attrs.config; } else {})
     // (if attrs ? expose && attrs.expose != null then { ExposeConfig = mkConsulExposeConfigAPI attrs.expose; } else {})
@@ -1386,18 +1456,18 @@ rec {
     // (if attrs ? localServicePort && attrs.localServicePort != null then { LocalServicePort = attrs.localServicePort; } else {})
     // (if attrs ? upstreams && builtins.isList attrs.upstreams then { Upstreams = builtins.map mkConsulUpstreamAPI attrs.upstreams; } else {})
   );
-  mkConsulSidecarServiceAPI = with lib; attrs: if !(builtins.isAttrs attrs) then null else (
+  _module.transformers.mkConsulSidecarServiceAPI = with lib; with config._module.transformers; attrs: if !(builtins.isAttrs attrs) then null else (
     {}
     // (if attrs ? disableDefaultTcpCheck && attrs.disableDefaultTcpCheck != null then { DisableDefaultTCPCheck = attrs.disableDefaultTcpCheck; } else {})
     // (if attrs ? port && attrs.port != null then { Port = attrs.port; } else {})
     // (if attrs ? proxy && attrs.proxy != null then { Proxy = mkConsulProxyAPI attrs.proxy; } else {})
     // (if attrs ? tags && attrs.tags != null then { Tags = attrs.tags; } else {})
   );
-  mkConsulTerminatingConfigEntryAPI = with lib; attrs: if !(builtins.isAttrs attrs) then null else (
+  _module.transformers.mkConsulTerminatingConfigEntryAPI = with lib; with config._module.transformers; attrs: if !(builtins.isAttrs attrs) then null else (
     {}
     // (if attrs ? services && builtins.isList attrs.services then { Services = builtins.map mkConsulLinkedServiceAPI attrs.services; } else {})
   );
-  mkConsulUpstreamAPI = with lib; attrs: if !(builtins.isAttrs attrs) then null else (
+  _module.transformers.mkConsulUpstreamAPI = with lib; with config._module.transformers; attrs: if !(builtins.isAttrs attrs) then null else (
     {}
     // (if attrs ? datacenter && attrs.datacenter != null then { Datacenter = attrs.datacenter; } else {})
     // (if attrs ? destinationName && attrs.destinationName != null then { DestinationName = attrs.destinationName; } else {})
@@ -1405,35 +1475,35 @@ rec {
     // (if attrs ? localBindPort && attrs.localBindPort != null then { LocalBindPort = attrs.localBindPort; } else {})
     // (if attrs ? meshGateway && attrs.meshGateway != null then { MeshGateway = mkConsulMeshGatewayAPI attrs.meshGateway; } else {})
   );
-  mkDNSConfigAPI = with lib; attrs: if !(builtins.isAttrs attrs) then null else (
+  _module.transformers.mkDNSConfigAPI = with lib; with config._module.transformers; attrs: if !(builtins.isAttrs attrs) then null else (
     {}
     // (if attrs ? options && attrs.options != null then { Options = attrs.options; } else {})
     // (if attrs ? searches && attrs.searches != null then { Searches = attrs.searches; } else {})
     // (if attrs ? servers && attrs.servers != null then { Servers = attrs.servers; } else {})
   );
-  mkDispatchPayloadConfigAPI = with lib; attrs: if !(builtins.isAttrs attrs) then null else (
+  _module.transformers.mkDispatchPayloadConfigAPI = with lib; with config._module.transformers; attrs: if !(builtins.isAttrs attrs) then null else (
     {}
     // (if attrs ? file && attrs.file != null then { File = attrs.file; } else {})
   );
-  mkEphemeralDiskAPI = with lib; attrs: if !(builtins.isAttrs attrs) then null else (
+  _module.transformers.mkEphemeralDiskAPI = with lib; with config._module.transformers; attrs: if !(builtins.isAttrs attrs) then null else (
     {}
     // (if attrs ? migrate && attrs.migrate != null then { Migrate = attrs.migrate; } else {})
     // (if attrs ? size && attrs.size != null then { SizeMB = attrs.size; } else {})
     // (if attrs ? sticky && attrs.sticky != null then { Sticky = attrs.sticky; } else {})
   );
-  mkJobAPI = with lib; label: attrs: if !(builtins.isAttrs attrs) then null else (
+  _module.transformers.mkJobAPI = with lib; with config._module.transformers; attrs: if !(builtins.isAttrs attrs) then null else (
     {}
     // (if attrs ? affinities && builtins.isList attrs.affinities then { Affinities = builtins.map mkAffinityAPI attrs.affinities; } else {})
     // (if attrs ? allAtOnce && attrs.allAtOnce != null then { AllAtOnce = attrs.allAtOnce; } else {})
     // (if attrs ? constraints && builtins.isList attrs.constraints then { Constraints = builtins.map mkConstraintAPI attrs.constraints; } else {})
     // (if attrs ? consulToken && attrs.consulToken != null then { ConsulToken = attrs.consulToken; } else {})
     // (if attrs ? datacenters && attrs.datacenters != null then { Datacenters = attrs.datacenters; } else {})
-    // (if attrs ? group && builtins.isAttrs attrs.group then { TaskGroups = mapAttrsToList mkTaskGroupAPI attrs.group; } else {})
-    // ({ ID = label; })
+    // (if attrs ? group && builtins.isAttrs attrs.group then { TaskGroups = mapAttrsToList (_: mkTaskGroupAPI) attrs.group; } else {})
+    // (if attrs ? id && attrs.id != null then { ID = attrs.id; } else {})
     // (if attrs ? meta && attrs.meta != null then { Meta = attrs.meta; } else {})
     // (if attrs ? migrate && attrs.migrate != null then { Migrate = mkMigrateStrategyAPI attrs.migrate; } else {})
     // (if attrs ? multiregion && attrs.multiregion != null then { Multiregion = mkMultiregionAPI attrs.multiregion; } else {})
-    // ({ Name = label; })
+    // (if attrs ? name && attrs.name != null then { Name = attrs.name; } else {})
     // (if attrs ? namespace && attrs.namespace != null then { Namespace = attrs.namespace; } else {})
     // (if attrs ? parameterized && attrs.parameterized != null then { ParameterizedJob = mkParameterizedJobConfigAPI attrs.parameterized; } else {})
     // (if attrs ? periodic && attrs.periodic != null then { Periodic = mkPeriodicConfigAPI attrs.periodic; } else {})
@@ -1445,36 +1515,36 @@ rec {
     // (if attrs ? update && attrs.update != null then { Update = mkUpdateStrategyAPI attrs.update; } else {})
     // (if attrs ? vaultToken && attrs.vaultToken != null then { VaultToken = attrs.vaultToken; } else {})
   );
-  mkLogConfigAPI = with lib; attrs: if !(builtins.isAttrs attrs) then null else (
+  _module.transformers.mkLogConfigAPI = with lib; with config._module.transformers; attrs: if !(builtins.isAttrs attrs) then null else (
     {}
     // (if attrs ? maxFileSize && attrs.maxFileSize != null then { MaxFileSizeMB = attrs.maxFileSize; } else {})
     // (if attrs ? maxFiles && attrs.maxFiles != null then { MaxFiles = attrs.maxFiles; } else {})
   );
-  mkMigrateStrategyAPI = with lib; attrs: if !(builtins.isAttrs attrs) then null else (
+  _module.transformers.mkMigrateStrategyAPI = with lib; with config._module.transformers; attrs: if !(builtins.isAttrs attrs) then null else (
     {}
     // (if attrs ? healthCheck && attrs.healthCheck != null then { HealthCheck = attrs.healthCheck; } else {})
     // (if attrs ? healthyDeadline && attrs.healthyDeadline != null then { HealthyDeadline = attrs.healthyDeadline; } else {})
     // (if attrs ? maxParallel && attrs.maxParallel != null then { MaxParallel = attrs.maxParallel; } else {})
     // (if attrs ? minHealthyTime && attrs.minHealthyTime != null then { MinHealthyTime = attrs.minHealthyTime; } else {})
   );
-  mkMultiregionAPI = with lib; attrs: if !(builtins.isAttrs attrs) then null else (
+  _module.transformers.mkMultiregionAPI = with lib; with config._module.transformers; attrs: if !(builtins.isAttrs attrs) then null else (
     {}
-    // (if attrs ? region && builtins.isAttrs attrs.region then { Regions = mapAttrsToList mkMultiregionRegionAPI attrs.region; } else {})
+    // (if attrs ? region && builtins.isAttrs attrs.region then { Regions = mapAttrsToList (_: mkMultiregionRegionAPI) attrs.region; } else {})
     // (if attrs ? strategy && attrs.strategy != null then { Strategy = mkMultiregionStrategyAPI attrs.strategy; } else {})
   );
-  mkMultiregionRegionAPI = with lib; label: attrs: if !(builtins.isAttrs attrs) then null else (
+  _module.transformers.mkMultiregionRegionAPI = with lib; with config._module.transformers; attrs: if !(builtins.isAttrs attrs) then null else (
     {}
-    // ({ Name = label; })
     // (if attrs ? count && attrs.count != null then { Count = attrs.count; } else {})
     // (if attrs ? datacenters && attrs.datacenters != null then { Datacenters = attrs.datacenters; } else {})
     // (if attrs ? meta && attrs.meta != null then { Meta = attrs.meta; } else {})
+    // (if attrs ? name && attrs.name != null then { Name = attrs.name; } else {})
   );
-  mkMultiregionStrategyAPI = with lib; attrs: if !(builtins.isAttrs attrs) then null else (
+  _module.transformers.mkMultiregionStrategyAPI = with lib; with config._module.transformers; attrs: if !(builtins.isAttrs attrs) then null else (
     {}
     // (if attrs ? maxParallel && attrs.maxParallel != null then { MaxParallel = attrs.maxParallel; } else {})
     // (if attrs ? onFailure && attrs.onFailure != null then { OnFailure = attrs.onFailure; } else {})
   );
-  mkNetworkResourceAPI = with lib; attrs: if !(builtins.isAttrs attrs) then null else (
+  _module.transformers.mkNetworkResourceAPI = with lib; with config._module.transformers; attrs: if !(builtins.isAttrs attrs) then null else (
     {}
     // (if attrs ? cidr && attrs.cidr != null then { CIDR = attrs.cidr; } else {})
     // (if attrs ? device && attrs.device != null then { Device = attrs.device; } else {})
@@ -1483,37 +1553,37 @@ rec {
     // (if attrs ? ip && attrs.ip != null then { IP = attrs.ip; } else {})
     // (if attrs ? mbits && attrs.mbits != null then { MBits = attrs.mbits; } else {})
     // (if attrs ? mode && attrs.mode != null then { Mode = attrs.mode; } else {})
-    // (if attrs ? port && builtins.isAttrs attrs.port then { DynamicPorts = mapAttrsToList mkPortAPI attrs.port; } else {})
-    // (if attrs ? reservedPorts && builtins.isAttrs attrs.reservedPorts then { ReservedPorts = mapAttrsToList mkPortAPI attrs.reservedPorts; } else {})
+    // (if attrs ? port && builtins.isAttrs attrs.port then { DynamicPorts = mapAttrsToList (_: mkPortAPI) attrs.port; } else {})
+    // (if attrs ? reservedPorts && builtins.isAttrs attrs.reservedPorts then { ReservedPorts = mapAttrsToList (_: mkPortAPI) attrs.reservedPorts; } else {})
   );
-  mkParameterizedJobConfigAPI = with lib; attrs: if !(builtins.isAttrs attrs) then null else (
+  _module.transformers.mkParameterizedJobConfigAPI = with lib; with config._module.transformers; attrs: if !(builtins.isAttrs attrs) then null else (
     {}
     // (if attrs ? metaOptional && attrs.metaOptional != null then { MetaOptional = attrs.metaOptional; } else {})
     // (if attrs ? metaRequired && attrs.metaRequired != null then { MetaRequired = attrs.metaRequired; } else {})
     // (if attrs ? payload && attrs.payload != null then { Payload = attrs.payload; } else {})
   );
-  mkPeriodicConfigAPI = with lib; attrs: if !(builtins.isAttrs attrs) then null else (
+  _module.transformers.mkPeriodicConfigAPI = with lib; with config._module.transformers; attrs: if !(builtins.isAttrs attrs) then null else (
     {}
     // (if attrs ? cron && attrs.cron != null then { Spec = attrs.cron; } else {})
     // (if attrs ? enabled && attrs.enabled != null then { Enabled = attrs.enabled; } else {})
     // (if attrs ? prohibitOverlap && attrs.prohibitOverlap != null then { ProhibitOverlap = attrs.prohibitOverlap; } else {})
     // (if attrs ? timeZone && attrs.timeZone != null then { TimeZone = attrs.timeZone; } else {})
   );
-  mkPortAPI = with lib; label: attrs: if !(builtins.isAttrs attrs) then null else (
+  _module.transformers.mkPortAPI = with lib; with config._module.transformers; attrs: if !(builtins.isAttrs attrs) then null else (
     {}
-    // ({ Label = label; })
     // (if attrs ? hostNetwork && attrs.hostNetwork != null then { HostNetwork = attrs.hostNetwork; } else {})
+    // (if attrs ? label && attrs.label != null then { Label = attrs.label; } else {})
     // (if attrs ? static && attrs.static != null then { Value = attrs.static; } else {})
     // (if attrs ? to && attrs.to != null then { To = attrs.to; } else {})
   );
-  mkRequestedDeviceAPI = with lib; label: attrs: if !(builtins.isAttrs attrs) then null else (
+  _module.transformers.mkRequestedDeviceAPI = with lib; with config._module.transformers; attrs: if !(builtins.isAttrs attrs) then null else (
     {}
-    // ({ Name = label; })
     // (if attrs ? affinities && builtins.isList attrs.affinities then { Affinities = builtins.map mkAffinityAPI attrs.affinities; } else {})
     // (if attrs ? constraints && builtins.isList attrs.constraints then { Constraints = builtins.map mkConstraintAPI attrs.constraints; } else {})
     // (if attrs ? count && attrs.count != null then { Count = attrs.count; } else {})
+    // (if attrs ? name && attrs.name != null then { Name = attrs.name; } else {})
   );
-  mkReschedulePolicyAPI = with lib; attrs: if !(builtins.isAttrs attrs) then null else (
+  _module.transformers.mkReschedulePolicyAPI = with lib; with config._module.transformers; attrs: if !(builtins.isAttrs attrs) then null else (
     {}
     // (if attrs ? attempts && attrs.attempts != null then { Attempts = attrs.attempts; } else {})
     // (if attrs ? delay && attrs.delay != null then { Delay = attrs.delay; } else {})
@@ -1522,25 +1592,25 @@ rec {
     // (if attrs ? maxDelay && attrs.maxDelay != null then { MaxDelay = attrs.maxDelay; } else {})
     // (if attrs ? unlimited && attrs.unlimited != null then { Unlimited = attrs.unlimited; } else {})
   );
-  mkResourcesAPI = with lib; attrs: if !(builtins.isAttrs attrs) then null else (
+  _module.transformers.mkResourcesAPI = with lib; with config._module.transformers; attrs: if !(builtins.isAttrs attrs) then null else (
     {}
     // (if attrs ? cores && attrs.cores != null then { Cores = attrs.cores; } else {})
     // (if attrs ? cpu && attrs.cpu != null then { CPU = attrs.cpu; } else {})
-    // (if attrs ? device && builtins.isAttrs attrs.device then { Devices = mapAttrsToList mkRequestedDeviceAPI attrs.device; } else {})
+    // (if attrs ? device && builtins.isAttrs attrs.device then { Devices = mapAttrsToList (_: mkRequestedDeviceAPI) attrs.device; } else {})
     // (if attrs ? disk && attrs.disk != null then { DiskMB = attrs.disk; } else {})
     // (if attrs ? iops && attrs.iops != null then { IOPS = attrs.iops; } else {})
     // (if attrs ? memory && attrs.memory != null then { MemoryMB = attrs.memory; } else {})
     // (if attrs ? memoryMax && attrs.memoryMax != null then { MemoryMaxMB = attrs.memoryMax; } else {})
     // (if attrs ? networks && builtins.isList attrs.networks then { Networks = builtins.map mkNetworkResourceAPI attrs.networks; } else {})
   );
-  mkRestartPolicyAPI = with lib; attrs: if !(builtins.isAttrs attrs) then null else (
+  _module.transformers.mkRestartPolicyAPI = with lib; with config._module.transformers; attrs: if !(builtins.isAttrs attrs) then null else (
     {}
     // (if attrs ? attempts && attrs.attempts != null then { Attempts = attrs.attempts; } else {})
     // (if attrs ? delay && attrs.delay != null then { Delay = attrs.delay; } else {})
     // (if attrs ? interval && attrs.interval != null then { Interval = attrs.interval; } else {})
     // (if attrs ? mode && attrs.mode != null then { Mode = attrs.mode; } else {})
   );
-  mkScalingPolicyAPI = with lib; attrs: if !(builtins.isAttrs attrs) then null else (
+  _module.transformers.mkScalingPolicyAPI = with lib; with config._module.transformers; attrs: if !(builtins.isAttrs attrs) then null else (
     {}
     // (if attrs ? enabled && attrs.enabled != null then { Enabled = attrs.enabled; } else {})
     // (if attrs ? max && attrs.max != null then { Max = attrs.max; } else {})
@@ -1548,7 +1618,7 @@ rec {
     // (if attrs ? policy && attrs.policy != null then { Policy = attrs.policy; } else {})
     // (if attrs ? type && attrs.type != null then { Type = attrs.type; } else {})
   );
-  mkServiceAPI = with lib; attrs: if !(builtins.isAttrs attrs) then null else (
+  _module.transformers.mkServiceAPI = with lib; with config._module.transformers; attrs: if !(builtins.isAttrs attrs) then null else (
     {}
     // (if attrs ? addressMode && attrs.addressMode != null then { AddressMode = attrs.addressMode; } else {})
     // (if attrs ? canaryMeta && attrs.canaryMeta != null then { CanaryMeta = attrs.canaryMeta; } else {})
@@ -1565,7 +1635,7 @@ rec {
     // (if attrs ? tags && attrs.tags != null then { Tags = attrs.tags; } else {})
     // (if attrs ? task && attrs.task != null then { TaskName = attrs.task; } else {})
   );
-  mkServiceCheckAPI = with lib; attrs: if !(builtins.isAttrs attrs) then null else (
+  _module.transformers.mkServiceCheckAPI = with lib; with config._module.transformers; attrs: if !(builtins.isAttrs attrs) then null else (
     {}
     // (if attrs ? addressMode && attrs.addressMode != null then { AddressMode = attrs.addressMode; } else {})
     // (if attrs ? args && attrs.args != null then { Args = attrs.args; } else {})
@@ -1592,7 +1662,7 @@ rec {
     // (if attrs ? tlsSkipVerify && attrs.tlsSkipVerify != null then { TLSSkipVerify = attrs.tlsSkipVerify; } else {})
     // (if attrs ? type && attrs.type != null then { Type = attrs.type; } else {})
   );
-  mkSidecarTaskAPI = with lib; attrs: if !(builtins.isAttrs attrs) then null else (
+  _module.transformers.mkSidecarTaskAPI = with lib; with config._module.transformers; attrs: if !(builtins.isAttrs attrs) then null else (
     {}
     // (if attrs ? config && attrs.config != null then { Config = attrs.config; } else {})
     // (if attrs ? driver && attrs.driver != null then { Driver = attrs.driver; } else {})
@@ -1606,18 +1676,18 @@ rec {
     // (if attrs ? shutdownDelay && attrs.shutdownDelay != null then { ShutdownDelay = attrs.shutdownDelay; } else {})
     // (if attrs ? user && attrs.user != null then { User = attrs.user; } else {})
   );
-  mkSpreadAPI = with lib; attrs: if !(builtins.isAttrs attrs) then null else (
+  _module.transformers.mkSpreadAPI = with lib; with config._module.transformers; attrs: if !(builtins.isAttrs attrs) then null else (
     {}
     // (if attrs ? attribute && attrs.attribute != null then { Attribute = attrs.attribute; } else {})
-    // (if attrs ? target && builtins.isAttrs attrs.target then { SpreadTarget = mapAttrsToList mkSpreadTargetAPI attrs.target; } else {})
+    // (if attrs ? target && builtins.isAttrs attrs.target then { SpreadTarget = mapAttrsToList (_: mkSpreadTargetAPI) attrs.target; } else {})
     // (if attrs ? weight && attrs.weight != null then { Weight = attrs.weight; } else {})
   );
-  mkSpreadTargetAPI = with lib; label: attrs: if !(builtins.isAttrs attrs) then null else (
+  _module.transformers.mkSpreadTargetAPI = with lib; with config._module.transformers; attrs: if !(builtins.isAttrs attrs) then null else (
     {}
-    // ({ Value = label; })
     // (if attrs ? percent && attrs.percent != null then { Percent = attrs.percent; } else {})
+    // (if attrs ? value && attrs.value != null then { Value = attrs.value; } else {})
   );
-  mkTaskAPI = with lib; label: attrs: if !(builtins.isAttrs attrs) then null else (
+  _module.transformers.mkTaskAPI = with lib; with config._module.transformers; attrs: if !(builtins.isAttrs attrs) then null else (
     {}
     // (if attrs ? affinities && builtins.isList attrs.affinities then { Affinities = builtins.map mkAffinityAPI attrs.affinities; } else {})
     // (if attrs ? artifacts && builtins.isList attrs.artifacts then { Artifacts = builtins.map mkTaskArtifactAPI attrs.artifacts; } else {})
@@ -1634,7 +1704,7 @@ rec {
     // (if attrs ? lifecycle && attrs.lifecycle != null then { Lifecycle = mkTaskLifecycleAPI attrs.lifecycle; } else {})
     // (if attrs ? logs && attrs.logs != null then { LogConfig = mkLogConfigAPI attrs.logs; } else {})
     // (if attrs ? meta && attrs.meta != null then { Meta = attrs.meta; } else {})
-    // ({ Name = label; })
+    // (if attrs ? name && attrs.name != null then { Name = attrs.name; } else {})
     // (if attrs ? resources && attrs.resources != null then { Resources = mkResourcesAPI attrs.resources; } else {})
     // (if attrs ? restart && attrs.restart != null then { RestartPolicy = mkRestartPolicyAPI attrs.restart; } else {})
     // (if attrs ? scalings && builtins.isList attrs.scalings then { ScalingPolicies = builtins.map mkScalingPolicyAPI attrs.scalings; } else {})
@@ -1645,7 +1715,7 @@ rec {
     // (if attrs ? vault && attrs.vault != null then { Vault = mkVaultAPI attrs.vault; } else {})
     // (if attrs ? volumeMounts && builtins.isList attrs.volumeMounts then { VolumeMounts = builtins.map mkVolumeMountAPI attrs.volumeMounts; } else {})
   );
-  mkTaskArtifactAPI = with lib; attrs: if !(builtins.isAttrs attrs) then null else (
+  _module.transformers.mkTaskArtifactAPI = with lib; with config._module.transformers; attrs: if !(builtins.isAttrs attrs) then null else (
     {}
     // (if attrs ? destination && attrs.destination != null then { RelativeDest = attrs.destination; } else {})
     // (if attrs ? headers && attrs.headers != null then { GetterHeaders = attrs.headers; } else {})
@@ -1653,13 +1723,13 @@ rec {
     // (if attrs ? options && attrs.options != null then { GetterOptions = attrs.options; } else {})
     // (if attrs ? source && attrs.source != null then { GetterSource = attrs.source; } else {})
   );
-  mkTaskCSIPluginConfigAPI = with lib; attrs: if !(builtins.isAttrs attrs) then null else (
+  _module.transformers.mkTaskCSIPluginConfigAPI = with lib; with config._module.transformers; attrs: if !(builtins.isAttrs attrs) then null else (
     {}
     // (if attrs ? id && attrs.id != null then { ID = attrs.id; } else {})
     // (if attrs ? mountDir && attrs.mountDir != null then { MountDir = attrs.mountDir; } else {})
     // (if attrs ? type && attrs.type != null then { Type = attrs.type; } else {})
   );
-  mkTaskGroupAPI = with lib; label: attrs: if !(builtins.isAttrs attrs) then null else (
+  _module.transformers.mkTaskGroupAPI = with lib; with config._module.transformers; attrs: if !(builtins.isAttrs attrs) then null else (
     {}
     // (if attrs ? affinities && builtins.isList attrs.affinities then { Affinities = builtins.map mkAffinityAPI attrs.affinities; } else {})
     // (if attrs ? constraints && builtins.isList attrs.constraints then { Constraints = builtins.map mkConstraintAPI attrs.constraints; } else {})
@@ -1668,7 +1738,7 @@ rec {
     // (if attrs ? ephemeralDisk && attrs.ephemeralDisk != null then { EphemeralDisk = mkEphemeralDiskAPI attrs.ephemeralDisk; } else {})
     // (if attrs ? meta && attrs.meta != null then { Meta = attrs.meta; } else {})
     // (if attrs ? migrate && attrs.migrate != null then { Migrate = mkMigrateStrategyAPI attrs.migrate; } else {})
-    // ({ Name = label; })
+    // (if attrs ? name && attrs.name != null then { Name = attrs.name; } else {})
     // (if attrs ? networks && builtins.isList attrs.networks then { Networks = builtins.map mkNetworkResourceAPI attrs.networks; } else {})
     // (if attrs ? reschedule && attrs.reschedule != null then { ReschedulePolicy = mkReschedulePolicyAPI attrs.reschedule; } else {})
     // (if attrs ? restart && attrs.restart != null then { RestartPolicy = mkRestartPolicyAPI attrs.restart; } else {})
@@ -1677,16 +1747,16 @@ rec {
     // (if attrs ? shutdownDelay && attrs.shutdownDelay != null then { ShutdownDelay = attrs.shutdownDelay; } else {})
     // (if attrs ? spreads && builtins.isList attrs.spreads then { Spreads = builtins.map mkSpreadAPI attrs.spreads; } else {})
     // (if attrs ? stopAfterClientDisconnect && attrs.stopAfterClientDisconnect != null then { StopAfterClientDisconnect = attrs.stopAfterClientDisconnect; } else {})
-    // (if attrs ? task && builtins.isAttrs attrs.task then { Tasks = mapAttrsToList mkTaskAPI attrs.task; } else {})
+    // (if attrs ? task && builtins.isAttrs attrs.task then { Tasks = mapAttrsToList (_: mkTaskAPI) attrs.task; } else {})
     // (if attrs ? update && attrs.update != null then { Update = mkUpdateStrategyAPI attrs.update; } else {})
-    // (if attrs ? volume && builtins.isAttrs attrs.volume then { Volumes = mapAttrsToList mkVolumeRequestAPI attrs.volume; } else {})
+    // (if attrs ? volume && builtins.isAttrs attrs.volume then { Volumes = mapAttrsToList (_: mkVolumeRequestAPI) attrs.volume; } else {})
   );
-  mkTaskLifecycleAPI = with lib; attrs: if !(builtins.isAttrs attrs) then null else (
+  _module.transformers.mkTaskLifecycleAPI = with lib; with config._module.transformers; attrs: if !(builtins.isAttrs attrs) then null else (
     {}
     // (if attrs ? hook && attrs.hook != null then { Hook = attrs.hook; } else {})
     // (if attrs ? sidecar && attrs.sidecar != null then { Sidecar = attrs.sidecar; } else {})
   );
-  mkTemplateAPI = with lib; attrs: if !(builtins.isAttrs attrs) then null else (
+  _module.transformers.mkTemplateAPI = with lib; with config._module.transformers; attrs: if !(builtins.isAttrs attrs) then null else (
     {}
     // (if attrs ? changeMode && attrs.changeMode != null then { ChangeMode = attrs.changeMode; } else {})
     // (if attrs ? changeSignal && attrs.changeSignal != null then { ChangeSignal = attrs.changeSignal; } else {})
@@ -1701,7 +1771,7 @@ rec {
     // (if attrs ? vaultGrace && attrs.vaultGrace != null then { VaultGrace = attrs.vaultGrace; } else {})
     // (if attrs ? wait && attrs.wait != null then { Wait = mkWaitConfigAPI attrs.wait; } else {})
   );
-  mkUpdateStrategyAPI = with lib; attrs: if !(builtins.isAttrs attrs) then null else (
+  _module.transformers.mkUpdateStrategyAPI = with lib; with config._module.transformers; attrs: if !(builtins.isAttrs attrs) then null else (
     {}
     // (if attrs ? autoPromote && attrs.autoPromote != null then { AutoPromote = attrs.autoPromote; } else {})
     // (if attrs ? autoRevert && attrs.autoRevert != null then { AutoRevert = attrs.autoRevert; } else {})
@@ -1713,7 +1783,7 @@ rec {
     // (if attrs ? progressDeadline && attrs.progressDeadline != null then { ProgressDeadline = attrs.progressDeadline; } else {})
     // (if attrs ? stagger && attrs.stagger != null then { Stagger = attrs.stagger; } else {})
   );
-  mkVaultAPI = with lib; attrs: if !(builtins.isAttrs attrs) then null else (
+  _module.transformers.mkVaultAPI = with lib; with config._module.transformers; attrs: if !(builtins.isAttrs attrs) then null else (
     {}
     // (if attrs ? changeMode && attrs.changeMode != null then { ChangeMode = attrs.changeMode; } else {})
     // (if attrs ? changeSignal && attrs.changeSignal != null then { ChangeSignal = attrs.changeSignal; } else {})
@@ -1721,25 +1791,25 @@ rec {
     // (if attrs ? namespace && attrs.namespace != null then { Namespace = attrs.namespace; } else {})
     // (if attrs ? policies && attrs.policies != null then { Policies = attrs.policies; } else {})
   );
-  mkVolumeMountAPI = with lib; attrs: if !(builtins.isAttrs attrs) then null else (
+  _module.transformers.mkVolumeMountAPI = with lib; with config._module.transformers; attrs: if !(builtins.isAttrs attrs) then null else (
     {}
     // (if attrs ? destination && attrs.destination != null then { Destination = attrs.destination; } else {})
     // (if attrs ? propagationMode && attrs.propagationMode != null then { PropagationMode = attrs.propagationMode; } else {})
     // (if attrs ? readOnly && attrs.readOnly != null then { ReadOnly = attrs.readOnly; } else {})
     // (if attrs ? volume && attrs.volume != null then { Volume = attrs.volume; } else {})
   );
-  mkVolumeRequestAPI = with lib; label: attrs: if !(builtins.isAttrs attrs) then null else (
+  _module.transformers.mkVolumeRequestAPI = with lib; with config._module.transformers; attrs: if !(builtins.isAttrs attrs) then null else (
     {}
     // (if attrs ? accessMode && attrs.accessMode != null then { AccessMode = attrs.accessMode; } else {})
     // (if attrs ? attachmentMode && attrs.attachmentMode != null then { AttachmentMode = attrs.attachmentMode; } else {})
     // (if attrs ? mountOptions && attrs.mountOptions != null then { MountOptions = mkCSIMountOptionsAPI attrs.mountOptions; } else {})
-    // ({ Name = label; })
+    // (if attrs ? name && attrs.name != null then { Name = attrs.name; } else {})
     // (if attrs ? perAlloc && attrs.perAlloc != null then { PerAlloc = attrs.perAlloc; } else {})
     // (if attrs ? readOnly && attrs.readOnly != null then { ReadOnly = attrs.readOnly; } else {})
     // (if attrs ? source && attrs.source != null then { Source = attrs.source; } else {})
     // (if attrs ? type && attrs.type != null then { Type = attrs.type; } else {})
   );
-  mkWaitConfigAPI = with lib; attrs: if !(builtins.isAttrs attrs) then null else (
+  _module.transformers.mkWaitConfigAPI = with lib; with config._module.transformers; attrs: if !(builtins.isAttrs attrs) then null else (
     {}
     // (if attrs ? max && attrs.max != null then { Max = attrs.max; } else {})
     // (if attrs ? min && attrs.min != null then { Min = attrs.min; } else {})

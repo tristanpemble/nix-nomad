@@ -1,10 +1,6 @@
 { self, nixpkgs, nixpkgs-lib }:
 
 let
-  generated = import ./generated.nix {
-    inherit (nixpkgs-lib) lib;
-  };
-
   time = rec {
     nanosecond = 1;
     microsecond = 1000 * nanosecond;
@@ -23,7 +19,7 @@ let
 
   mkNomadJobs = args: (nomad.evalNomadJobs args).nomad.build.apiJobFarm;
 
-  nomad = nixpkgs-lib.lib.recursiveUpdate generated {
+  nomad = {
     inherit evalNomadJobs mkNomadJobs time;
   };
 in nomad

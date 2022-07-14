@@ -46,15 +46,15 @@ func main() {
 	job := api.Job{}
 	jobType := reflect.TypeOf(job)
 
-	fmt.Printf("{ lib }:\n\n")
-	fmt.Printf("rec {\n")
+	fmt.Printf("{ config, lib, ... }:\n\n")
+	fmt.Printf("{\n")
 	for _, t := range findAllTypes(jobType) {
 		nt := parseNomadType(t)
-		fmt.Printf("  %s = with lib; %s;\n", nt.nixTypeName, strings.TrimSpace(indent(generateTypeModule(nt), 2)))
+		fmt.Printf("  _module.types.%s = with lib; with config._module.types; %s;\n", nt.nixTypeName, strings.TrimSpace(indent(generateTypeModule(nt), 2)))
 	}
 	for _, t := range findAllTypes(jobType) {
 		nt := parseNomadType(t)
-		fmt.Printf("  %s = with lib; %s;\n", nt.nixTransformName, strings.TrimSpace(indent(generateTransformer(nt), 2)))
+		fmt.Printf("  _module.transformers.%s = with lib; with config._module.transformers; %s;\n", nt.nixTransformName, strings.TrimSpace(indent(generateTransformer(nt), 2)))
 	}
 	fmt.Printf("}\n")
 }
@@ -62,20 +62,26 @@ func main() {
 func generateTypeModule(t *NomadType) string {
 	var o string
 
-	o += fmt.Sprintf("with lib.types; {\n")
+	if t.isLabeled {
+		o += fmt.Sprintf("with lib.types; submodule ({ name, ... }: {\n")
+	} else {
+		o += fmt.Sprintf("with lib.types; submodule ({\n")
+	}
 
 	for _, f := range t.fields {
-		if f.isLabel {
-			continue
-		}
 		o += fmt.Sprintf("  options.%s = mkOption {\n", f.nixName)
 		o += fmt.Sprintf("    type = %s;\n", f.nixType)
-		if f.nixDefault != "" {
+		if f.isLabel {
+			o += fmt.Sprintf("    default = name;\n")
+			o += fmt.Sprintf("    internal = true;\n")
+			o += fmt.Sprintf("    readOnly = true;\n")
+			o += fmt.Sprintf("    visible = false;\n")
+		} else if f.nixDefault != "" {
 			o += fmt.Sprintf("    default = %s;\n", f.nixDefault)
 		}
 		o += fmt.Sprintf("  };\n")
 	}
-	o += fmt.Sprintf("}")
+	o += fmt.Sprintf("})")
 
 	return o
 }
@@ -83,11 +89,7 @@ func generateTypeModule(t *NomadType) string {
 func generateTransformer(t *NomadType) string {
 	var o string
 
-	if t.isLabeled {
-		o += fmt.Sprintf("label: attrs: if !(builtins.isAttrs attrs) then null else (\n")
-	} else {
-		o += fmt.Sprintf("attrs: if !(builtins.isAttrs attrs) then null else (\n")
-	}
+	o += fmt.Sprintf("attrs: if !(builtins.isAttrs attrs) then null else (\n")
 
 	o += fmt.Sprintf("  {}\n")
 	for _, f := range t.fields {
@@ -100,14 +102,10 @@ func generateTransformer(t *NomadType) string {
 }
 
 func generateFieldTransformer(f NomadField) string {
-	if f.isLabel {
-		return fmt.Sprintf("{ %s = label; }", f.goName)
-	}
-
 	if f.isLabeled {
 		return fmt.Sprintf(""+
 			"if attrs ? %s && builtins.isAttrs attrs.%s "+
-			"then { %s = mapAttrsToList %s attrs.%s; } "+
+			"then { %s = mapAttrsToList (_: %s) attrs.%s; } "+
 			"else {}",
 			f.nixName,
 			f.nixName,
@@ -259,9 +257,9 @@ func parseNomadField(t reflect.Type, f reflect.StructField) *NomadField {
 		o.nixType = "ints.unsigned"
 	}
 
-	if o.nomadType != nil {
-		o.nixType = fmt.Sprintf("(submodule %s)", o.nixType)
-	}
+	//if o.nomadType != nil {
+	//	o.nixType = fmt.Sprintf("(submodule %s)", o.nixType)
+	//}
 
 	if o.isList && o.goType.Kind() == reflect.Struct {
 		o.nixName = pluralize.NewClient().Plural(o.nixName)
@@ -279,6 +277,10 @@ func parseNomadField(t reflect.Type, f reflect.StructField) *NomadField {
 	if o.isOptional {
 		o.nixType = fmt.Sprintf("(nullOr %s)", o.nixType)
 		o.nixDefault = "null"
+	}
+
+	if o.isLabel && o.nixName == "" {
+		o.nixName = strcase.ToLowerCamel(o.goName);
 	}
 
 	return &o
