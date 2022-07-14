@@ -1,6 +1,6 @@
 { lib, nixpkgs, nomad }:
 
-{ system ? null
+{ system ? builtins.currentSystem
 , pkgs ? import nixpkgs { inherit system; }
 , config
 }:
@@ -8,7 +8,7 @@
 let evaluated = lib.evalModules {
   modules = [
     ({ _module.args = { inherit nomad pkgs; inherit (nomad) time; }; })
-    ../modules/core.nix
+    ../modules
   ] ++ (lib.toList config);
 }; in
 evaluated.config

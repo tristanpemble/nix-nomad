@@ -20,7 +20,7 @@ output is an attrset where each attr is a derivation that builds a JSON job file
 Module options are enumerated in [the documentation](https://tristanpemble.github.io/nix-nomad/).
 
 ```nix
-let myJobs = mkNomadJobs {
+mkNomadJobs {
   pkgs = import <nixpkgs> {};
   config = {
     job.hello = {
@@ -46,11 +46,11 @@ let myJobs = mkNomadJobs {
       };
     };
   };
-}; in myJobs.hello
+}
 ```
 
-The above example evaluates to a derivation, that when built, outputs a JSON file containing the following (which has
-been prettified for readability):
+The above example evaluates to a derivation, that when built, outputs a folder containing a file named "hello.json".
+The contents of the file, when prettified for readability, look like:
 
 ```json
 {
@@ -88,7 +88,7 @@ been prettified for readability):
 You can run this job with the Nomad CLI on Nomad v1.3 and later:
 
 ```bash
-nomad run -json ./result
+nomad run -json ./result/hello.json
 ```
 
 Older versions of Nomad will require using Nomad's JSON API to run the job.

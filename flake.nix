@@ -15,10 +15,10 @@
     packages.generator = pkgs.callPackage ./generator {};
     packages.docs = pkgs.callPackage ./docs { inherit self; };
     devShells.default = pkgs.callPackage ./shell.nix {};
-    checks.hello = pkgs.linkFarmFromDrvs "hello-goodbye" (builtins.attrValues (self.lib.mkNomadJobs {
+    checks.hello = self.lib.mkNomadJobs {
        inherit system;
        config = [ ./examples/hello.nix ./examples/goodbye.nix ];
-    }));
+    };
   }) // {
     lib = import ./lib { inherit self nixpkgs nixpkgs-lib; };
     overlays.default = _: _: { nomadLib = self.lib; };

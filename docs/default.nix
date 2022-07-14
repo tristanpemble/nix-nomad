@@ -16,10 +16,16 @@ let
   nmd = import nmdSrc { inherit lib pkgs; };
 
   moduleDocs = nmd.buildModulesDocs {
-    moduleRootPaths = [ ../modules ];
+    moduleRootPaths = [ ../. ];
     mkModuleUrl = path: "https://github.com/tristanpemble/nix-nomad/blob/main/${path}#blob-path";
     channelName = "nix-nomad";
-    modules = [ (import ../modules/core.nix { inherit lib; nomad = self.lib; }) ];
+    modules = [
+      {
+        options._module.args = lib.mkOption { visible = false; };
+        config._module.args = { inherit lib; nomad = self.lib; };
+      }
+      ../modules
+    ];
     docBook.id = "nix-nomad-options";
   };
 
