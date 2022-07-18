@@ -25,6 +25,8 @@ type NomadField struct {
 	goName string
 	goType reflect.Type
 
+	hclName string
+
 	nixName    string
 	nixType    string
 	nixDefault string
@@ -54,7 +56,12 @@ func main() {
 	}
 	for _, t := range findAllTypes(jobType) {
 		nt := parseNomadType(t)
-		fmt.Printf("  _module.transformers.%s = with lib; with config._module.transformers; %s;\n", nt.nixTransformName, strings.TrimSpace(indent(generateTransformer(nt), 2)))
+		fmt.Printf("\n")
+		fmt.Printf("  # Convert a %s Nix module into a JSON object.\n", nt.nixTypeName)
+		fmt.Printf("  _module.transformers.%s.toJSON = with lib; with config._module.transformers; %s;\n", nt.nixTypeName, strings.TrimSpace(indent(genStructToJson(nt), 2)))
+		fmt.Printf("\n")
+		fmt.Printf("  # Convert a %s JSON object into a Nix module.\n", nt.nixTypeName)
+		fmt.Printf("  _module.transformers.%s.fromJSON = with lib; with config._module.transformers; %s;\n", nt.nixTypeName, strings.TrimSpace(indent(genStructFromJson(nt), 2)))
 	}
 	fmt.Printf("}\n")
 }
@@ -74,7 +81,6 @@ func generateTypeModule(t *NomadType) string {
 		if f.isLabel {
 			o += fmt.Sprintf("    default = name;\n")
 			o += fmt.Sprintf("    internal = true;\n")
-			o += fmt.Sprintf("    readOnly = true;\n")
 			o += fmt.Sprintf("    visible = false;\n")
 		} else if f.nixDefault != "" {
 			o += fmt.Sprintf("    default = %s;\n", f.nixDefault)
@@ -86,14 +92,13 @@ func generateTypeModule(t *NomadType) string {
 	return o
 }
 
-func generateTransformer(t *NomadType) string {
+func genStructToJson(t *NomadType) string {
 	var o string
 
 	o += fmt.Sprintf("attrs: if !(builtins.isAttrs attrs) then null else (\n")
-
 	o += fmt.Sprintf("  {}\n")
 	for _, f := range t.fields {
-		o += fmt.Sprintf("  // (%s)\n", generateFieldTransformer(f))
+		o += fmt.Sprintf("  // (%s)\n", genFieldToJson(f))
 	}
 
 	o += fmt.Sprintf(")")
@@ -101,38 +106,38 @@ func generateTransformer(t *NomadType) string {
 	return o
 }
 
-func generateFieldTransformer(f NomadField) string {
+func genFieldToJson(f NomadField) string {
 	if f.isLabeled {
 		return fmt.Sprintf(""+
 			"if attrs ? %s && builtins.isAttrs attrs.%s "+
-			"then { %s = mapAttrsToList (_: %s) attrs.%s; } "+
+			"then { %s = mapAttrsToList (_: %s.toJSON) attrs.%s; } "+
 			"else {}",
 			f.nixName,
 			f.nixName,
 			f.goName,
-			f.nomadType.nixTransformName,
+			f.nomadType.nixTypeName,
 			f.nixName,
 		)
 	}
 
 	if f.isList && f.nomadType != nil {
 		return fmt.Sprintf(""+
-			"if attrs ? %s && builtins.isList attrs.%s then { %s = builtins.map %s attrs.%s; } else {}",
+			"if attrs ? %s && builtins.isList attrs.%s then { %s = builtins.map %s.toJSON attrs.%s; } else {}",
 			f.nixName,
 			f.nixName,
 			f.goName,
-			f.nomadType.nixTransformName,
+			f.nomadType.nixTypeName,
 			f.nixName,
 		)
 	}
 
 	if f.nomadType != nil {
 		return fmt.Sprintf(
-			"if attrs ? %s && attrs.%s != null then { %s = %s attrs.%s; } else {}",
+			"if attrs ? %s && attrs.%s != null then { %s = %s.toJSON attrs.%s; } else {}",
 			f.nixName,
 			f.nixName,
 			f.goName,
-			f.nomadType.nixTransformName,
+			f.nomadType.nixTypeName,
 			f.nixName,
 		)
 	}
@@ -146,11 +151,79 @@ func generateFieldTransformer(f NomadField) string {
 	)
 }
 
+func genStructFromJson(t *NomadType) string {
+	var o string
+
+	o += fmt.Sprintf("attrs: (\n")
+	o += fmt.Sprintf("  {}\n")
+	for _, f := range t.fields {
+		o += fmt.Sprintf("  // (%s)\n", genFieldFromJson(f))
+	}
+
+	o += fmt.Sprintf(")")
+
+	return o
+}
+
+func genFieldFromJson(f NomadField) string {
+	if f.isLabeled {
+		var label NomadField
+		for _, field := range f.nomadType.fields {
+			if field.isLabel {
+				label = field
+				break
+			}
+		}
+
+		return fmt.Sprintf(""+
+			"if attrs ? %s && builtins.isList attrs.%s "+
+			"then { %s = builtins.listToAttrs (builtins.map (v: nameValuePair v.%s (%s.fromJSON v)) attrs.%s); } "+
+			"else {}",
+			f.goName,
+			f.goName,
+			f.nixName,
+			label.goName,
+			f.nomadType.nixTypeName,
+			f.goName,
+		)
+	}
+
+	if f.isList && f.nomadType != nil {
+		return fmt.Sprintf(""+
+			"if attrs ? %s && builtins.isList attrs.%s then { %s = builtins.map %s.fromJSON attrs.%s; } else {}",
+			f.goName,
+			f.goName,
+			f.nixName,
+			f.nomadType.nixTypeName,
+			f.goName,
+		)
+	}
+
+	if f.nomadType != nil {
+		return fmt.Sprintf(
+			"if attrs ? %s && attrs.%s != null then { %s = %s.fromJSON attrs.%s; } else {}",
+			f.goName,
+			f.goName,
+			f.nixName,
+			f.nomadType.nixTypeName,
+			f.goName,
+		)
+	}
+
+	return fmt.Sprintf(
+		"if attrs ? %s && attrs.%s != null then { %s = attrs.%s; } else {}",
+		f.goName,
+		f.goName,
+		f.nixName,
+		f.goName,
+	)
+}
+
 func parseNomadType(t reflect.Type) *NomadType {
 	o := NomadType{
 		goName:           t.Name(),
 		nixTypeName:      strcase.ToCamel(t.Name()),
-		nixTransformName: strcase.ToLowerCamel("mk" + t.Name() + "API"),
+		nixTransformName: "toJSON",
 	}
 
 	for _, rt := range collectReferencedTypes(t) {
@@ -229,6 +302,7 @@ func parseNomadField(t reflect.Type, f reflect.StructField) *NomadField {
 		o.isMap = true
 	}
 
+	o.hclName = hclParts[0]
 	o.nixName = strcase.ToLowerCamel(hclParts[0])
 	o.nixType = o.goType.Name()
 	o.nixDefault = ""
@@ -280,7 +354,7 @@ func parseNomadField(t reflect.Type, f reflect.StructField) *NomadField {
 	}
 
 	if o.isLabel && o.nixName == "" {
-		o.nixName = strcase.ToLowerCamel(o.goName);
+		o.nixName = strcase.ToLowerCamel(o.goName)
 	}
 
 	return &o

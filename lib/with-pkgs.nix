@@ -1,10 +1,14 @@
 { lib, pkgs }:
 
-let inherit (pkgs) hcl2json runCommand writeText; in
+let inherit (pkgs) hcl2json nomad runCommand writeText; in
 
 rec {
-  importHCL = path: lib.importJSON (runCommand "${baseNameOf path}.json" {} ''
-    ${hcl2json}/bin/hcl2json < ${path} > $out
+  importNomadHCL = path: vars: lib.importJSON (runCommand "${baseNameOf path}.json" {
+    buildInputs = [ nomad ];
+    VAR_FILE = writeText "${baseNameOf path}-vars.json" (builtins.toJSON vars);
+  } ''
+    nomad job run -var-file="$VAR_FILE" -output ${path} > $out
   '');
-  fromHCL = text: importHCL (writeText "source.hcl" text);
+
+  fromNomadHCL = text: importNomadHCL (writeText "source.hcl" text);
 }

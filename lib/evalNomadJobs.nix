@@ -10,7 +10,14 @@ let
   evaluated = lib.evalModules {
     specialArgs.lib = pkgs.lib
       // (import ./without-pkgs.nix { inherit self nixpkgs nixpkgs-lib; })
-      // (import ./with-pkgs.nix { inherit pkgs; inherit (pkgs) lib; });
+      // (import ./with-pkgs.nix { inherit pkgs; inherit (pkgs) lib; })
+      // {
+        importNomadModule = path: vars: { config, lib, ... }: let
+          job = config._module.transformers.Job.fromJSON (lib.importNomadHCL path vars).Job;
+        in {
+          job.${job.name} = builtins.removeAttrs job ["id" "name"];
+        };
+      };
 
     modules = [
       ({ _module.args = { inherit pkgs; inherit (nomad) time; }; })

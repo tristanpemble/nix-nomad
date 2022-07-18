@@ -5,6 +5,6 @@ mkShell {
     go
     gomod2nix
     jq
-    nomad
+    nomad_1_3
   ];
 }

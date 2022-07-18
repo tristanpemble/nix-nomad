@@ -14,6 +14,8 @@ HashiCorp stack.
 
 ## Usage
 
+### Overview
+
 The `mkNomadJobs` function takes in a module, path to a module, a list of modules, or a list of paths to modules. The
 output is an attrset where each attr is a derivation that builds a JSON job file for the Nomad job of the same name.
 
@@ -92,3 +94,23 @@ nomad run -json ./result/hello.json
 ```
 
 Older versions of Nomad will require using Nomad's JSON API to run the job.
+
+### Migrating from HCL
+
+You can import an HCL job file using the method `importNomadModule`. It takes a path to an HCL job file, and an attrset
+of variables to pass to the job.
+
+```nix
+{ lib, ... }:
+
+{
+  imports = [
+    (lib.importNomadModule ./my-job.hcl { foo = "bar"; })
+  ];
+  
+  job.my-job.region = lib.mkForce "global";  
+}
+```
+
+This is using [import from derivation](https://nixos.wiki/wiki/Import_From_Derivation) with the `nomad job run -output [file]`
+command; so it will be pretty slow. This is best used as an intermediate step for migrating your jobs to Nix.

@@ -17,7 +17,7 @@
     devShells.default = pkgs.callPackage ./shell.nix {};
     checks.hello = self.lib.mkNomadJobs {
        inherit system;
-       config = [ ./examples/hello.nix ./examples/goodbye.nix ];
+       config = [ ./examples/hello.nix ./examples/goodbye.nix ./examples/docs.nix ];
     };
   }) // {
     lib = import ./lib/without-pkgs.nix { inherit self nixpkgs nixpkgs-lib; };
