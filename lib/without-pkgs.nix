@@ -13,8 +13,7 @@ let
   };
 
   evalNomadJobs = import ./evalNomadJobs.nix {
-    inherit nixpkgs nomad;
-    inherit (nixpkgs-lib) lib;
+    inherit nixpkgs nixpkgs-lib nomad self;
   };
 
   mkNomadJobs = args: (nomad.evalNomadJobs args).nomad.build.apiJobFarm;

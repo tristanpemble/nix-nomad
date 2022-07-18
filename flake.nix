@@ -20,7 +20,11 @@
        config = [ ./examples/hello.nix ./examples/goodbye.nix ];
     };
   }) // {
-    lib = import ./lib { inherit self nixpkgs nixpkgs-lib; };
-    overlays.default = _: _: { nomadLib = self.lib; };
+    lib = import ./lib/without-pkgs.nix { inherit self nixpkgs nixpkgs-lib; };
+    overlays.default = final: prev:                   {
+      lib = prev.lib
+        // (import ./lib/without-pkgs.nix { inherit self nixpkgs nixpkgs-lib; })
+        // (import ./lib/with-pkgs.nix { inherit (prev) lib; pkgs = final; });
+    };
   };
 }

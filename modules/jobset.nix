@@ -1,4 +1,4 @@
-{ config, lib, nomad, pkgs, ... }:
+{ config, lib, pkgs, ... }:
 
 with lib;
 
