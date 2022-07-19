@@ -1,3 +1,9 @@
+# Disclaimer
+
+This project is still in an early proof of concept stage. While I will soon be rolling this out in production at work,
+deploying dozens of services across multiple environments, hundreds of times daily, the API may change without
+documentation or warning.
+
 # nix-nomad
 
 Generate [HashiCorp Nomad](https://nomadproject.io) JSON job files with [Nix](https://nixos.org) using
