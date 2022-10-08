@@ -9,6 +9,8 @@ documentation or warning.
 Generate [HashiCorp Nomad](https://nomadproject.io) JSON job files with [Nix](https://nixos.org) using
 [NixOS modules](https://github.com/NixOS/nixpkgs/blob/master/lib/modules.nix).
 
+We are using this flake internally at Quartzy, where we use Nix to manage our entire infrastructure from development to production. If you'd like to help advance scientific research while getting to work with Nix, [we are hiring](https://www.quartzy.com/careers).
+
 ## Why?
 
 On its own, if used for a single job definition, this is overkill. However, NixOS modules becomes most  powerful when
