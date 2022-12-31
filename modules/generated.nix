@@ -29,6 +29,22 @@
       default = null;
     };
   });
+  _module.types.ChangeScript = with lib; with config._module.types; with lib.types; submodule ({
+    options.args = mkOption {
+      type = (nullOr (listOf str));
+      default = null;
+    };
+    options.command = mkOption {
+      type = str;
+    };
+    options.failOnError = mkOption {
+      type = bool;
+    };
+    options.timeout = mkOption {
+      type = (nullOr int);
+      default = null;
+    };
+  });
   _module.types.CheckRestart = with lib; with config._module.types; with lib.types; submodule ({
     options.grace = mkOption {
       type = (nullOr int);
@@ -166,8 +182,20 @@
     };
   });
   _module.types.ConsulGatewayTLSConfig = with lib; with config._module.types; with lib.types; submodule ({
+    options.cipherSuites = mkOption {
+      type = (nullOr (listOf str));
+      default = null;
+    };
     options.enabled = mkOption {
       type = (nullOr bool);
+      default = null;
+    };
+    options.tlsMaxVersion = mkOption {
+      type = (nullOr str);
+      default = null;
+    };
+    options.tlsMinVersion = mkOption {
+      type = (nullOr str);
       default = null;
     };
   });
@@ -287,6 +315,10 @@
       default = null;
     };
     options.destinationName = mkOption {
+      type = (nullOr str);
+      default = null;
+    };
+    options.destinationNamespace = mkOption {
       type = (nullOr str);
       default = null;
     };
@@ -706,6 +738,10 @@
     };
   });
   _module.types.Service = with lib; with config._module.types; with lib.types; submodule ({
+    options.address = mkOption {
+      type = (nullOr str);
+      default = null;
+    };
     options.addressMode = mkOption {
       type = (nullOr str);
       default = null;
@@ -734,10 +770,6 @@
       type = (nullOr bool);
       default = null;
     };
-    options.id = mkOption {
-      type = (nullOr str);
-      default = null;
-    };
     options.meta = mkOption {
       type = (nullOr (attrsOf str));
       default = null;
@@ -754,6 +786,14 @@
       type = (nullOr str);
       default = null;
     };
+    options.provider = mkOption {
+      type = (nullOr str);
+      default = null;
+    };
+    options.taggedAddresses = mkOption {
+      type = (nullOr (attrsOf str));
+      default = null;
+    };
     options.tags = mkOption {
       type = (nullOr (listOf str));
       default = null;
@@ -765,6 +805,10 @@
   });
   _module.types.ServiceCheck = with lib; with config._module.types; with lib.types; submodule ({
     options.addressMode = mkOption {
+      type = (nullOr str);
+      default = null;
+    };
+    options.advertise = mkOption {
       type = (nullOr str);
       default = null;
     };
@@ -802,10 +846,6 @@
     };
     options.header = mkOption {
       type = (nullOr (attrsOf str));
-      default = null;
-    };
-    options.id = mkOption {
-      type = (nullOr str);
       default = null;
     };
     options.initialStatus = mkOption {
@@ -1060,11 +1100,19 @@
     };
   });
   _module.types.TaskCSIPluginConfig = with lib; with config._module.types; with lib.types; submodule ({
+    options.healthTimeout = mkOption {
+      type = (nullOr int);
+      default = null;
+    };
     options.id = mkOption {
       type = (nullOr str);
       default = null;
     };
     options.mountDir = mkOption {
+      type = (nullOr str);
+      default = null;
+    };
+    options.stagePublishBaseDir = mkOption {
       type = (nullOr str);
       default = null;
     };
@@ -1092,6 +1140,10 @@
     };
     options.ephemeralDisk = mkOption {
       type = (nullOr EphemeralDisk);
+      default = null;
+    };
+    options.maxClientDisconnect = mkOption {
+      type = (nullOr int);
       default = null;
     };
     options.meta = mkOption {
@@ -1168,6 +1220,10 @@
       type = (nullOr str);
       default = null;
     };
+    options.changeScript = mkOption {
+      type = (nullOr ChangeScript);
+      default = null;
+    };
     options.changeSignal = mkOption {
       type = (nullOr str);
       default = null;
@@ -1182,6 +1238,10 @@
     };
     options.env = mkOption {
       type = (nullOr bool);
+      default = null;
+    };
+    options.gid = mkOption {
+      type = (nullOr int);
       default = null;
     };
     options.leftDelimiter = mkOption {
@@ -1201,6 +1261,10 @@
       default = null;
     };
     options.splay = mkOption {
+      type = (nullOr int);
+      default = null;
+    };
+    options.uid = mkOption {
       type = (nullOr int);
       default = null;
     };
@@ -1368,6 +1432,24 @@
     // (if attrs ? MountFlags && attrs.MountFlags != null then { mountFlags = attrs.MountFlags; } else {})
   );
 
+  # Convert a ChangeScript Nix module into a JSON object.
+  _module.transformers.ChangeScript.toJSON = with lib; with config._module.transformers; attrs: if !(builtins.isAttrs attrs) then null else (
+    {}
+    // (if attrs ? args && attrs.args != null then { Args = attrs.args; } else {})
+    // (if attrs ? command && attrs.command != null then { Command = attrs.command; } else {})
+    // (if attrs ? failOnError && attrs.failOnError != null then { FailOnError = attrs.failOnError; } else {})
+    // (if attrs ? timeout && attrs.timeout != null then { Timeout = attrs.timeout; } else {})
+  );
+
+  # Convert a ChangeScript JSON object into a Nix module.
+  _module.transformers.ChangeScript.fromJSON = with lib; with config._module.transformers; attrs: (
+    {}
+    // (if attrs ? Args && attrs.Args != null then { args = attrs.Args; } else {})
+    // (if attrs ? Command && attrs.Command != null then { command = attrs.Command; } else {})
+    // (if attrs ? FailOnError && attrs.FailOnError != null then { failOnError = attrs.FailOnError; } else {})
+    // (if attrs ? Timeout && attrs.Timeout != null then { timeout = attrs.Timeout; } else {})
+  );
+
   # Convert a CheckRestart Nix module into a JSON object.
   _module.transformers.CheckRestart.toJSON = with lib; with config._module.transformers; attrs: if !(builtins.isAttrs attrs) then null else (
     {}
@@ -1519,13 +1601,19 @@
   # Convert a ConsulGatewayTLSConfig Nix module into a JSON object.
   _module.transformers.ConsulGatewayTLSConfig.toJSON = with lib; with config._module.transformers; attrs: if !(builtins.isAttrs attrs) then null else (
     {}
+    // (if attrs ? cipherSuites && attrs.cipherSuites != null then { CipherSuites = attrs.cipherSuites; } else {})
     // (if attrs ? enabled && attrs.enabled != null then { Enabled = attrs.enabled; } else {})
+    // (if attrs ? tlsMaxVersion && attrs.tlsMaxVersion != null then { TLSMaxVersion = attrs.tlsMaxVersion; } else {})
+    // (if attrs ? tlsMinVersion && attrs.tlsMinVersion != null then { TLSMinVersion = attrs.tlsMinVersion; } else {})
   );
 
   # Convert a ConsulGatewayTLSConfig JSON object into a Nix module.
   _module.transformers.ConsulGatewayTLSConfig.fromJSON = with lib; with config._module.transformers; attrs: (
     {}
+    // (if attrs ? CipherSuites && attrs.CipherSuites != null then { cipherSuites = attrs.CipherSuites; } else {})
     // (if attrs ? Enabled && attrs.Enabled != null then { enabled = attrs.Enabled; } else {})
+    // (if attrs ? TLSMaxVersion && attrs.TLSMaxVersion != null then { tlsMaxVersion = attrs.TLSMaxVersion; } else {})
+    // (if attrs ? TLSMinVersion && attrs.TLSMinVersion != null then { tlsMinVersion = attrs.TLSMinVersion; } else {})
   );
 
   # Convert a ConsulIngressConfigEntry Nix module into a JSON object.
@@ -1669,6 +1757,7 @@
     {}
     // (if attrs ? datacenter && attrs.datacenter != null then { Datacenter = attrs.datacenter; } else {})
     // (if attrs ? destinationName && attrs.destinationName != null then { DestinationName = attrs.destinationName; } else {})
+    // (if attrs ? destinationNamespace && attrs.destinationNamespace != null then { DestinationNamespace = attrs.destinationNamespace; } else {})
     // (if attrs ? localBindAddress && attrs.localBindAddress != null then { LocalBindAddress = attrs.localBindAddress; } else {})
     // (if attrs ? localBindPort && attrs.localBindPort != null then { LocalBindPort = attrs.localBindPort; } else {})
     // (if attrs ? meshGateway && attrs.meshGateway != null then { MeshGateway = ConsulMeshGateway.toJSON attrs.meshGateway; } else {})
@@ -1679,6 +1768,7 @@
     {}
     // (if attrs ? Datacenter && attrs.Datacenter != null then { datacenter = attrs.Datacenter; } else {})
     // (if attrs ? DestinationName && attrs.DestinationName != null then { destinationName = attrs.DestinationName; } else {})
+    // (if attrs ? DestinationNamespace && attrs.DestinationNamespace != null then { destinationNamespace = attrs.DestinationNamespace; } else {})
     // (if attrs ? LocalBindAddress && attrs.LocalBindAddress != null then { localBindAddress = attrs.LocalBindAddress; } else {})
     // (if attrs ? LocalBindPort && attrs.LocalBindPort != null then { localBindPort = attrs.LocalBindPort; } else {})
     // (if attrs ? MeshGateway && attrs.MeshGateway != null then { meshGateway = ConsulMeshGateway.fromJSON attrs.MeshGateway; } else {})
@@ -2045,6 +2135,7 @@
   # Convert a Service Nix module into a JSON object.
   _module.transformers.Service.toJSON = with lib; with config._module.transformers; attrs: if !(builtins.isAttrs attrs) then null else (
     {}
+    // (if attrs ? address && attrs.address != null then { Address = attrs.address; } else {})
     // (if attrs ? addressMode && attrs.addressMode != null then { AddressMode = attrs.addressMode; } else {})
     // (if attrs ? canaryMeta && attrs.canaryMeta != null then { CanaryMeta = attrs.canaryMeta; } else {})
     // (if attrs ? canaryTags && attrs.canaryTags != null then { CanaryTags = attrs.canaryTags; } else {})
@@ -2052,11 +2143,12 @@
     // (if attrs ? checks && builtins.isList attrs.checks then { Checks = builtins.map ServiceCheck.toJSON attrs.checks; } else {})
     // (if attrs ? connect && attrs.connect != null then { Connect = ConsulConnect.toJSON attrs.connect; } else {})
     // (if attrs ? enableTagOverride && attrs.enableTagOverride != null then { EnableTagOverride = attrs.enableTagOverride; } else {})
-    // (if attrs ? id && attrs.id != null then { Id = attrs.id; } else {})
     // (if attrs ? meta && attrs.meta != null then { Meta = attrs.meta; } else {})
     // (if attrs ? name && attrs.name != null then { Name = attrs.name; } else {})
     // (if attrs ? onUpdate && attrs.onUpdate != null then { OnUpdate = attrs.onUpdate; } else {})
     // (if attrs ? port && attrs.port != null then { PortLabel = attrs.port; } else {})
+    // (if attrs ? provider && attrs.provider != null then { Provider = attrs.provider; } else {})
+    // (if attrs ? taggedAddresses && attrs.taggedAddresses != null then { TaggedAddresses = attrs.taggedAddresses; } else {})
     // (if attrs ? tags && attrs.tags != null then { Tags = attrs.tags; } else {})
     // (if attrs ? task && attrs.task != null then { TaskName = attrs.task; } else {})
   );
@@ -2064,6 +2156,7 @@
   # Convert a Service JSON object into a Nix module.
   _module.transformers.Service.fromJSON = with lib; with config._module.transformers; attrs: (
     {}
+    // (if attrs ? Address && attrs.Address != null then { address = attrs.Address; } else {})
     // (if attrs ? AddressMode && attrs.AddressMode != null then { addressMode = attrs.AddressMode; } else {})
     // (if attrs ? CanaryMeta && attrs.CanaryMeta != null then { canaryMeta = attrs.CanaryMeta; } else {})
     // (if attrs ? CanaryTags && attrs.CanaryTags != null then { canaryTags = attrs.CanaryTags; } else {})
@@ -2071,11 +2164,12 @@
     // (if attrs ? Checks && builtins.isList attrs.Checks then { checks = builtins.map ServiceCheck.fromJSON attrs.Checks; } else {})
     // (if attrs ? Connect && attrs.Connect != null then { connect = ConsulConnect.fromJSON attrs.Connect; } else {})
     // (if attrs ? EnableTagOverride && attrs.EnableTagOverride != null then { enableTagOverride = attrs.EnableTagOverride; } else {})
-    // (if attrs ? Id && attrs.Id != null then { id = attrs.Id; } else {})
     // (if attrs ? Meta && attrs.Meta != null then { meta = attrs.Meta; } else {})
     // (if attrs ? Name && attrs.Name != null then { name = attrs.Name; } else {})
     // (if attrs ? OnUpdate && attrs.OnUpdate != null then { onUpdate = attrs.OnUpdate; } else {})
     // (if attrs ? PortLabel && attrs.PortLabel != null then { port = attrs.PortLabel; } else {})
+    // (if attrs ? Provider && attrs.Provider != null then { provider = attrs.Provider; } else {})
+    // (if attrs ? TaggedAddresses && attrs.TaggedAddresses != null then { taggedAddresses = attrs.TaggedAddresses; } else {})
     // (if attrs ? Tags && attrs.Tags != null then { tags = attrs.Tags; } else {})
     // (if attrs ? TaskName && attrs.TaskName != null then { task = attrs.TaskName; } else {})
   );
@@ -2084,6 +2178,7 @@
   _module.transformers.ServiceCheck.toJSON = with lib; with config._module.transformers; attrs: if !(builtins.isAttrs attrs) then null else (
     {}
     // (if attrs ? addressMode && attrs.addressMode != null then { AddressMode = attrs.addressMode; } else {})
+    // (if attrs ? advertise && attrs.advertise != null then { Advertise = attrs.advertise; } else {})
     // (if attrs ? args && attrs.args != null then { Args = attrs.args; } else {})
     // (if attrs ? body && attrs.body != null then { Body = attrs.body; } else {})
     // (if attrs ? checkRestart && attrs.checkRestart != null then { CheckRestart = CheckRestart.toJSON attrs.checkRestart; } else {})
@@ -2093,7 +2188,6 @@
     // (if attrs ? grpcService && attrs.grpcService != null then { GRPCService = attrs.grpcService; } else {})
     // (if attrs ? grpcUseTls && attrs.grpcUseTls != null then { GRPCUseTLS = attrs.grpcUseTls; } else {})
     // (if attrs ? header && attrs.header != null then { Header = attrs.header; } else {})
-    // (if attrs ? id && attrs.id != null then { Id = attrs.id; } else {})
     // (if attrs ? initialStatus && attrs.initialStatus != null then { InitialStatus = attrs.initialStatus; } else {})
     // (if attrs ? interval && attrs.interval != null then { Interval = attrs.interval; } else {})
     // (if attrs ? method && attrs.method != null then { Method = attrs.method; } else {})
@@ -2113,6 +2207,7 @@
   _module.transformers.ServiceCheck.fromJSON = with lib; with config._module.transformers; attrs: (
     {}
     // (if attrs ? AddressMode && attrs.AddressMode != null then { addressMode = attrs.AddressMode; } else {})
+    // (if attrs ? Advertise && attrs.Advertise != null then { advertise = attrs.Advertise; } else {})
     // (if attrs ? Args && attrs.Args != null then { args = attrs.Args; } else {})
     // (if attrs ? Body && attrs.Body != null then { body = attrs.Body; } else {})
     // (if attrs ? CheckRestart && attrs.CheckRestart != null then { checkRestart = CheckRestart.fromJSON attrs.CheckRestart; } else {})
@@ -2122,7 +2217,6 @@
     // (if attrs ? GRPCService && attrs.GRPCService != null then { grpcService = attrs.GRPCService; } else {})
     // (if attrs ? GRPCUseTLS && attrs.GRPCUseTLS != null then { grpcUseTls = attrs.GRPCUseTLS; } else {})
     // (if attrs ? Header && attrs.Header != null then { header = attrs.Header; } else {})
-    // (if attrs ? Id && attrs.Id != null then { id = attrs.Id; } else {})
     // (if attrs ? InitialStatus && attrs.InitialStatus != null then { initialStatus = attrs.InitialStatus; } else {})
     // (if attrs ? Interval && attrs.Interval != null then { interval = attrs.Interval; } else {})
     // (if attrs ? Method && attrs.Method != null then { method = attrs.Method; } else {})
@@ -2283,16 +2377,20 @@
   # Convert a TaskCSIPluginConfig Nix module into a JSON object.
   _module.transformers.TaskCSIPluginConfig.toJSON = with lib; with config._module.transformers; attrs: if !(builtins.isAttrs attrs) then null else (
     {}
+    // (if attrs ? healthTimeout && attrs.healthTimeout != null then { HealthTimeout = attrs.healthTimeout; } else {})
     // (if attrs ? id && attrs.id != null then { ID = attrs.id; } else {})
     // (if attrs ? mountDir && attrs.mountDir != null then { MountDir = attrs.mountDir; } else {})
+    // (if attrs ? stagePublishBaseDir && attrs.stagePublishBaseDir != null then { StagePublishBaseDir = attrs.stagePublishBaseDir; } else {})
     // (if attrs ? type && attrs.type != null then { Type = attrs.type; } else {})
   );
 
   # Convert a TaskCSIPluginConfig JSON object into a Nix module.
   _module.transformers.TaskCSIPluginConfig.fromJSON = with lib; with config._module.transformers; attrs: (
     {}
+    // (if attrs ? HealthTimeout && attrs.HealthTimeout != null then { healthTimeout = attrs.HealthTimeout; } else {})
     // (if attrs ? ID && attrs.ID != null then { id = attrs.ID; } else {})
     // (if attrs ? MountDir && attrs.MountDir != null then { mountDir = attrs.MountDir; } else {})
+    // (if attrs ? StagePublishBaseDir && attrs.StagePublishBaseDir != null then { stagePublishBaseDir = attrs.StagePublishBaseDir; } else {})
     // (if attrs ? Type && attrs.Type != null then { type = attrs.Type; } else {})
   );
 
@@ -2304,6 +2402,7 @@
     // (if attrs ? consul && attrs.consul != null then { Consul = Consul.toJSON attrs.consul; } else {})
     // (if attrs ? count && attrs.count != null then { Count = attrs.count; } else {})
     // (if attrs ? ephemeralDisk && attrs.ephemeralDisk != null then { EphemeralDisk = EphemeralDisk.toJSON attrs.ephemeralDisk; } else {})
+    // (if attrs ? maxClientDisconnect && attrs.maxClientDisconnect != null then { MaxClientDisconnect = attrs.maxClientDisconnect; } else {})
     // (if attrs ? meta && attrs.meta != null then { Meta = attrs.meta; } else {})
     // (if attrs ? migrate && attrs.migrate != null then { Migrate = MigrateStrategy.toJSON attrs.migrate; } else {})
     // (if attrs ? name && attrs.name != null then { Name = attrs.name; } else {})
@@ -2328,6 +2427,7 @@
     // (if attrs ? Consul && attrs.Consul != null then { consul = Consul.fromJSON attrs.Consul; } else {})
     // (if attrs ? Count && attrs.Count != null then { count = attrs.Count; } else {})
     // (if attrs ? EphemeralDisk && attrs.EphemeralDisk != null then { ephemeralDisk = EphemeralDisk.fromJSON attrs.EphemeralDisk; } else {})
+    // (if attrs ? MaxClientDisconnect && attrs.MaxClientDisconnect != null then { maxClientDisconnect = attrs.MaxClientDisconnect; } else {})
     // (if attrs ? Meta && attrs.Meta != null then { meta = attrs.Meta; } else {})
     // (if attrs ? Migrate && attrs.Migrate != null then { migrate = MigrateStrategy.fromJSON attrs.Migrate; } else {})
     // (if attrs ? Name && attrs.Name != null then { name = attrs.Name; } else {})
@@ -2362,15 +2462,18 @@
   _module.transformers.Template.toJSON = with lib; with config._module.transformers; attrs: if !(builtins.isAttrs attrs) then null else (
     {}
     // (if attrs ? changeMode && attrs.changeMode != null then { ChangeMode = attrs.changeMode; } else {})
+    // (if attrs ? changeScript && attrs.changeScript != null then { ChangeScript = ChangeScript.toJSON attrs.changeScript; } else {})
     // (if attrs ? changeSignal && attrs.changeSignal != null then { ChangeSignal = attrs.changeSignal; } else {})
     // (if attrs ? data && attrs.data != null then { EmbeddedTmpl = attrs.data; } else {})
     // (if attrs ? destination && attrs.destination != null then { DestPath = attrs.destination; } else {})
     // (if attrs ? env && attrs.env != null then { Envvars = attrs.env; } else {})
+    // (if attrs ? gid && attrs.gid != null then { Gid = attrs.gid; } else {})
     // (if attrs ? leftDelimiter && attrs.leftDelimiter != null then { LeftDelim = attrs.leftDelimiter; } else {})
     // (if attrs ? perms && attrs.perms != null then { Perms = attrs.perms; } else {})
     // (if attrs ? rightDelimiter && attrs.rightDelimiter != null then { RightDelim = attrs.rightDelimiter; } else {})
     // (if attrs ? source && attrs.source != null then { SourcePath = attrs.source; } else {})
     // (if attrs ? splay && attrs.splay != null then { Splay = attrs.splay; } else {})
+    // (if attrs ? uid && attrs.uid != null then { Uid = attrs.uid; } else {})
     // (if attrs ? vaultGrace && attrs.vaultGrace != null then { VaultGrace = attrs.vaultGrace; } else {})
     // (if attrs ? wait && attrs.wait != null then { Wait = WaitConfig.toJSON attrs.wait; } else {})
   );
@@ -2379,15 +2482,18 @@
   _module.transformers.Template.fromJSON = with lib; with config._module.transformers; attrs: (
     {}
     // (if attrs ? ChangeMode && attrs.ChangeMode != null then { changeMode = attrs.ChangeMode; } else {})
+    // (if attrs ? ChangeScript && attrs.ChangeScript != null then { changeScript = ChangeScript.fromJSON attrs.ChangeScript; } else {})
     // (if attrs ? ChangeSignal && attrs.ChangeSignal != null then { changeSignal = attrs.ChangeSignal; } else {})
     // (if attrs ? EmbeddedTmpl && attrs.EmbeddedTmpl != null then { data = attrs.EmbeddedTmpl; } else {})
     // (if attrs ? DestPath && attrs.DestPath != null then { destination = attrs.DestPath; } else {})
     // (if attrs ? Envvars && attrs.Envvars != null then { env = attrs.Envvars; } else {})
+    // (if attrs ? Gid && attrs.Gid != null then { gid = attrs.Gid; } else {})
     // (if attrs ? LeftDelim && attrs.LeftDelim != null then { leftDelimiter = attrs.LeftDelim; } else {})
     // (if attrs ? Perms && attrs.Perms != null then { perms = attrs.Perms; } else {})
     // (if attrs ? RightDelim && attrs.RightDelim != null then { rightDelimiter = attrs.RightDelim; } else {})
     // (if attrs ? SourcePath && attrs.SourcePath != null then { source = attrs.SourcePath; } else {})
     // (if attrs ? Splay && attrs.Splay != null then { splay = attrs.Splay; } else {})
+    // (if attrs ? Uid && attrs.Uid != null then { uid = attrs.Uid; } else {})
     // (if attrs ? VaultGrace && attrs.VaultGrace != null then { vaultGrace = attrs.VaultGrace; } else {})
     // (if attrs ? Wait && attrs.Wait != null then { wait = WaitConfig.fromJSON attrs.Wait; } else {})
   );
