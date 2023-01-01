@@ -1582,7 +1582,7 @@
     // (if attrs ? config && attrs.config != null then { Config = attrs.config; } else {})
     // (if attrs ? connectTimeout && attrs.connectTimeout != null then { ConnectTimeout = attrs.connectTimeout; } else {})
     // (if attrs ? envoyDnsDiscoveryType && attrs.envoyDnsDiscoveryType != null then { EnvoyDNSDiscoveryType = attrs.envoyDnsDiscoveryType; } else {})
-    // (if attrs ? envoyGatewayBindAddresses && builtins.isAttrs attrs.envoyGatewayBindAddresses then { EnvoyGatewayBindAddresses = mapAttrsToList (_: ConsulGatewayBindAddress.toJSON) attrs.envoyGatewayBindAddresses; } else {})
+    // (if attrs ? envoyGatewayBindAddresses && builtins.isAttrs attrs.envoyGatewayBindAddresses then { EnvoyGatewayBindAddresses = mapAttrs (_: ConsulGatewayBindAddress.toJSON) attrs.envoyGatewayBindAddresses; } else {})
     // (if attrs ? envoyGatewayBindTaggedAddresses && attrs.envoyGatewayBindTaggedAddresses != null then { EnvoyGatewayBindTaggedAddresses = attrs.envoyGatewayBindTaggedAddresses; } else {})
     // (if attrs ? envoyGatewayNoDefaultBind && attrs.envoyGatewayNoDefaultBind != null then { EnvoyGatewayNoDefaultBind = attrs.envoyGatewayNoDefaultBind; } else {})
   );
@@ -2416,7 +2416,7 @@
     // (if attrs ? stopAfterClientDisconnect && attrs.stopAfterClientDisconnect != null then { StopAfterClientDisconnect = attrs.stopAfterClientDisconnect; } else {})
     // (if attrs ? task && builtins.isAttrs attrs.task then { Tasks = mapAttrsToList (_: Task.toJSON) attrs.task; } else {})
     // (if attrs ? update && attrs.update != null then { Update = UpdateStrategy.toJSON attrs.update; } else {})
-    // (if attrs ? volume && builtins.isAttrs attrs.volume then { Volumes = mapAttrsToList (_: VolumeRequest.toJSON) attrs.volume; } else {})
+    // (if attrs ? volume && builtins.isAttrs attrs.volume then { Volumes = mapAttrs (_: VolumeRequest.toJSON) attrs.volume; } else {})
   );
 
   # Convert a TaskGroup JSON object into a Nix module.

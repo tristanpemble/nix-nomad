@@ -37,8 +37,11 @@ type NomadField struct {
 	isBlock   bool
 	isLabel   bool
 	isLabeled bool
+	isSlice   bool
 	isMap     bool
-	isList    bool
+
+	isAttrs bool
+	isList  bool
 
 	isOptional bool
 	label      *NomadField
@@ -107,10 +110,23 @@ func genStructToJson(t *NomadType) string {
 }
 
 func genFieldToJson(f NomadField) string {
-	if f.isLabeled {
+	if f.isLabeled && f.isSlice {
 		return fmt.Sprintf(""+
 			"if attrs ? %s && builtins.isAttrs attrs.%s "+
 			"then { %s = mapAttrsToList (_: %s.toJSON) attrs.%s; } "+
+			"else {}",
+			f.nixName,
+			f.nixName,
+			f.goName,
+			f.nomadType.nixTypeName,
+			f.nixName,
+		)
+	}
+
+	if f.isLabeled && f.isMap {
+		return fmt.Sprintf(""+
+			"if attrs ? %s && builtins.isAttrs attrs.%s "+
+			"then { %s = mapAttrs (_: %s.toJSON) attrs.%s; } "+
 			"else {}",
 			f.nixName,
 			f.nixName,
@@ -285,7 +301,8 @@ func parseNomadField(t reflect.Type, f reflect.StructField) *NomadField {
 		o.nomadType = parseNomadType(o.goType)
 	}
 	o.isOptional = len(hclParts) > 1 && hclParts[1] == "optional"
-	o.isMap = false
+	o.isSlice = false
+	o.isAttrs = false
 	o.isList = false
 
 	if o.isBlock {
@@ -293,13 +310,15 @@ func parseNomadField(t reflect.Type, f reflect.StructField) *NomadField {
 	}
 
 	if f.Type.Kind() == reflect.Slice {
+		o.isSlice = true
 		if o.isLabeled {
-			o.isMap = true
+			o.isAttrs = true
 		} else {
 			o.isList = true
 		}
 	} else if f.Type.Kind() == reflect.Map {
 		o.isMap = true
+		o.isAttrs = true
 	}
 
 	o.hclName = hclParts[0]
@@ -338,10 +357,10 @@ func parseNomadField(t reflect.Type, f reflect.StructField) *NomadField {
 	if o.isList && o.goType.Kind() == reflect.Struct {
 		o.nixName = pluralize.NewClient().Plural(o.nixName)
 	}
-	if o.isMap {
+	if o.isAttrs {
 		o.nixType = fmt.Sprintf("(attrsOf %s)", o.nixType)
 	}
-	if o.isMap || o.isBlock {
+	if o.isAttrs || o.isBlock {
 		o.nixDefault = "{}"
 	}
 	if o.isList {
