@@ -5,11 +5,14 @@
     flake-utils.url = "github:numtide/flake-utils";
     gomod2nix.url = "github:tweag/gomod2nix";
     nixpkgs-lib.url = "github:nix-community/nixpkgs.lib";
-    nixpkgs.url = "github:nixos/nixpkgs/release-22.05";
+    nixpkgs.url = "github:nixos/nixpkgs/release-23.11";
   };
 
   outputs = { self, nixpkgs, nixpkgs-lib, flake-utils, gomod2nix, ... }: flake-utils.lib.eachDefaultSystem (system: let
-    pkgs = import nixpkgs { inherit system; overlays = [ gomod2nix.overlays.default ]; };
+    pkgs = import nixpkgs {
+      inherit system; overlays = [ gomod2nix.overlays.default ];
+      config.allowUnfreePredicate = pkg: builtins.elem (pkgs.lib.getName pkg) ["nomad"];
+    };
   in {
     packages.default = self.packages.${system}.generator;
     packages.generator = pkgs.callPackage ./generator {};

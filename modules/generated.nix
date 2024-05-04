@@ -19,7 +19,7 @@
       default = null;
     };
   });
-  _module.types.CSIMountOptions = with lib; with config._module.types; with lib.types; submodule ({
+  _module.types.CsiMountOptions = with lib; with config._module.types; with lib.types; submodule ({
     options.fsType = mkOption {
       type = (nullOr str);
       default = null;
@@ -181,7 +181,7 @@
       default = null;
     };
   });
-  _module.types.ConsulGatewayTLSConfig = with lib; with config._module.types; with lib.types; submodule ({
+  _module.types.ConsulGatewayTlsConfig = with lib; with config._module.types; with lib.types; submodule ({
     options.cipherSuites = mkOption {
       type = (nullOr (listOf str));
       default = null;
@@ -205,7 +205,7 @@
       default = null;
     };
     options.tls = mkOption {
-      type = (nullOr ConsulGatewayTLSConfig);
+      type = (nullOr ConsulGatewayTlsConfig);
       default = null;
     };
   });
@@ -290,6 +290,10 @@
       type = (nullOr bool);
       default = null;
     };
+    options.meta = mkOption {
+      type = (nullOr (attrsOf str));
+      default = null;
+    };
     options.port = mkOption {
       type = (nullOr str);
       default = null;
@@ -310,6 +314,10 @@
     };
   });
   _module.types.ConsulUpstream = with lib; with config._module.types; with lib.types; submodule ({
+    options.config = mkOption {
+      type = (nullOr (attrsOf anything));
+      default = null;
+    };
     options.datacenter = mkOption {
       type = (nullOr str);
       default = null;
@@ -335,7 +343,7 @@
       default = null;
     };
   });
-  _module.types.DNSConfig = with lib; with config._module.types; with lib.types; submodule ({
+  _module.types.DnsConfig = with lib; with config._module.types; with lib.types; submodule ({
     options.options = mkOption {
       type = (nullOr (listOf str));
       default = null;
@@ -460,6 +468,14 @@
     };
   });
   _module.types.LogConfig = with lib; with config._module.types; with lib.types; submodule ({
+    options.disabled = mkOption {
+      type = (nullOr bool);
+      default = null;
+    };
+    options.enabled = mkOption {
+      type = (nullOr bool);
+      default = null;
+    };
     options.maxFileSize = mkOption {
       type = (nullOr int);
       default = null;
@@ -537,7 +553,7 @@
       default = null;
     };
     options.dns = mkOption {
-      type = (nullOr DNSConfig);
+      type = (nullOr DnsConfig);
       default = null;
     };
     options.hostname = mkOption {
@@ -991,7 +1007,7 @@
       default = null;
     };
     options.csiPlugin = mkOption {
-      type = (nullOr TaskCSIPluginConfig);
+      type = (nullOr TaskCsiPluginConfig);
       default = null;
     };
     options.dispatchPayload = mkOption {
@@ -1004,6 +1020,10 @@
     };
     options.env = mkOption {
       type = (nullOr (attrsOf str));
+      default = null;
+    };
+    options.identity = mkOption {
+      type = (nullOr WorkloadIdentity);
       default = null;
     };
     options.killSignal = mkOption {
@@ -1099,7 +1119,7 @@
       default = null;
     };
   });
-  _module.types.TaskCSIPluginConfig = with lib; with config._module.types; with lib.types; submodule ({
+  _module.types.TaskCsiPluginConfig = with lib; with config._module.types; with lib.types; submodule ({
     options.healthTimeout = mkOption {
       type = (nullOr int);
       default = null;
@@ -1240,6 +1260,10 @@
       type = (nullOr bool);
       default = null;
     };
+    options.errorOnMissingKey = mkOption {
+      type = (nullOr bool);
+      default = null;
+    };
     options.gid = mkOption {
       type = (nullOr int);
       default = null;
@@ -1365,7 +1389,7 @@
       default = null;
     };
     options.mountOptions = mkOption {
-      type = (nullOr CSIMountOptions);
+      type = (nullOr CsiMountOptions);
       default = null;
     };
     options.name = mkOption {
@@ -1399,6 +1423,16 @@
       type = int;
     };
   });
+  _module.types.WorkloadIdentity = with lib; with config._module.types; with lib.types; submodule ({
+    options.env = mkOption {
+      type = (nullOr bool);
+      default = null;
+    };
+    options.file = mkOption {
+      type = (nullOr bool);
+      default = null;
+    };
+  });
 
   # Convert a Affinity Nix module into a JSON object.
   _module.transformers.Affinity.toJSON = with lib; with config._module.transformers; attrs: if !(builtins.isAttrs attrs) then null else (
@@ -1418,15 +1452,15 @@
     // (if attrs ? Weight && attrs.Weight != null then { weight = attrs.Weight; } else {})
   );
 
-  # Convert a CSIMountOptions Nix module into a JSON object.
-  _module.transformers.CSIMountOptions.toJSON = with lib; with config._module.transformers; attrs: if !(builtins.isAttrs attrs) then null else (
+  # Convert a CsiMountOptions Nix module into a JSON object.
+  _module.transformers.CsiMountOptions.toJSON = with lib; with config._module.transformers; attrs: if !(builtins.isAttrs attrs) then null else (
     {}
     // (if attrs ? fsType && attrs.fsType != null then { FSType = attrs.fsType; } else {})
     // (if attrs ? mountFlags && attrs.mountFlags != null then { MountFlags = attrs.mountFlags; } else {})
   );
 
-  # Convert a CSIMountOptions JSON object into a Nix module.
-  _module.transformers.CSIMountOptions.fromJSON = with lib; with config._module.transformers; attrs: (
+  # Convert a CsiMountOptions JSON object into a Nix module.
+  _module.transformers.CsiMountOptions.fromJSON = with lib; with config._module.transformers; attrs: (
     {}
     // (if attrs ? FSType && attrs.FSType != null then { fsType = attrs.FSType; } else {})
     // (if attrs ? MountFlags && attrs.MountFlags != null then { mountFlags = attrs.MountFlags; } else {})
@@ -1515,13 +1549,13 @@
   # Convert a ConsulExposeConfig Nix module into a JSON object.
   _module.transformers.ConsulExposeConfig.toJSON = with lib; with config._module.transformers; attrs: if !(builtins.isAttrs attrs) then null else (
     {}
-    // (if attrs ? paths && builtins.isList attrs.paths then { Path = builtins.map ConsulExposePath.toJSON attrs.paths; } else {})
+    // (if attrs ? paths && builtins.isList attrs.paths then { Paths = builtins.map ConsulExposePath.toJSON attrs.paths; } else {})
   );
 
   # Convert a ConsulExposeConfig JSON object into a Nix module.
   _module.transformers.ConsulExposeConfig.fromJSON = with lib; with config._module.transformers; attrs: (
     {}
-    // (if attrs ? Path && builtins.isList attrs.Path then { paths = builtins.map ConsulExposePath.fromJSON attrs.Path; } else {})
+    // (if attrs ? Paths && builtins.isList attrs.Paths then { paths = builtins.map ConsulExposePath.fromJSON attrs.Paths; } else {})
   );
 
   # Convert a ConsulExposePath Nix module into a JSON object.
@@ -1598,8 +1632,8 @@
     // (if attrs ? EnvoyGatewayNoDefaultBind && attrs.EnvoyGatewayNoDefaultBind != null then { envoyGatewayNoDefaultBind = attrs.EnvoyGatewayNoDefaultBind; } else {})
   );
 
-  # Convert a ConsulGatewayTLSConfig Nix module into a JSON object.
-  _module.transformers.ConsulGatewayTLSConfig.toJSON = with lib; with config._module.transformers; attrs: if !(builtins.isAttrs attrs) then null else (
+  # Convert a ConsulGatewayTlsConfig Nix module into a JSON object.
+  _module.transformers.ConsulGatewayTlsConfig.toJSON = with lib; with config._module.transformers; attrs: if !(builtins.isAttrs attrs) then null else (
     {}
     // (if attrs ? cipherSuites && attrs.cipherSuites != null then { CipherSuites = attrs.cipherSuites; } else {})
     // (if attrs ? enabled && attrs.enabled != null then { Enabled = attrs.enabled; } else {})
@@ -1607,8 +1641,8 @@
     // (if attrs ? tlsMinVersion && attrs.tlsMinVersion != null then { TLSMinVersion = attrs.tlsMinVersion; } else {})
   );
 
-  # Convert a ConsulGatewayTLSConfig JSON object into a Nix module.
-  _module.transformers.ConsulGatewayTLSConfig.fromJSON = with lib; with config._module.transformers; attrs: (
+  # Convert a ConsulGatewayTlsConfig JSON object into a Nix module.
+  _module.transformers.ConsulGatewayTlsConfig.fromJSON = with lib; with config._module.transformers; attrs: (
     {}
     // (if attrs ? CipherSuites && attrs.CipherSuites != null then { cipherSuites = attrs.CipherSuites; } else {})
     // (if attrs ? Enabled && attrs.Enabled != null then { enabled = attrs.Enabled; } else {})
@@ -1620,14 +1654,14 @@
   _module.transformers.ConsulIngressConfigEntry.toJSON = with lib; with config._module.transformers; attrs: if !(builtins.isAttrs attrs) then null else (
     {}
     // (if attrs ? listeners && builtins.isList attrs.listeners then { Listeners = builtins.map ConsulIngressListener.toJSON attrs.listeners; } else {})
-    // (if attrs ? tls && attrs.tls != null then { TLS = ConsulGatewayTLSConfig.toJSON attrs.tls; } else {})
+    // (if attrs ? tls && attrs.tls != null then { TLS = ConsulGatewayTlsConfig.toJSON attrs.tls; } else {})
   );
 
   # Convert a ConsulIngressConfigEntry JSON object into a Nix module.
   _module.transformers.ConsulIngressConfigEntry.fromJSON = with lib; with config._module.transformers; attrs: (
     {}
     // (if attrs ? Listeners && builtins.isList attrs.Listeners then { listeners = builtins.map ConsulIngressListener.fromJSON attrs.Listeners; } else {})
-    // (if attrs ? TLS && attrs.TLS != null then { tls = ConsulGatewayTLSConfig.fromJSON attrs.TLS; } else {})
+    // (if attrs ? TLS && attrs.TLS != null then { tls = ConsulGatewayTlsConfig.fromJSON attrs.TLS; } else {})
   );
 
   # Convert a ConsulIngressListener Nix module into a JSON object.
@@ -1706,7 +1740,7 @@
   _module.transformers.ConsulProxy.toJSON = with lib; with config._module.transformers; attrs: if !(builtins.isAttrs attrs) then null else (
     {}
     // (if attrs ? config && attrs.config != null then { Config = attrs.config; } else {})
-    // (if attrs ? expose && attrs.expose != null then { ExposeConfig = ConsulExposeConfig.toJSON attrs.expose; } else {})
+    // (if attrs ? expose && attrs.expose != null then { Expose = ConsulExposeConfig.toJSON attrs.expose; } else {})
     // (if attrs ? localServiceAddress && attrs.localServiceAddress != null then { LocalServiceAddress = attrs.localServiceAddress; } else {})
     // (if attrs ? localServicePort && attrs.localServicePort != null then { LocalServicePort = attrs.localServicePort; } else {})
     // (if attrs ? upstreams && builtins.isList attrs.upstreams then { Upstreams = builtins.map ConsulUpstream.toJSON attrs.upstreams; } else {})
@@ -1716,7 +1750,7 @@
   _module.transformers.ConsulProxy.fromJSON = with lib; with config._module.transformers; attrs: (
     {}
     // (if attrs ? Config && attrs.Config != null then { config = attrs.Config; } else {})
-    // (if attrs ? ExposeConfig && attrs.ExposeConfig != null then { expose = ConsulExposeConfig.fromJSON attrs.ExposeConfig; } else {})
+    // (if attrs ? Expose && attrs.Expose != null then { expose = ConsulExposeConfig.fromJSON attrs.Expose; } else {})
     // (if attrs ? LocalServiceAddress && attrs.LocalServiceAddress != null then { localServiceAddress = attrs.LocalServiceAddress; } else {})
     // (if attrs ? LocalServicePort && attrs.LocalServicePort != null then { localServicePort = attrs.LocalServicePort; } else {})
     // (if attrs ? Upstreams && builtins.isList attrs.Upstreams then { upstreams = builtins.map ConsulUpstream.fromJSON attrs.Upstreams; } else {})
@@ -1726,6 +1760,7 @@
   _module.transformers.ConsulSidecarService.toJSON = with lib; with config._module.transformers; attrs: if !(builtins.isAttrs attrs) then null else (
     {}
     // (if attrs ? disableDefaultTcpCheck && attrs.disableDefaultTcpCheck != null then { DisableDefaultTCPCheck = attrs.disableDefaultTcpCheck; } else {})
+    // (if attrs ? meta && attrs.meta != null then { Meta = attrs.meta; } else {})
     // (if attrs ? port && attrs.port != null then { Port = attrs.port; } else {})
     // (if attrs ? proxy && attrs.proxy != null then { Proxy = ConsulProxy.toJSON attrs.proxy; } else {})
     // (if attrs ? tags && attrs.tags != null then { Tags = attrs.tags; } else {})
@@ -1735,6 +1770,7 @@
   _module.transformers.ConsulSidecarService.fromJSON = with lib; with config._module.transformers; attrs: (
     {}
     // (if attrs ? DisableDefaultTCPCheck && attrs.DisableDefaultTCPCheck != null then { disableDefaultTcpCheck = attrs.DisableDefaultTCPCheck; } else {})
+    // (if attrs ? Meta && attrs.Meta != null then { meta = attrs.Meta; } else {})
     // (if attrs ? Port && attrs.Port != null then { port = attrs.Port; } else {})
     // (if attrs ? Proxy && attrs.Proxy != null then { proxy = ConsulProxy.fromJSON attrs.Proxy; } else {})
     // (if attrs ? Tags && attrs.Tags != null then { tags = attrs.Tags; } else {})
@@ -1755,6 +1791,7 @@
   # Convert a ConsulUpstream Nix module into a JSON object.
   _module.transformers.ConsulUpstream.toJSON = with lib; with config._module.transformers; attrs: if !(builtins.isAttrs attrs) then null else (
     {}
+    // (if attrs ? config && attrs.config != null then { Config = attrs.config; } else {})
     // (if attrs ? datacenter && attrs.datacenter != null then { Datacenter = attrs.datacenter; } else {})
     // (if attrs ? destinationName && attrs.destinationName != null then { DestinationName = attrs.destinationName; } else {})
     // (if attrs ? destinationNamespace && attrs.destinationNamespace != null then { DestinationNamespace = attrs.destinationNamespace; } else {})
@@ -1766,6 +1803,7 @@
   # Convert a ConsulUpstream JSON object into a Nix module.
   _module.transformers.ConsulUpstream.fromJSON = with lib; with config._module.transformers; attrs: (
     {}
+    // (if attrs ? Config && attrs.Config != null then { config = attrs.Config; } else {})
     // (if attrs ? Datacenter && attrs.Datacenter != null then { datacenter = attrs.Datacenter; } else {})
     // (if attrs ? DestinationName && attrs.DestinationName != null then { destinationName = attrs.DestinationName; } else {})
     // (if attrs ? DestinationNamespace && attrs.DestinationNamespace != null then { destinationNamespace = attrs.DestinationNamespace; } else {})
@@ -1774,16 +1812,16 @@
     // (if attrs ? MeshGateway && attrs.MeshGateway != null then { meshGateway = ConsulMeshGateway.fromJSON attrs.MeshGateway; } else {})
   );
 
-  # Convert a DNSConfig Nix module into a JSON object.
-  _module.transformers.DNSConfig.toJSON = with lib; with config._module.transformers; attrs: if !(builtins.isAttrs attrs) then null else (
+  # Convert a DnsConfig Nix module into a JSON object.
+  _module.transformers.DnsConfig.toJSON = with lib; with config._module.transformers; attrs: if !(builtins.isAttrs attrs) then null else (
     {}
     // (if attrs ? options && attrs.options != null then { Options = attrs.options; } else {})
     // (if attrs ? searches && attrs.searches != null then { Searches = attrs.searches; } else {})
     // (if attrs ? servers && attrs.servers != null then { Servers = attrs.servers; } else {})
   );
 
-  # Convert a DNSConfig JSON object into a Nix module.
-  _module.transformers.DNSConfig.fromJSON = with lib; with config._module.transformers; attrs: (
+  # Convert a DnsConfig JSON object into a Nix module.
+  _module.transformers.DnsConfig.fromJSON = with lib; with config._module.transformers; attrs: (
     {}
     // (if attrs ? Options && attrs.Options != null then { options = attrs.Options; } else {})
     // (if attrs ? Searches && attrs.Searches != null then { searches = attrs.Searches; } else {})
@@ -1873,6 +1911,8 @@
   # Convert a LogConfig Nix module into a JSON object.
   _module.transformers.LogConfig.toJSON = with lib; with config._module.transformers; attrs: if !(builtins.isAttrs attrs) then null else (
     {}
+    // (if attrs ? disabled && attrs.disabled != null then { Disabled = attrs.disabled; } else {})
+    // (if attrs ? enabled && attrs.enabled != null then { Enabled = attrs.enabled; } else {})
     // (if attrs ? maxFileSize && attrs.maxFileSize != null then { MaxFileSizeMB = attrs.maxFileSize; } else {})
     // (if attrs ? maxFiles && attrs.maxFiles != null then { MaxFiles = attrs.maxFiles; } else {})
   );
@@ -1880,6 +1920,8 @@
   # Convert a LogConfig JSON object into a Nix module.
   _module.transformers.LogConfig.fromJSON = with lib; with config._module.transformers; attrs: (
     {}
+    // (if attrs ? Disabled && attrs.Disabled != null then { disabled = attrs.Disabled; } else {})
+    // (if attrs ? Enabled && attrs.Enabled != null then { enabled = attrs.Enabled; } else {})
     // (if attrs ? MaxFileSizeMB && attrs.MaxFileSizeMB != null then { maxFileSize = attrs.MaxFileSizeMB; } else {})
     // (if attrs ? MaxFiles && attrs.MaxFiles != null then { maxFiles = attrs.MaxFiles; } else {})
   );
@@ -1953,7 +1995,7 @@
     {}
     // (if attrs ? cidr && attrs.cidr != null then { CIDR = attrs.cidr; } else {})
     // (if attrs ? device && attrs.device != null then { Device = attrs.device; } else {})
-    // (if attrs ? dns && attrs.dns != null then { DNS = DNSConfig.toJSON attrs.dns; } else {})
+    // (if attrs ? dns && attrs.dns != null then { DNS = DnsConfig.toJSON attrs.dns; } else {})
     // (if attrs ? hostname && attrs.hostname != null then { Hostname = attrs.hostname; } else {})
     // (if attrs ? ip && attrs.ip != null then { IP = attrs.ip; } else {})
     // (if attrs ? mbits && attrs.mbits != null then { MBits = attrs.mbits; } else {})
@@ -1967,7 +2009,7 @@
     {}
     // (if attrs ? CIDR && attrs.CIDR != null then { cidr = attrs.CIDR; } else {})
     // (if attrs ? Device && attrs.Device != null then { device = attrs.Device; } else {})
-    // (if attrs ? DNS && attrs.DNS != null then { dns = DNSConfig.fromJSON attrs.DNS; } else {})
+    // (if attrs ? DNS && attrs.DNS != null then { dns = DnsConfig.fromJSON attrs.DNS; } else {})
     // (if attrs ? Hostname && attrs.Hostname != null then { hostname = attrs.Hostname; } else {})
     // (if attrs ? IP && attrs.IP != null then { ip = attrs.IP; } else {})
     // (if attrs ? MBits && attrs.MBits != null then { mbits = attrs.MBits; } else {})
@@ -2301,10 +2343,11 @@
     // (if attrs ? artifacts && builtins.isList attrs.artifacts then { Artifacts = builtins.map TaskArtifact.toJSON attrs.artifacts; } else {})
     // (if attrs ? config && attrs.config != null then { Config = attrs.config; } else {})
     // (if attrs ? constraints && builtins.isList attrs.constraints then { Constraints = builtins.map Constraint.toJSON attrs.constraints; } else {})
-    // (if attrs ? csiPlugin && attrs.csiPlugin != null then { CSIPluginConfig = TaskCSIPluginConfig.toJSON attrs.csiPlugin; } else {})
+    // (if attrs ? csiPlugin && attrs.csiPlugin != null then { CSIPluginConfig = TaskCsiPluginConfig.toJSON attrs.csiPlugin; } else {})
     // (if attrs ? dispatchPayload && attrs.dispatchPayload != null then { DispatchPayload = DispatchPayloadConfig.toJSON attrs.dispatchPayload; } else {})
     // (if attrs ? driver && attrs.driver != null then { Driver = attrs.driver; } else {})
     // (if attrs ? env && attrs.env != null then { Env = attrs.env; } else {})
+    // (if attrs ? identity && attrs.identity != null then { Identity = WorkloadIdentity.toJSON attrs.identity; } else {})
     // (if attrs ? killSignal && attrs.killSignal != null then { KillSignal = attrs.killSignal; } else {})
     // (if attrs ? killTimeout && attrs.killTimeout != null then { KillTimeout = attrs.killTimeout; } else {})
     // (if attrs ? kind && attrs.kind != null then { Kind = attrs.kind; } else {})
@@ -2331,10 +2374,11 @@
     // (if attrs ? Artifacts && builtins.isList attrs.Artifacts then { artifacts = builtins.map TaskArtifact.fromJSON attrs.Artifacts; } else {})
     // (if attrs ? Config && attrs.Config != null then { config = attrs.Config; } else {})
     // (if attrs ? Constraints && builtins.isList attrs.Constraints then { constraints = builtins.map Constraint.fromJSON attrs.Constraints; } else {})
-    // (if attrs ? CSIPluginConfig && attrs.CSIPluginConfig != null then { csiPlugin = TaskCSIPluginConfig.fromJSON attrs.CSIPluginConfig; } else {})
+    // (if attrs ? CSIPluginConfig && attrs.CSIPluginConfig != null then { csiPlugin = TaskCsiPluginConfig.fromJSON attrs.CSIPluginConfig; } else {})
     // (if attrs ? DispatchPayload && attrs.DispatchPayload != null then { dispatchPayload = DispatchPayloadConfig.fromJSON attrs.DispatchPayload; } else {})
     // (if attrs ? Driver && attrs.Driver != null then { driver = attrs.Driver; } else {})
     // (if attrs ? Env && attrs.Env != null then { env = attrs.Env; } else {})
+    // (if attrs ? Identity && attrs.Identity != null then { identity = WorkloadIdentity.fromJSON attrs.Identity; } else {})
     // (if attrs ? KillSignal && attrs.KillSignal != null then { killSignal = attrs.KillSignal; } else {})
     // (if attrs ? KillTimeout && attrs.KillTimeout != null then { killTimeout = attrs.KillTimeout; } else {})
     // (if attrs ? Kind && attrs.Kind != null then { kind = attrs.Kind; } else {})
@@ -2374,8 +2418,8 @@
     // (if attrs ? GetterSource && attrs.GetterSource != null then { source = attrs.GetterSource; } else {})
   );
 
-  # Convert a TaskCSIPluginConfig Nix module into a JSON object.
-  _module.transformers.TaskCSIPluginConfig.toJSON = with lib; with config._module.transformers; attrs: if !(builtins.isAttrs attrs) then null else (
+  # Convert a TaskCsiPluginConfig Nix module into a JSON object.
+  _module.transformers.TaskCsiPluginConfig.toJSON = with lib; with config._module.transformers; attrs: if !(builtins.isAttrs attrs) then null else (
     {}
     // (if attrs ? healthTimeout && attrs.healthTimeout != null then { HealthTimeout = attrs.healthTimeout; } else {})
     // (if attrs ? id && attrs.id != null then { ID = attrs.id; } else {})
@@ -2384,8 +2428,8 @@
     // (if attrs ? type && attrs.type != null then { Type = attrs.type; } else {})
   );
 
-  # Convert a TaskCSIPluginConfig JSON object into a Nix module.
-  _module.transformers.TaskCSIPluginConfig.fromJSON = with lib; with config._module.transformers; attrs: (
+  # Convert a TaskCsiPluginConfig JSON object into a Nix module.
+  _module.transformers.TaskCsiPluginConfig.fromJSON = with lib; with config._module.transformers; attrs: (
     {}
     // (if attrs ? HealthTimeout && attrs.HealthTimeout != null then { healthTimeout = attrs.HealthTimeout; } else {})
     // (if attrs ? ID && attrs.ID != null then { id = attrs.ID; } else {})
@@ -2467,6 +2511,7 @@
     // (if attrs ? data && attrs.data != null then { EmbeddedTmpl = attrs.data; } else {})
     // (if attrs ? destination && attrs.destination != null then { DestPath = attrs.destination; } else {})
     // (if attrs ? env && attrs.env != null then { Envvars = attrs.env; } else {})
+    // (if attrs ? errorOnMissingKey && attrs.errorOnMissingKey != null then { ErrMissingKey = attrs.errorOnMissingKey; } else {})
     // (if attrs ? gid && attrs.gid != null then { Gid = attrs.gid; } else {})
     // (if attrs ? leftDelimiter && attrs.leftDelimiter != null then { LeftDelim = attrs.leftDelimiter; } else {})
     // (if attrs ? perms && attrs.perms != null then { Perms = attrs.perms; } else {})
@@ -2487,6 +2532,7 @@
     // (if attrs ? EmbeddedTmpl && attrs.EmbeddedTmpl != null then { data = attrs.EmbeddedTmpl; } else {})
     // (if attrs ? DestPath && attrs.DestPath != null then { destination = attrs.DestPath; } else {})
     // (if attrs ? Envvars && attrs.Envvars != null then { env = attrs.Envvars; } else {})
+    // (if attrs ? ErrMissingKey && attrs.ErrMissingKey != null then { errorOnMissingKey = attrs.ErrMissingKey; } else {})
     // (if attrs ? Gid && attrs.Gid != null then { gid = attrs.Gid; } else {})
     // (if attrs ? LeftDelim && attrs.LeftDelim != null then { leftDelimiter = attrs.LeftDelim; } else {})
     // (if attrs ? Perms && attrs.Perms != null then { perms = attrs.Perms; } else {})
@@ -2569,7 +2615,7 @@
     {}
     // (if attrs ? accessMode && attrs.accessMode != null then { AccessMode = attrs.accessMode; } else {})
     // (if attrs ? attachmentMode && attrs.attachmentMode != null then { AttachmentMode = attrs.attachmentMode; } else {})
-    // (if attrs ? mountOptions && attrs.mountOptions != null then { MountOptions = CSIMountOptions.toJSON attrs.mountOptions; } else {})
+    // (if attrs ? mountOptions && attrs.mountOptions != null then { MountOptions = CsiMountOptions.toJSON attrs.mountOptions; } else {})
     // (if attrs ? name && attrs.name != null then { Name = attrs.name; } else {})
     // (if attrs ? perAlloc && attrs.perAlloc != null then { PerAlloc = attrs.perAlloc; } else {})
     // (if attrs ? readOnly && attrs.readOnly != null then { ReadOnly = attrs.readOnly; } else {})
@@ -2582,7 +2628,7 @@
     {}
     // (if attrs ? AccessMode && attrs.AccessMode != null then { accessMode = attrs.AccessMode; } else {})
     // (if attrs ? AttachmentMode && attrs.AttachmentMode != null then { attachmentMode = attrs.AttachmentMode; } else {})
-    // (if attrs ? MountOptions && attrs.MountOptions != null then { mountOptions = CSIMountOptions.fromJSON attrs.MountOptions; } else {})
+    // (if attrs ? MountOptions && attrs.MountOptions != null then { mountOptions = CsiMountOptions.fromJSON attrs.MountOptions; } else {})
     // (if attrs ? Name && attrs.Name != null then { name = attrs.Name; } else {})
     // (if attrs ? PerAlloc && attrs.PerAlloc != null then { perAlloc = attrs.PerAlloc; } else {})
     // (if attrs ? ReadOnly && attrs.ReadOnly != null then { readOnly = attrs.ReadOnly; } else {})
@@ -2602,5 +2648,19 @@
     {}
     // (if attrs ? Max && attrs.Max != null then { max = attrs.Max; } else {})
     // (if attrs ? Min && attrs.Min != null then { min = attrs.Min; } else {})
+  );
+
+  # Convert a WorkloadIdentity Nix module into a JSON object.
+  _module.transformers.WorkloadIdentity.toJSON = with lib; with config._module.transformers; attrs: if !(builtins.isAttrs attrs) then null else (
+    {}
+    // (if attrs ? env && attrs.env != null then { Env = attrs.env; } else {})
+    // (if attrs ? file && attrs.file != null then { File = attrs.file; } else {})
+  );
+
+  # Convert a WorkloadIdentity JSON object into a Nix module.
+  _module.transformers.WorkloadIdentity.fromJSON = with lib; with config._module.transformers; attrs: (
+    {}
+    // (if attrs ? Env && attrs.Env != null then { env = attrs.Env; } else {})
+    // (if attrs ? File && attrs.File != null then { file = attrs.File; } else {})
   );
 }

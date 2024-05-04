@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/gertd/go-pluralize"
 	"github.com/hashicorp/nomad/api"
-	"github.com/iancoleman/strcase"
+	"github.com/stoewer/go-strcase"
 	"reflect"
 	"sort"
 	"strings"
@@ -238,7 +238,7 @@ func genFieldFromJson(f NomadField) string {
 func parseNomadType(t reflect.Type) *NomadType {
 	o := NomadType{
 		goName:           t.Name(),
-		nixTypeName:      strcase.ToCamel(t.Name()),
+		nixTypeName:      strcase.UpperCamelCase(t.Name()),
 		nixTransformName: "toJSON",
 	}
 
@@ -322,7 +322,7 @@ func parseNomadField(t reflect.Type, f reflect.StructField) *NomadField {
 	}
 
 	o.hclName = hclParts[0]
-	o.nixName = strcase.ToLowerCamel(hclParts[0])
+	o.nixName = strcase.LowerCamelCase(hclParts[0])
 	o.nixType = o.goType.Name()
 	o.nixDefault = ""
 
@@ -330,24 +330,19 @@ func parseNomadField(t reflect.Type, f reflect.StructField) *NomadField {
 		o.nixType = "anything"
 	}
 
-	if o.goType.Kind() == reflect.String {
-		o.nixType = "str"
-	} else if o.goType.Kind() == reflect.Int8 {
-		o.nixType = "int"
-	} else if o.goType.Kind() == reflect.Int16 {
-		o.nixType = "int"
-	} else if o.goType.Kind() == reflect.Int32 {
-		o.nixType = "int"
-	} else if o.goType.Kind() == reflect.Int64 {
-		o.nixType = "int"
-	} else if o.goType.Kind() == reflect.Uint8 {
-		o.nixType = "ints.unsigned"
-	} else if o.goType.Kind() == reflect.Uint16 {
-		o.nixType = "ints.unsigned"
-	} else if o.goType.Kind() == reflect.Uint32 {
-		o.nixType = "ints.unsigned"
-	} else if o.goType.Kind() == reflect.Uint64 {
-		o.nixType = "ints.unsigned"
+	switch o.goType.Kind() {
+		case reflect.String:
+			o.nixType = "str"
+		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+			o.nixType = "int"
+		case reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+			o.nixType = "ints.unsigned"
+		case reflect.Bool:
+			o.nixType = "bool"
+		case reflect.Struct:
+			o.nixType = strcase.UpperCamelCase(o.goType.Name())
+		default:
+			o.nixType = "anything"
 	}
 
 	//if o.nomadType != nil {
@@ -373,7 +368,7 @@ func parseNomadField(t reflect.Type, f reflect.StructField) *NomadField {
 	}
 
 	if o.isLabel && o.nixName == "" {
-		o.nixName = strcase.ToLowerCamel(o.goName)
+		o.nixName = strcase.LowerCamelCase(o.goName)
 	}
 
 	return &o

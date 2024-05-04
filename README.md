@@ -9,16 +9,13 @@ documentation or warning.
 Generate [HashiCorp Nomad](https://nomadproject.io) JSON job files with [Nix](https://nixos.org) using
 [NixOS modules](https://github.com/NixOS/nixpkgs/blob/master/lib/modules.nix).
 
-We are using this flake internally at Quartzy, where we use Nix to manage our entire infrastructure from development to production. If you'd like to help advance scientific research while getting to work with Nix, [we are hiring](https://www.quartzy.com/careers).
-
 ## Why?
 
 On its own, if used for a single job definition, this is overkill. However, NixOS modules becomes most  powerful when
 working with many job definitions across multiple environments. You can compose jobs as modules, and create an API for
 configuring each environment by defining your own NixOS module options.
 
-The goal of this project is, if used with a tool like [terranix](https://terranix.org), to help adopt a fully Nix-ified
-HashiCorp stack.
+The goal of this project is, if used with a tool like [terranix](https://terranix.org), to help adopt a fully Nix-ified HashiCorp stack.
 
 ## Usage
 
