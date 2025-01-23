@@ -20,7 +20,7 @@
     packages.docs = pkgs.callPackage ./docs { inherit self; };
     devShells.default = pkgs.callPackage ./shell.nix {};
     checks.hello = self.lib.mkNomadJobs {
-       inherit system;
+       inherit system pkgs;
        config = [ ./examples/hello.nix ./examples/goodbye.nix ./examples/docs.nix ];
     };
   }) // {

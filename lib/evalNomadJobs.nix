@@ -1,7 +1,7 @@
 { self, nixpkgs, nixpkgs-lib, nomad }:
 
 { system ? builtins.currentSystem
-, pkgs ? import nixpkgs { inherit system; }
+, pkgs ? import nixpkgs.legacyPackages.${system}
 , config
 , extraArgs ? {}
 }:
