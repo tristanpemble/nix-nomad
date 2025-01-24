@@ -1,3 +1,5 @@
 .direnv
 .idea
 result*
+
+.DS_Store
