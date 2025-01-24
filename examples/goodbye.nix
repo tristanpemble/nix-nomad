@@ -2,7 +2,7 @@
 
 {
   job.goodbye.type = "batch";
-  job.goodbye.datacenters = ["dc1"];
+  job.goodbye.datacenters = [ "dc1" ];
 
   job.goodbye.group.webs = {
     count = 1;
@@ -12,7 +12,7 @@
 
       config = {
         command = "echo";
-        args = ["goodbye"];
+        args = [ "goodbye" ];
       };
     };
   };

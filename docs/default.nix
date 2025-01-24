@@ -42,4 +42,5 @@ let
       </toc>
     '';
   };
-in docs.html
+in
+docs.html

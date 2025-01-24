@@ -4,7 +4,7 @@ with lib;
 
 {
   options.nomad.build = mkOption {
-    default = {};
+    default = { };
     description = ''
       Attribute set of derivations used to set up the Nomad server.
     '';
