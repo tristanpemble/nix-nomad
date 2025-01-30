@@ -2,7 +2,7 @@
 
 {
   imports = [
-    (lib.importNomadModule ./docs.hcl {})
+    (lib.importNomadModule ./docs.hcl { })
   ];
 
   job.docs.region = lib.mkForce "global";

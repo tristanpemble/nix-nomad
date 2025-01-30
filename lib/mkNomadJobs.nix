@@ -1,7 +1,7 @@
 { nixpkgs, lib, nomad, evalNomadJobs }:
 
 { system ? null
-, pkgs ? import nixpkgs { inherit system; }
+, pkgs ? import nixpkgs.legacyPackages.${system}
 , config
 }:
 

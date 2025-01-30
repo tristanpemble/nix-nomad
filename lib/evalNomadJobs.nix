@@ -1,9 +1,9 @@
 { self, nixpkgs, nixpkgs-lib, nomad }:
 
 { system ? builtins.currentSystem
-, pkgs ? import nixpkgs { inherit system; }
+, pkgs ? import nixpkgs.legacyPackages.${system}
 , config
-, extraArgs ? {}
+, extraArgs ? { }
 }:
 
 let
@@ -14,17 +14,20 @@ let
         // (import ./without-pkgs.nix { inherit self nixpkgs nixpkgs-lib; })
         // (import ./with-pkgs.nix { inherit pkgs; inherit (pkgs) lib; })
         // {
-          importNomadModule = path: vars: { config, lib, ... }: let
+        importNomadModule = path: vars: { config, lib, ... }:
+          let
             job = config._module.transformers.Job.fromJSON (lib.importNomadHCL path vars).Job;
-          in {
-            job.${job.name} = builtins.removeAttrs job ["id" "name"];
+          in
+          {
+            job.${job.name} = builtins.removeAttrs job [ "id" "name" ];
           };
-        };
       };
+    };
 
     modules = [
       ({ _module.args = { inherit pkgs; inherit (nomad) time; }; })
       ../modules
     ] ++ (lib.toList config);
   };
-in evaluated.config
+in
+evaluated.config

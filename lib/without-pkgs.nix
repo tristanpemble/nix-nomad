@@ -21,4 +21,5 @@ let
   nomad = {
     inherit evalNomadJobs mkNomadJobs time;
   };
-in nomad
+in
+nomad

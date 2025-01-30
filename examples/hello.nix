@@ -1,6 +1,6 @@
 {
   job.hello.type = "batch";
-  job.hello.datacenters = ["dc1"];
+  job.hello.datacenters = [ "dc1" ];
 
   job.hello.group.webs = {
     count = 1;
@@ -10,7 +10,7 @@
 
       config = {
         command = "echo";
-        args = ["hello"];
+        args = [ "hello" ];
       };
     };
   };
