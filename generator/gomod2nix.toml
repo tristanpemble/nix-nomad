@@ -8,8 +8,8 @@ schema = 3
     version = "v1.5.3"
     hash = "sha256-vTIGEFMEi+30ZdO6ffMNJ/kId6pZs5bbyqov8xe9BM0="
   [mod."github.com/hashicorp/cronexpr"]
-    version = "v1.1.2"
-    hash = "sha256-V3nG6IFjb3Jx0eU5KwklcHo7ML3K6F8J2uAZmIvvXsc="
+    version = "v1.1.3"
+    hash = "sha256-MqpqvGiQbpg0E7xn3DJQ7YEo6vZQC1e5zuuyLecsOkE="
   [mod."github.com/hashicorp/errwrap"]
     version = "v1.1.0"
     hash = "sha256-6lwuMQOfBq+McrViN3maJTIeh4f8jbEqvLy2c9FvvFw="
@@ -23,8 +23,8 @@ schema = 3
     version = "v1.0.2"
     hash = "sha256-prifkrFs+lawGTig3GwxddR0QM9E1+IpgZWCKoOnS5M="
   [mod."github.com/hashicorp/nomad/api"]
-    version = "v0.0.0-20250123190632-c1dc9ed75da5"
-    hash = "sha256-71qiil1ovSJQvV+HCuWDfb+w2PCFWv5EHFuLMZUpLGA="
+    version = "v0.0.0-20251216171439-1dee0671280e"
+    hash = "sha256-WlnhQlh7ngm6e+WF3DaE1GTxRF7acSs/ZLkruS/AXxs="
   [mod."github.com/mitchellh/go-homedir"]
     version = "v1.1.0"
     hash = "sha256-oduBKXHAQG8X6aqLEpqZHs5DOKe84u6WkBwi4W6cv3k="

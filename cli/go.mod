@@ -4,14 +4,14 @@ go 1.21
 
 require (
 	github.com/gosuri/uilive v0.0.4
-	github.com/hashicorp/nomad/api v0.0.0-20240403130644-e7b25a25014a
+	github.com/hashicorp/nomad/api v0.0.0-20251216171439-1dee0671280e
 	github.com/spf13/cobra v1.8.0
 )
 
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/gorilla/websocket v1.5.0 // indirect
-	github.com/hashicorp/cronexpr v1.1.2 // indirect
+	github.com/gorilla/websocket v1.5.3 // indirect
+	github.com/hashicorp/cronexpr v1.1.3 // indirect
 	github.com/hashicorp/errwrap v1.0.0 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect

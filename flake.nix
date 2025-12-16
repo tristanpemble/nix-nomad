@@ -6,21 +6,25 @@
     gomod2nix.url = "github:tweag/gomod2nix";
     gomod2nix.inputs.flake-utils.follows = "flake-utils";
     nixpkgs-lib.url = "github:nix-community/nixpkgs.lib";
-    nixpkgs.url = "github:nixos/nixpkgs/release-24.11";
+    nixpkgs.url = "github:nixos/nixpkgs/release-25.11";
+    nmd.url = github:gvolpe/nmd;
   };
 
-  outputs = { self, nixpkgs, nixpkgs-lib, flake-utils, gomod2nix, ... }: flake-utils.lib.eachDefaultSystem
+  outputs = { self, nixpkgs, nixpkgs-lib, flake-utils, gomod2nix, nmd, ... }: flake-utils.lib.eachDefaultSystem
     (system:
       let
         pkgs = import nixpkgs {
-          inherit system; overlays = [ gomod2nix.overlays.default ];
+          inherit system; overlays = [ gomod2nix.overlays.default nmd.overlays.default ];
           config.allowUnfreePredicate = pkg: builtins.elem (pkgs.lib.getName pkg) [ "nomad" ];
         };
       in
       {
         packages.default = self.packages.${system}.generator;
         packages.generator = pkgs.callPackage ./generator { };
-        packages.docs = pkgs.callPackage ./docs { inherit self; };
+        packages.docs = pkgs.callPackage ./docs {
+          inherit nmd;
+          inherit self;
+        };
         devShells.default = pkgs.callPackage ./shell.nix { };
         checks.hello = self.lib.mkNomadJobs {
           inherit system pkgs;
