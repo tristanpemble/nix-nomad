@@ -1,10 +1,15 @@
-{ pkgs }: with pkgs;
+{ pkgs }:
+with pkgs;
 
 mkShell {
   buildInputs = [
     go
     gomod2nix
     jq
-    nomad_1_9
+    nomad_1_10
   ];
+
+  shellHook = ''
+    unset DEVELOPER_DIR
+  '';
 }
