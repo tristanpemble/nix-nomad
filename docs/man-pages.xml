@@ -1,0 +1,24 @@
+<reference xmlns="http://docbook.org/ns/docbook"
+           xmlns:xlink="http://www.w3.org/1999/xlink"
+           xmlns:xi="http://www.w3.org/2001/XInclude"
+           version="5.0"
+           xml:id="man-pages">
+
+  <title>Man Pages</title>
+
+  <refentry xml:id="dummy-man-page">
+    <refmeta>
+      <refentrytitle>dummy</refentrytitle>
+      <manvolnum>1</manvolnum>
+    </refmeta>
+    <refnamediv>
+      <refname>dummy</refname>
+      <refpurpose>A dummy man page to satisfy nmd</refpurpose>
+    </refnamediv>
+    <refsect1>
+      <title>Description</title>
+      <para>This exists solely to satisfy the build requirements.</para>
+    </refsect1>
+  </refentry>
+
+</reference>

@@ -542,10 +542,6 @@
       type = (nullOr (listOf Constraint));
       default = null;
     };
-    options.consulToken = mkOption {
-      type = (nullOr str);
-      default = null;
-    };
     options.datacenters = mkOption {
       type = (nullOr (listOf str));
       default = null;
@@ -620,10 +616,6 @@
     };
     options.update = mkOption {
       type = (nullOr UpdateStrategy);
-      default = null;
-    };
-    options.vaultToken = mkOption {
-      type = (nullOr str);
       default = null;
     };
   });
@@ -971,6 +963,30 @@
       default = null;
     };
   });
+  _module.types.Secret = with lib; with config._module.types; with lib.types; submodule ({ name, ... }: {
+    options.config = mkOption {
+      type = (nullOr (attrsOf anything));
+      default = null;
+    };
+    options.env = mkOption {
+      type = (nullOr (attrsOf str));
+      default = null;
+    };
+    options.name = mkOption {
+      type = str;
+      default = name;
+      internal = true;
+      visible = false;
+    };
+    options.path = mkOption {
+      type = (nullOr str);
+      default = null;
+    };
+    options.provider = mkOption {
+      type = (nullOr str);
+      default = null;
+    };
+  });
   _module.types.Service = with lib; with config._module.types; with lib.types; submodule ({
     options.address = mkOption {
       type = (nullOr str);
@@ -1010,6 +1026,10 @@
     };
     options.identity = mkOption {
       type = (nullOr WorkloadIdentity);
+      default = null;
+    };
+    options.kind = mkOption {
+      type = (nullOr str);
       default = null;
     };
     options.meta = mkOption {
@@ -1182,6 +1202,10 @@
       type = (nullOr (attrsOf str));
       default = null;
     };
+    options.identities = mkOption {
+      type = (nullOr (listOf WorkloadIdentity));
+      default = null;
+    };
     options.killSignal = mkOption {
       type = (nullOr str);
       default = null;
@@ -1338,6 +1362,10 @@
     };
     options.schedule = mkOption {
       type = (nullOr TaskSchedule);
+      default = null;
+    };
+    options.secret = mkOption {
+      type = (nullOr (attrsOf Secret));
       default = null;
     };
     options.services = mkOption {
@@ -1511,8 +1539,7 @@
   });
   _module.types.TaskLifecycle = with lib; with config._module.types; with lib.types; submodule ({
     options.hook = mkOption {
-      type = (nullOr str);
-      default = null;
+      type = str;
     };
     options.sidecar = mkOption {
       type = (nullOr bool);
@@ -1574,6 +1601,10 @@
     };
     options.leftDelimiter = mkOption {
       type = (nullOr str);
+      default = null;
+    };
+    options.once = mkOption {
+      type = (nullOr bool);
       default = null;
     };
     options.perms = mkOption {
@@ -2381,7 +2412,6 @@
     // (if attrs ? affinities && builtins.isList attrs.affinities then { Affinities = builtins.map Affinity.toJSON attrs.affinities; } else { })
     // (if attrs ? allAtOnce && attrs.allAtOnce != null then { AllAtOnce = attrs.allAtOnce; } else { })
     // (if attrs ? constraints && builtins.isList attrs.constraints then { Constraints = builtins.map Constraint.toJSON attrs.constraints; } else { })
-    // (if attrs ? consulToken && attrs.consulToken != null then { ConsulToken = attrs.consulToken; } else { })
     // (if attrs ? datacenters && attrs.datacenters != null then { Datacenters = attrs.datacenters; } else { })
     // (if attrs ? group && builtins.isAttrs attrs.group then { TaskGroups = mapAttrsToList (_: TaskGroup.toJSON) attrs.group; } else { })
     // (if attrs ? id && attrs.id != null then { ID = attrs.id; } else { })
@@ -2400,7 +2430,6 @@
     // (if attrs ? type && attrs.type != null then { Type = attrs.type; } else { })
     // (if attrs ? ui && attrs.ui != null then { UI = JobUiConfig.toJSON attrs.ui; } else { })
     // (if attrs ? update && attrs.update != null then { Update = UpdateStrategy.toJSON attrs.update; } else { })
-    // (if attrs ? vaultToken && attrs.vaultToken != null then { VaultToken = attrs.vaultToken; } else { })
   );
 
   # Convert a Job JSON object into a Nix module.
@@ -2409,7 +2438,6 @@
     // (if attrs ? Affinities && builtins.isList attrs.Affinities then { affinities = builtins.map Affinity.fromJSON attrs.Affinities; } else { })
     // (if attrs ? AllAtOnce && attrs.AllAtOnce != null then { allAtOnce = attrs.AllAtOnce; } else { })
     // (if attrs ? Constraints && builtins.isList attrs.Constraints then { constraints = builtins.map Constraint.fromJSON attrs.Constraints; } else { })
-    // (if attrs ? ConsulToken && attrs.ConsulToken != null then { consulToken = attrs.ConsulToken; } else { })
     // (if attrs ? Datacenters && attrs.Datacenters != null then { datacenters = attrs.Datacenters; } else { })
     // (if attrs ? TaskGroups && builtins.isList attrs.TaskGroups then { group = builtins.listToAttrs (builtins.map (v: nameValuePair v.Name (TaskGroup.fromJSON v)) attrs.TaskGroups); } else { })
     // (if attrs ? ID && attrs.ID != null then { id = attrs.ID; } else { })
@@ -2428,7 +2456,6 @@
     // (if attrs ? Type && attrs.Type != null then { type = attrs.Type; } else { })
     // (if attrs ? UI && attrs.UI != null then { ui = JobUiConfig.fromJSON attrs.UI; } else { })
     // (if attrs ? Update && attrs.Update != null then { update = UpdateStrategy.fromJSON attrs.Update; } else { })
-    // (if attrs ? VaultToken && attrs.VaultToken != null then { vaultToken = attrs.VaultToken; } else { })
   );
 
   # Convert a JobUiConfig Nix module into a JSON object.
@@ -2770,6 +2797,27 @@
     // (if attrs ? Type && attrs.Type != null then { type = attrs.Type; } else { })
   );
 
+  # Convert a Secret Nix module into a JSON object.
+  _module.transformers.Secret.toJSON = with lib; with config._module.transformers; attrs: if !(builtins.isAttrs attrs) then null else
+  (
+    { }
+    // (if attrs ? config && attrs.config != null then { Config = attrs.config; } else { })
+    // (if attrs ? env && attrs.env != null then { Env = attrs.env; } else { })
+    // (if attrs ? name && attrs.name != null then { Name = attrs.name; } else { })
+    // (if attrs ? path && attrs.path != null then { Path = attrs.path; } else { })
+    // (if attrs ? provider && attrs.provider != null then { Provider = attrs.provider; } else { })
+  );
+
+  # Convert a Secret JSON object into a Nix module.
+  _module.transformers.Secret.fromJSON = with lib; with config._module.transformers; attrs: (
+    { }
+    // (if attrs ? Config && attrs.Config != null then { config = attrs.Config; } else { })
+    // (if attrs ? Env && attrs.Env != null then { env = attrs.Env; } else { })
+    // (if attrs ? Name && attrs.Name != null then { name = attrs.Name; } else { })
+    // (if attrs ? Path && attrs.Path != null then { path = attrs.Path; } else { })
+    // (if attrs ? Provider && attrs.Provider != null then { provider = attrs.Provider; } else { })
+  );
+
   # Convert a Service Nix module into a JSON object.
   _module.transformers.Service.toJSON = with lib; with config._module.transformers; attrs: if !(builtins.isAttrs attrs) then null else
   (
@@ -2784,6 +2832,7 @@
     // (if attrs ? connect && attrs.connect != null then { Connect = ConsulConnect.toJSON attrs.connect; } else { })
     // (if attrs ? enableTagOverride && attrs.enableTagOverride != null then { EnableTagOverride = attrs.enableTagOverride; } else { })
     // (if attrs ? identity && attrs.identity != null then { Identity = WorkloadIdentity.toJSON attrs.identity; } else { })
+    // (if attrs ? kind && attrs.kind != null then { Kind = attrs.kind; } else { })
     // (if attrs ? meta && attrs.meta != null then { Meta = attrs.meta; } else { })
     // (if attrs ? name && attrs.name != null then { Name = attrs.name; } else { })
     // (if attrs ? onUpdate && attrs.onUpdate != null then { OnUpdate = attrs.onUpdate; } else { })
@@ -2808,6 +2857,7 @@
     // (if attrs ? Connect && attrs.Connect != null then { connect = ConsulConnect.fromJSON attrs.Connect; } else { })
     // (if attrs ? EnableTagOverride && attrs.EnableTagOverride != null then { enableTagOverride = attrs.EnableTagOverride; } else { })
     // (if attrs ? Identity && attrs.Identity != null then { identity = WorkloadIdentity.fromJSON attrs.Identity; } else { })
+    // (if attrs ? Kind && attrs.Kind != null then { kind = attrs.Kind; } else { })
     // (if attrs ? Meta && attrs.Meta != null then { meta = attrs.Meta; } else { })
     // (if attrs ? Name && attrs.Name != null then { name = attrs.Name; } else { })
     // (if attrs ? OnUpdate && attrs.OnUpdate != null then { onUpdate = attrs.OnUpdate; } else { })
@@ -2906,6 +2956,7 @@
     // (if attrs ? config && attrs.config != null then { Config = attrs.config; } else { })
     // (if attrs ? driver && attrs.driver != null then { Driver = attrs.driver; } else { })
     // (if attrs ? env && attrs.env != null then { Env = attrs.env; } else { })
+    // (if attrs ? identities && builtins.isList attrs.identities then { Identities = builtins.map WorkloadIdentity.toJSON attrs.identities; } else { })
     // (if attrs ? killSignal && attrs.killSignal != null then { KillSignal = attrs.killSignal; } else { })
     // (if attrs ? killTimeout && attrs.killTimeout != null then { KillTimeout = attrs.killTimeout; } else { })
     // (if attrs ? logs && attrs.logs != null then { LogConfig = LogConfig.toJSON attrs.logs; } else { })
@@ -2923,6 +2974,7 @@
     // (if attrs ? Config && attrs.Config != null then { config = attrs.Config; } else { })
     // (if attrs ? Driver && attrs.Driver != null then { driver = attrs.Driver; } else { })
     // (if attrs ? Env && attrs.Env != null then { env = attrs.Env; } else { })
+    // (if attrs ? Identities && builtins.isList attrs.Identities then { identities = builtins.map WorkloadIdentity.fromJSON attrs.Identities; } else { })
     // (if attrs ? KillSignal && attrs.KillSignal != null then { killSignal = attrs.KillSignal; } else { })
     // (if attrs ? KillTimeout && attrs.KillTimeout != null then { killTimeout = attrs.KillTimeout; } else { })
     // (if attrs ? LogConfig && attrs.LogConfig != null then { logs = LogConfig.fromJSON attrs.LogConfig; } else { })
@@ -2993,6 +3045,7 @@
     // (if attrs ? restart && attrs.restart != null then { RestartPolicy = RestartPolicy.toJSON attrs.restart; } else { })
     // (if attrs ? scalings && builtins.isList attrs.scalings then { ScalingPolicies = builtins.map ScalingPolicy.toJSON attrs.scalings; } else { })
     // (if attrs ? schedule && attrs.schedule != null then { Schedule = TaskSchedule.toJSON attrs.schedule; } else { })
+    // (if attrs ? secret && builtins.isAttrs attrs.secret then { Secrets = mapAttrsToList (_: Secret.toJSON) attrs.secret; } else { })
     // (if attrs ? services && builtins.isList attrs.services then { Services = builtins.map Service.toJSON attrs.services; } else { })
     // (if attrs ? shutdownDelay && attrs.shutdownDelay != null then { ShutdownDelay = attrs.shutdownDelay; } else { })
     // (if attrs ? templates && builtins.isList attrs.templates then { Templates = builtins.map Template.toJSON attrs.templates; } else { })
@@ -3027,6 +3080,7 @@
     // (if attrs ? RestartPolicy && attrs.RestartPolicy != null then { restart = RestartPolicy.fromJSON attrs.RestartPolicy; } else { })
     // (if attrs ? ScalingPolicies && builtins.isList attrs.ScalingPolicies then { scalings = builtins.map ScalingPolicy.fromJSON attrs.ScalingPolicies; } else { })
     // (if attrs ? Schedule && attrs.Schedule != null then { schedule = TaskSchedule.fromJSON attrs.Schedule; } else { })
+    // (if attrs ? Secrets && builtins.isList attrs.Secrets then { secret = builtins.listToAttrs (builtins.map (v: nameValuePair v.Name (Secret.fromJSON v)) attrs.Secrets); } else { })
     // (if attrs ? Services && builtins.isList attrs.Services then { services = builtins.map Service.fromJSON attrs.Services; } else { })
     // (if attrs ? ShutdownDelay && attrs.ShutdownDelay != null then { shutdownDelay = attrs.ShutdownDelay; } else { })
     // (if attrs ? Templates && builtins.isList attrs.Templates then { templates = builtins.map Template.fromJSON attrs.Templates; } else { })
@@ -3194,6 +3248,7 @@
     // (if attrs ? errorOnMissingKey && attrs.errorOnMissingKey != null then { ErrMissingKey = attrs.errorOnMissingKey; } else { })
     // (if attrs ? gid && attrs.gid != null then { Gid = attrs.gid; } else { })
     // (if attrs ? leftDelimiter && attrs.leftDelimiter != null then { LeftDelim = attrs.leftDelimiter; } else { })
+    // (if attrs ? once && attrs.once != null then { Once = attrs.once; } else { })
     // (if attrs ? perms && attrs.perms != null then { Perms = attrs.perms; } else { })
     // (if attrs ? rightDelimiter && attrs.rightDelimiter != null then { RightDelim = attrs.rightDelimiter; } else { })
     // (if attrs ? source && attrs.source != null then { SourcePath = attrs.source; } else { })
@@ -3215,6 +3270,7 @@
     // (if attrs ? ErrMissingKey && attrs.ErrMissingKey != null then { errorOnMissingKey = attrs.ErrMissingKey; } else { })
     // (if attrs ? Gid && attrs.Gid != null then { gid = attrs.Gid; } else { })
     // (if attrs ? LeftDelim && attrs.LeftDelim != null then { leftDelimiter = attrs.LeftDelim; } else { })
+    // (if attrs ? Once && attrs.Once != null then { once = attrs.Once; } else { })
     // (if attrs ? Perms && attrs.Perms != null then { perms = attrs.Perms; } else { })
     // (if attrs ? RightDelim && attrs.RightDelim != null then { rightDelimiter = attrs.RightDelim; } else { })
     // (if attrs ? SourcePath && attrs.SourcePath != null then { source = attrs.SourcePath; } else { })
