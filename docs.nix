@@ -4,6 +4,7 @@
 , pkgs
 , runCommandLocal
 , self
+, writeTextDir
 , writers
 }:
 
@@ -13,7 +14,7 @@ let
       {
         options._module.args = lib.mkOption { visible = false; };
       }
-      ../modules
+      ./modules
     ];
     specialArgs = { inherit pkgs; };
   };
@@ -49,6 +50,8 @@ let
     };
   };
 
+  documentationSource = writeTextDir "index.md" (builtins.readFile ./DOCUMENTATION.md);
+
   ndgConfig = writers.writeTOML "ndg.toml" {
     highlight_code = true;
     search.enable = true;
@@ -72,7 +75,7 @@ runCommandLocal "nix-nomad-docs" {
   ndg \
     --config-file ${ndgConfig} \
     html \
-    --input-dir ${./.} \
+    --input-dir ${documentationSource} \
     --output-dir "$out" \
     --title "nix-nomad" \
     --module-options ${options.optionsJSON}/share/doc/nixos/options.json \

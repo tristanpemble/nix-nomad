@@ -22,7 +22,7 @@
         packages.default = self.packages.${system}.generator;
         packages.generator = pkgs.callPackage ./generator { };
         packages.nomad = nomad;
-        packages.docs = pkgs.callPackage ./docs {
+        packages.docs = pkgs.callPackage ./docs.nix {
           inherit self;
         };
         devShells.default = pkgs.callPackage ./shell.nix { inherit nomad; };
