@@ -2609,32 +2609,62 @@
   # Convert a NetworkResource Nix module into a JSON object.
   _module.transformers.NetworkResource.toJSON = with lib; with config._module.transformers; attrs: if !(builtins.isAttrs attrs) then null else
   (
-    { }
-    // (if attrs ? cidr && attrs.cidr != null then { CIDR = attrs.cidr; } else { })
-    // (if attrs ? cni && attrs.cni != null then { CNI = CniConfig.toJSON attrs.cni; } else { })
-    // (if attrs ? device && attrs.device != null then { Device = attrs.device; } else { })
-    // (if attrs ? dns && attrs.dns != null then { DNS = DnsConfig.toJSON attrs.dns; } else { })
-    // (if attrs ? hostname && attrs.hostname != null then { Hostname = attrs.hostname; } else { })
-    // (if attrs ? ip && attrs.ip != null then { IP = attrs.ip; } else { })
-    // (if attrs ? mbits && attrs.mbits != null then { MBits = attrs.mbits; } else { })
-    // (if attrs ? mode && attrs.mode != null then { Mode = attrs.mode; } else { })
-    // (if attrs ? port && builtins.isAttrs attrs.port then { DynamicPorts = mapAttrsToList (_: Port.toJSON) attrs.port; } else { })
-    // (if attrs ? reservedPorts && builtins.isAttrs attrs.reservedPorts then { ReservedPorts = mapAttrsToList (_: Port.toJSON) attrs.reservedPorts; } else { })
+    let
+      ports = if attrs ? port && builtins.isAttrs attrs.port then attrs.port else { };
+      legacyReservedPorts = if attrs ? reservedPorts && builtins.isAttrs attrs.reservedPorts then attrs.reservedPorts else { };
+      duplicateLabels = builtins.attrNames (builtins.intersectAttrs ports legacyReservedPorts);
+      invalidReservedLabels = builtins.attrNames (filterAttrs (_: port: (port.static or null) == null) legacyReservedPorts);
+      dynamicPortAttrs = filterAttrs (_: port: (port.static or null) == null) ports;
+      reservedPortAttrs = filterAttrs (_: port: (port.static or null) != null) ports;
+      dynamicPorts = mapAttrsToList (_: Port.toJSON) dynamicPortAttrs;
+      reservedPorts = mapAttrsToList (_: Port.toJSON) (reservedPortAttrs // legacyReservedPorts);
+    in
+    if duplicateLabels != [ ] then
+      throw ("NetworkResource port labels are defined in both port and reservedPorts: " + concatStringsSep ", " duplicateLabels)
+    else if invalidReservedLabels != [ ] then
+      throw ("NetworkResource reservedPorts entries must set static: " + concatStringsSep ", " invalidReservedLabels)
+    else
+      (
+        { }
+        // (if attrs ? cidr && attrs.cidr != null then { CIDR = attrs.cidr; } else { })
+        // (if attrs ? cni && attrs.cni != null then { CNI = CniConfig.toJSON attrs.cni; } else { })
+        // (if attrs ? device && attrs.device != null then { Device = attrs.device; } else { })
+        // (if attrs ? dns && attrs.dns != null then { DNS = DnsConfig.toJSON attrs.dns; } else { })
+        // (if attrs ? hostname && attrs.hostname != null then { Hostname = attrs.hostname; } else { })
+        // (if attrs ? ip && attrs.ip != null then { IP = attrs.ip; } else { })
+        // (if attrs ? mbits && attrs.mbits != null then { MBits = attrs.mbits; } else { })
+        // (if attrs ? mode && attrs.mode != null then { Mode = attrs.mode; } else { })
+        // (if dynamicPorts != [ ] then { DynamicPorts = dynamicPorts; } else { })
+        // (if reservedPorts != [ ] then { ReservedPorts = reservedPorts; } else { })
+      )
   );
 
   # Convert a NetworkResource JSON object into a Nix module.
   _module.transformers.NetworkResource.fromJSON = with lib; with config._module.transformers; attrs: (
-    { }
-    // (if attrs ? CIDR && attrs.CIDR != null then { cidr = attrs.CIDR; } else { })
-    // (if attrs ? CNI && attrs.CNI != null then { cni = CniConfig.fromJSON attrs.CNI; } else { })
-    // (if attrs ? Device && attrs.Device != null then { device = attrs.Device; } else { })
-    // (if attrs ? DNS && attrs.DNS != null then { dns = DnsConfig.fromJSON attrs.DNS; } else { })
-    // (if attrs ? Hostname && attrs.Hostname != null then { hostname = attrs.Hostname; } else { })
-    // (if attrs ? IP && attrs.IP != null then { ip = attrs.IP; } else { })
-    // (if attrs ? MBits && attrs.MBits != null then { mbits = attrs.MBits; } else { })
-    // (if attrs ? Mode && attrs.Mode != null then { mode = attrs.Mode; } else { })
-    // (if attrs ? DynamicPorts && builtins.isList attrs.DynamicPorts then { port = builtins.listToAttrs (builtins.map (v: nameValuePair v.Label (Port.fromJSON v)) attrs.DynamicPorts); } else { })
-    // (if attrs ? ReservedPorts && builtins.isList attrs.ReservedPorts then { reservedPorts = builtins.listToAttrs (builtins.map (v: nameValuePair v.Label (Port.fromJSON v)) attrs.ReservedPorts); } else { })
+    let
+      hasDynamicPorts = attrs ? DynamicPorts && builtins.isList attrs.DynamicPorts;
+      hasReservedPorts = attrs ? ReservedPorts && builtins.isList attrs.ReservedPorts;
+      dynamicPortValues = if hasDynamicPorts then attrs.DynamicPorts else [ ];
+      reservedPortValues = if hasReservedPorts then attrs.ReservedPorts else [ ];
+      dynamicPorts = builtins.listToAttrs (builtins.map (v: nameValuePair v.Label ((Port.fromJSON v) // { static = null; })) dynamicPortValues);
+      reservedPorts = builtins.listToAttrs (builtins.map (v: nameValuePair v.Label (Port.fromJSON v)) reservedPortValues);
+      duplicateLabels = builtins.attrNames (builtins.intersectAttrs dynamicPorts reservedPorts);
+    in
+    if duplicateLabels != [ ] then
+      throw ("Nomad NetworkResource JSON defines port labels in both DynamicPorts and ReservedPorts: " + concatStringsSep ", " duplicateLabels)
+    else
+      (
+        { }
+        // (if attrs ? CIDR && attrs.CIDR != null then { cidr = attrs.CIDR; } else { })
+        // (if attrs ? CNI && attrs.CNI != null then { cni = CniConfig.fromJSON attrs.CNI; } else { })
+        // (if attrs ? Device && attrs.Device != null then { device = attrs.Device; } else { })
+        // (if attrs ? DNS && attrs.DNS != null then { dns = DnsConfig.fromJSON attrs.DNS; } else { })
+        // (if attrs ? Hostname && attrs.Hostname != null then { hostname = attrs.Hostname; } else { })
+        // (if attrs ? IP && attrs.IP != null then { ip = attrs.IP; } else { })
+        // (if attrs ? MBits && attrs.MBits != null then { mbits = attrs.MBits; } else { })
+        // (if attrs ? Mode && attrs.Mode != null then { mode = attrs.Mode; } else { })
+        // (if hasDynamicPorts || hasReservedPorts then { port = dynamicPorts // reservedPorts; } else { })
+      )
   );
 
   # Convert a ParameterizedJobConfig Nix module into a JSON object.

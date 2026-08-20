@@ -31,6 +31,9 @@
           inherit system pkgs;
           config = [ ./examples/hello.nix ./examples/goodbye.nix ./examples/docs.nix ];
         };
+        checks.network-ports = pkgs.writeText "network-port-tests" (import ./tests/network-ports.nix {
+          inherit self pkgs;
+        });
       }) // {
     lib = import ./lib/without-pkgs.nix { inherit self nixpkgs nixpkgs-lib; };
     overlays.default = final: prev: {

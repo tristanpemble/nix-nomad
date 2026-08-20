@@ -81,6 +81,13 @@ func renderType(typeModel *nixType) string {
 }
 
 func renderToJSON(typeModel *nixType) string {
+	if isNomadAPIType(typeModel, "NetworkResource") {
+		return renderNetworkResourceToJSON(typeModel)
+	}
+	return renderGenericToJSON(typeModel)
+}
+
+func renderGenericToJSON(typeModel *nixType) string {
 	var output strings.Builder
 	output.WriteString("attrs: if !(builtins.isAttrs attrs) then null else (\n")
 	output.WriteString("  {}\n")
@@ -88,6 +95,38 @@ func renderToJSON(typeModel *nixType) string {
 		output.WriteString(fmt.Sprintf("  // (%s)\n", renderFieldToJSON(field)))
 	}
 	output.WriteString(")")
+	return output.String()
+}
+
+func renderNetworkResourceToJSON(typeModel *nixType) string {
+	var output strings.Builder
+	output.WriteString(`attrs: if !(builtins.isAttrs attrs) then null else (
+  let
+    ports = if attrs ? port && builtins.isAttrs attrs.port then attrs.port else {};
+    legacyReservedPorts = if attrs ? reservedPorts && builtins.isAttrs attrs.reservedPorts then attrs.reservedPorts else {};
+    duplicateLabels = builtins.attrNames (builtins.intersectAttrs ports legacyReservedPorts);
+    invalidReservedLabels = builtins.attrNames (filterAttrs (_: port: (port.static or null) == null) legacyReservedPorts);
+    dynamicPortAttrs = filterAttrs (_: port: (port.static or null) == null) ports;
+    reservedPortAttrs = filterAttrs (_: port: (port.static or null) != null) ports;
+    dynamicPorts = mapAttrsToList (_: Port.toJSON) dynamicPortAttrs;
+    reservedPorts = mapAttrsToList (_: Port.toJSON) (reservedPortAttrs // legacyReservedPorts);
+  in if duplicateLabels != [] then
+    throw ("NetworkResource port labels are defined in both port and reservedPorts: " + concatStringsSep ", " duplicateLabels)
+  else if invalidReservedLabels != [] then
+    throw ("NetworkResource reservedPorts entries must set static: " + concatStringsSep ", " invalidReservedLabels)
+  else (
+    {}
+`)
+	for _, field := range typeModel.fields {
+		if isNetworkResourcePortField(field) {
+			continue
+		}
+		output.WriteString(fmt.Sprintf("    // (%s)\n", renderFieldToJSON(field)))
+	}
+	output.WriteString(`    // (if dynamicPorts != [] then { DynamicPorts = dynamicPorts; } else {})
+    // (if reservedPorts != [] then { ReservedPorts = reservedPorts; } else {})
+  )
+)`)
 	return output.String()
 }
 
@@ -146,6 +185,13 @@ func renderFieldToJSON(field nixField) string {
 }
 
 func renderFromJSON(typeModel *nixType) string {
+	if isNomadAPIType(typeModel, "NetworkResource") {
+		return renderNetworkResourceFromJSON(typeModel)
+	}
+	return renderGenericFromJSON(typeModel)
+}
+
+func renderGenericFromJSON(typeModel *nixType) string {
 	var output strings.Builder
 	output.WriteString("attrs: (\n")
 	output.WriteString("  {}\n")
@@ -154,6 +200,42 @@ func renderFromJSON(typeModel *nixType) string {
 	}
 	output.WriteString(")")
 	return output.String()
+}
+
+func renderNetworkResourceFromJSON(typeModel *nixType) string {
+	var output strings.Builder
+	output.WriteString(`attrs: (
+  let
+    hasDynamicPorts = attrs ? DynamicPorts && builtins.isList attrs.DynamicPorts;
+    hasReservedPorts = attrs ? ReservedPorts && builtins.isList attrs.ReservedPorts;
+    dynamicPortValues = if hasDynamicPorts then attrs.DynamicPorts else [];
+    reservedPortValues = if hasReservedPorts then attrs.ReservedPorts else [];
+    dynamicPorts = builtins.listToAttrs (builtins.map (v: nameValuePair v.Label ((Port.fromJSON v) // { static = null; })) dynamicPortValues);
+    reservedPorts = builtins.listToAttrs (builtins.map (v: nameValuePair v.Label (Port.fromJSON v)) reservedPortValues);
+    duplicateLabels = builtins.attrNames (builtins.intersectAttrs dynamicPorts reservedPorts);
+  in if duplicateLabels != [] then
+    throw ("Nomad NetworkResource JSON defines port labels in both DynamicPorts and ReservedPorts: " + concatStringsSep ", " duplicateLabels)
+  else (
+    {}
+`)
+	for _, field := range typeModel.fields {
+		if isNetworkResourcePortField(field) {
+			continue
+		}
+		output.WriteString(fmt.Sprintf("    // (%s)\n", renderFieldFromJSON(field)))
+	}
+	output.WriteString(`    // (if hasDynamicPorts || hasReservedPorts then { port = dynamicPorts // reservedPorts; } else {})
+  )
+)`)
+	return output.String()
+}
+
+func isNomadAPIType(typeModel *nixType, name string) bool {
+	return typeModel.goType.PkgPath() == "github.com/hashicorp/nomad/api" && typeModel.goType.Name() == name
+}
+
+func isNetworkResourcePortField(field nixField) bool {
+	return field.goName == "DynamicPorts" || field.goName == "ReservedPorts"
 }
 
 func renderFieldFromJSON(field nixField) string {

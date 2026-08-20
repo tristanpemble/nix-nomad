@@ -6,6 +6,8 @@ import (
 	"reflect"
 	"strings"
 	"testing"
+
+	"github.com/hashicorp/nomad/api"
 )
 
 func TestRenderNixModule(t *testing.T) {
@@ -35,6 +37,46 @@ func TestRenderNixModule(t *testing.T) {
 	taskIndex := strings.Index(generated, "_module.types.FixtureTask")
 	if !(rootIndex >= 0 && rootIndex < stepIndex && stepIndex < taskIndex) {
 		t.Errorf("type definitions are not sorted: root=%d step=%d task=%d", rootIndex, stepIndex, taskIndex)
+	}
+}
+
+func TestRenderNomadNetworkResourcePorts(t *testing.T) {
+	t.Parallel()
+
+	schema, err := analyzeSchema(reflect.TypeOf(api.Job{}))
+	if err != nil {
+		t.Fatalf("analyzeSchema() error = %v", err)
+	}
+	networkResource := requireType(t, schema, "NetworkResource")
+
+	toJSON := renderToJSON(networkResource)
+	for _, fragment := range []string{
+		"dynamicPortAttrs = filterAttrs (_: port: (port.static or null) == null) ports;",
+		"reservedPortAttrs = filterAttrs (_: port: (port.static or null) != null) ports;",
+		"DynamicPorts = dynamicPorts;",
+		"ReservedPorts = reservedPorts;",
+		"CIDR = attrs.cidr;",
+	} {
+		if !strings.Contains(toJSON, fragment) {
+			t.Errorf("NetworkResource.toJSON does not contain %q", fragment)
+		}
+	}
+	if strings.Contains(toJSON, "DynamicPorts = mapAttrsToList (_: Port.toJSON) attrs.port") {
+		t.Error("NetworkResource.toJSON still sends every port to DynamicPorts")
+	}
+
+	fromJSON := renderFromJSON(networkResource)
+	for _, fragment := range []string{
+		"(Port.fromJSON v) // { static = null; }",
+		"port = dynamicPorts // reservedPorts;",
+		"cidr = attrs.CIDR;",
+	} {
+		if !strings.Contains(fromJSON, fragment) {
+			t.Errorf("NetworkResource.fromJSON does not contain %q", fragment)
+		}
+	}
+	if strings.Contains(fromJSON, "{ reservedPorts =") {
+		t.Error("NetworkResource.fromJSON still exposes ReservedPorts as a separate Nix option")
 	}
 }
 
