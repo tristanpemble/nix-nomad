@@ -1,5 +1,3 @@
-{ nix-nomad, ... }:
-
 {
   jobs.goodbye.type = "batch";
   jobs.goodbye.datacenters = [ "dc1" ];
@@ -15,10 +13,5 @@
         args = [ "goodbye" ];
       };
     };
-  };
-
-  jobs.goodbye.update = with nix-nomad.time; {
-    healthyDeadline = 15 * minute;
-    progressDeadline = 1 * hour;
   };
 }

@@ -22,13 +22,22 @@
           pkgs = pkgsFor system;
         in
         {
+          default = pkgs.callPackage ./cli { };
           docs = pkgs.callPackage ./docs.nix { inherit self; };
+          nix-nomad = self.packages.${system}.default;
         };
     in
     {
       lib = import ./lib {
         inherit pkgsFor systems;
         inherit (nixpkgs) lib;
+      };
+
+      nomadConfigurations.default = self.lib.nomadConfiguration {
+        modules = [
+          ./examples/hello.nix
+          ./examples/goodbye.nix
+        ];
       };
 
       packages = forAllSystems packagesFor;
@@ -50,13 +59,9 @@
             nomad = pkgs.nomad;
           in
           {
-            hello = (self.lib.nomadConfiguration {
-              modules = [
-                ./examples/hello.nix
-                ./examples/goodbye.nix
-                ./examples/docs.nix
-              ];
-            }).${system}.jobsPackage;
+            cli = self.packages.${system}.default;
+
+            hello = self.nomadConfigurations.default.${system}.jobsPackage;
 
             network-ports = pkgs.writeText "network-port-tests" (import ./tests/network-ports.nix {
               inherit nomad pkgs system;
