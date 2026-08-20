@@ -6,7 +6,7 @@
     gomod2nix.url = "github:tweag/gomod2nix";
     gomod2nix.inputs.flake-utils.follows = "flake-utils";
     nixpkgs-lib.url = "github:nix-community/nixpkgs.lib";
-    nixpkgs.url = "github:nixos/nixpkgs/release-25.11";
+    nixpkgs.url = "github:nixos/nixpkgs/release-26.05";
     nmd.url = github:gvolpe/nmd;
   };
 
@@ -22,7 +22,6 @@
         packages.default = self.packages.${system}.generator;
         packages.generator = pkgs.callPackage ./generator { };
         packages.docs = pkgs.callPackage ./docs {
-          inherit nmd;
           inherit self;
         };
         devShells.default = pkgs.callPackage ./shell.nix { };

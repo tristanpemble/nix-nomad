@@ -4,6 +4,9 @@ schema = 3
   [mod."github.com/gertd/go-pluralize"]
     version = "v0.2.1"
     hash = "sha256-raTQUWJXcFZwCHNQnj2AhVPf8bRzLrfjp5Dp7dVZLtU="
+  [mod."github.com/go-viper/mapstructure/v2"]
+    version = "v2.5.0"
+    hash = "sha256-LbrCBANBprVI84M0CWrXc7rriJL5ac5VKbh58LBTw7U="
   [mod."github.com/gorilla/websocket"]
     version = "v1.5.3"
     hash = "sha256-vTIGEFMEi+30ZdO6ffMNJ/kId6pZs5bbyqov8xe9BM0="
@@ -23,14 +26,11 @@ schema = 3
     version = "v1.0.2"
     hash = "sha256-prifkrFs+lawGTig3GwxddR0QM9E1+IpgZWCKoOnS5M="
   [mod."github.com/hashicorp/nomad/api"]
-    version = "v0.0.0-20251216171439-1dee0671280e"
-    hash = "sha256-WlnhQlh7ngm6e+WF3DaE1GTxRF7acSs/ZLkruS/AXxs="
+    version = "v0.0.0-20260311091027-173ab08a0210"
+    hash = "sha256-iEr1zGRtB8SIUrW64ZRuBl31X5YapFX7hZfn03gciNQ="
   [mod."github.com/mitchellh/go-homedir"]
     version = "v1.1.0"
     hash = "sha256-oduBKXHAQG8X6aqLEpqZHs5DOKe84u6WkBwi4W6cv3k="
-  [mod."github.com/mitchellh/mapstructure"]
-    version = "v1.5.0"
-    hash = "sha256-ztVhGQXs67MF8UadVvG72G3ly0ypQW0IRDdOOkjYwoE="
   [mod."github.com/stoewer/go-strcase"]
     version = "v1.3.0"
     hash = "sha256-X0ilcefeqVQ44B9WT6euCMcigs7oLFypOQaGI33kGr8="
