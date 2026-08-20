@@ -1,10 +1,10 @@
 module github.com/tristanpemble/nix-nomad/cli
 
-go 1.21
+go 1.25
 
 require (
 	github.com/gosuri/uilive v0.0.4
-	github.com/hashicorp/nomad/api v0.0.0-20260311091027-173ab08a0210
+	github.com/hashicorp/nomad/api v0.0.0-20260812182241-5c8612bba6eb
 	github.com/spf13/cobra v1.8.0
 )
 

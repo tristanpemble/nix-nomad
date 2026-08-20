@@ -61,6 +61,10 @@
     options.failOnError = mkOption {
       type = bool;
     };
+    options.runOnFirstRender = mkOption {
+      type = (nullOr bool);
+      default = null;
+    };
     options.timeout = mkOption {
       type = (nullOr int);
       default = null;
@@ -1474,6 +1478,10 @@
       type = (nullOr int);
       default = null;
     };
+    options.maxRunDuration = mkOption {
+      type = (nullOr int);
+      default = null;
+    };
     options.meta = mkOption {
       type = (nullOr (attrsOf str));
       default = null;
@@ -1799,6 +1807,10 @@
       type = (nullOr bool);
       default = null;
     };
+    options.extraClaims = mkOption {
+      type = (nullOr (listOf str));
+      default = null;
+    };
     options.file = mkOption {
       type = (nullOr bool);
       default = null;
@@ -1892,6 +1904,7 @@
     // (if attrs ? args && attrs.args != null then { Args = attrs.args; } else { })
     // (if attrs ? command && attrs.command != null then { Command = attrs.command; } else { })
     // (if attrs ? failOnError && attrs.failOnError != null then { FailOnError = attrs.failOnError; } else { })
+    // (if attrs ? runOnFirstRender && attrs.runOnFirstRender != null then { RunOnFirstRender = attrs.runOnFirstRender; } else { })
     // (if attrs ? timeout && attrs.timeout != null then { Timeout = attrs.timeout; } else { })
   );
 
@@ -1901,6 +1914,7 @@
     // (if attrs ? Args && attrs.Args != null then { args = attrs.Args; } else { })
     // (if attrs ? Command && attrs.Command != null then { command = attrs.Command; } else { })
     // (if attrs ? FailOnError && attrs.FailOnError != null then { failOnError = attrs.FailOnError; } else { })
+    // (if attrs ? RunOnFirstRender && attrs.RunOnFirstRender != null then { runOnFirstRender = attrs.RunOnFirstRender; } else { })
     // (if attrs ? Timeout && attrs.Timeout != null then { timeout = attrs.Timeout; } else { })
   );
 
@@ -3146,6 +3160,7 @@
     // (if attrs ? disconnect && attrs.disconnect != null then { Disconnect = DisconnectStrategy.toJSON attrs.disconnect; } else { })
     // (if attrs ? ephemeralDisk && attrs.ephemeralDisk != null then { EphemeralDisk = EphemeralDisk.toJSON attrs.ephemeralDisk; } else { })
     // (if attrs ? maxClientDisconnect && attrs.maxClientDisconnect != null then { MaxClientDisconnect = attrs.maxClientDisconnect; } else { })
+    // (if attrs ? maxRunDuration && attrs.maxRunDuration != null then { MaxRunDuration = attrs.maxRunDuration; } else { })
     // (if attrs ? meta && attrs.meta != null then { Meta = attrs.meta; } else { })
     // (if attrs ? migrate && attrs.migrate != null then { Migrate = MigrateStrategy.toJSON attrs.migrate; } else { })
     // (if attrs ? name && attrs.name != null then { Name = attrs.name; } else { })
@@ -3173,6 +3188,7 @@
     // (if attrs ? Disconnect && attrs.Disconnect != null then { disconnect = DisconnectStrategy.fromJSON attrs.Disconnect; } else { })
     // (if attrs ? EphemeralDisk && attrs.EphemeralDisk != null then { ephemeralDisk = EphemeralDisk.fromJSON attrs.EphemeralDisk; } else { })
     // (if attrs ? MaxClientDisconnect && attrs.MaxClientDisconnect != null then { maxClientDisconnect = attrs.MaxClientDisconnect; } else { })
+    // (if attrs ? MaxRunDuration && attrs.MaxRunDuration != null then { maxRunDuration = attrs.MaxRunDuration; } else { })
     // (if attrs ? Meta && attrs.Meta != null then { meta = attrs.Meta; } else { })
     // (if attrs ? Migrate && attrs.Migrate != null then { migrate = MigrateStrategy.fromJSON attrs.Migrate; } else { })
     // (if attrs ? Name && attrs.Name != null then { name = attrs.Name; } else { })
@@ -3411,6 +3427,7 @@
     // (if attrs ? changeMode && attrs.changeMode != null then { ChangeMode = attrs.changeMode; } else { })
     // (if attrs ? changeSignal && attrs.changeSignal != null then { ChangeSignal = attrs.changeSignal; } else { })
     // (if attrs ? env && attrs.env != null then { Env = attrs.env; } else { })
+    // (if attrs ? extraClaims && attrs.extraClaims != null then { ExtraClaims = attrs.extraClaims; } else { })
     // (if attrs ? file && attrs.file != null then { File = attrs.file; } else { })
     // (if attrs ? filepath && attrs.filepath != null then { Filepath = attrs.filepath; } else { })
     // (if attrs ? name && attrs.name != null then { Name = attrs.name; } else { })
@@ -3425,6 +3442,7 @@
     // (if attrs ? ChangeMode && attrs.ChangeMode != null then { changeMode = attrs.ChangeMode; } else { })
     // (if attrs ? ChangeSignal && attrs.ChangeSignal != null then { changeSignal = attrs.ChangeSignal; } else { })
     // (if attrs ? Env && attrs.Env != null then { env = attrs.Env; } else { })
+    // (if attrs ? ExtraClaims && attrs.ExtraClaims != null then { extraClaims = attrs.ExtraClaims; } else { })
     // (if attrs ? File && attrs.File != null then { file = attrs.File; } else { })
     // (if attrs ? Filepath && attrs.Filepath != null then { filepath = attrs.Filepath; } else { })
     // (if attrs ? Name && attrs.Name != null then { name = attrs.Name; } else { })

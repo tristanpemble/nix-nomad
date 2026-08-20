@@ -6,7 +6,7 @@
     gomod2nix.url = "github:tweag/gomod2nix";
     gomod2nix.inputs.flake-utils.follows = "flake-utils";
     nixpkgs-lib.url = "github:nix-community/nixpkgs.lib";
-    nixpkgs.url = "github:nixos/nixpkgs/release-26.05";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     nmd.url = github:gvolpe/nmd;
   };
 
@@ -17,14 +17,16 @@
           inherit system; overlays = [ gomod2nix.overlays.default nmd.overlays.default ];
           config.allowUnfreePredicate = pkg: builtins.elem (pkgs.lib.getName pkg) [ "nomad" ];
         };
+        nomad = pkgs.callPackage ./nomad.nix { };
       in
       {
         packages.default = self.packages.${system}.generator;
         packages.generator = pkgs.callPackage ./generator { };
+        packages.nomad = nomad;
         packages.docs = pkgs.callPackage ./docs {
           inherit self;
         };
-        devShells.default = pkgs.callPackage ./shell.nix { };
+        devShells.default = pkgs.callPackage ./shell.nix { inherit nomad; };
         checks.hello = self.lib.mkNomadJobs {
           inherit system pkgs;
           config = [ ./examples/hello.nix ./examples/goodbye.nix ./examples/docs.nix ];

@@ -26,8 +26,8 @@ schema = 3
     version = "v1.0.2"
     hash = "sha256-prifkrFs+lawGTig3GwxddR0QM9E1+IpgZWCKoOnS5M="
   [mod."github.com/hashicorp/nomad/api"]
-    version = "v0.0.0-20260311091027-173ab08a0210"
-    hash = "sha256-iEr1zGRtB8SIUrW64ZRuBl31X5YapFX7hZfn03gciNQ="
+    version = "v0.0.0-20260812182241-5c8612bba6eb"
+    hash = "sha256-miYtoq+u6PCXaCWooVHQJSN0ZeAA7uU04/TOT6u+t+k="
   [mod."github.com/mitchellh/go-homedir"]
     version = "v1.1.0"
     hash = "sha256-oduBKXHAQG8X6aqLEpqZHs5DOKe84u6WkBwi4W6cv3k="
