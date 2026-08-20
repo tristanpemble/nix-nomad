@@ -19,7 +19,7 @@ let
     (system:
       let
         pkgs = pkgsFor system;
-        defaultNomad = pkgs.callPackage ../nomad.nix { };
+        defaultNomad = pkgs.nomad;
         hcl = import ./hcl.nix {
           inherit lib pkgs;
         };

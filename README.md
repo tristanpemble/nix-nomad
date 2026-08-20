@@ -7,6 +7,14 @@ It is for job sets that need shared policy, reusable service definitions, and
 controlled differences between environments. For one small job, plain Nomad
 HCL is usually simpler.
 
+## Nomad version
+
+nix-nomad uses `pkgs.nomad` from its pinned Nixpkgs input by default. The
+current Nixpkgs lock supplies **Nomad 1.11.3**.
+
+You can use your own Nomad package by setting the `nomad` argument of
+`nomadConfiguration`; [see here for more information](#select-the-nomad-version).
+
 ## Why
 
 A Nomad job file describes one deployment. A deployment system usually has
@@ -165,13 +173,13 @@ duration constants and HCL import helper.
 
 ## Select the Nomad version
 
-`nomadConfiguration` uses the project default Nomad package for each build
-system. `nomad` selects a different package family and therefore a
+`nomadConfiguration` uses `pkgs.nomad` from the pinned Nixpkgs input for each
+build system. `nomad` selects a different package family and therefore a
 different Nomad API schema:
 
 ```nix
 nix-nomad.lib.nomadConfiguration {
-  nomad = system: pkgsFor.${system}.nomad_1_11;
+  nomad = system: pkgsFor.${system}.nomad_2_0;
   modules = [ ./jobs.nix ];
 }
 ```

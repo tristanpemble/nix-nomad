@@ -37,7 +37,7 @@
         (system:
           let
             pkgs = pkgsFor system;
-            nomad = pkgs.callPackage ./nomad.nix { };
+            nomad = pkgs.nomad;
           in
           {
             default = pkgs.callPackage ./shell.nix { inherit nomad; };
@@ -47,7 +47,7 @@
         (system:
           let
             pkgs = pkgsFor system;
-            nomad = pkgs.callPackage ./nomad.nix { };
+            nomad = pkgs.nomad;
           in
           {
             hello = (self.lib.nomadConfiguration {
