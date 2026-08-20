@@ -622,6 +622,16 @@
       type = (nullOr UpdateStrategy);
       default = null;
     };
+    options.secret = mkOption {
+      type = (nullOr (attrsOf Secret));
+      default = null;
+      description = "Secrets that are added to each task in the job. Task and group secrets are also kept.";
+    };
+    options.vault = mkOption {
+      type = (nullOr Vault);
+      default = null;
+      description = "Vault configuration for each task in the job. A group or task vault block overrides this value.";
+    };
   });
   _module.types.JobUiConfig = with lib; with config._module.types; with lib.types; submodule ({
     options.description = mkOption {
@@ -650,7 +660,9 @@
     };
     options.enabled = mkOption {
       type = (nullOr bool);
+      apply = value: warnIf (value != null) "The option LogConfig.enabled is deprecated. Use disabled. Nomad keeps enabled only for compatibility with older job JSON." value;
       default = null;
+      description = "Deprecated: Use disabled. Nomad keeps enabled only for compatibility with older job JSON.";
     };
     options.maxFileSize = mkOption {
       type = (nullOr int);
@@ -760,7 +772,9 @@
     };
     options.mbits = mkOption {
       type = (nullOr int);
+      apply = value: warnIf (value != null) "The option NetworkResource.mbits is deprecated. Nomad no longer uses mbits. Remove this option." value;
       default = null;
+      description = "Deprecated: Nomad no longer uses mbits. Remove this option.";
     };
     options.mode = mkOption {
       type = (nullOr str);
@@ -772,7 +786,9 @@
     };
     options.reservedPorts = mkOption {
       type = (nullOr (attrsOf Port));
+      apply = value: warnIf (value != null) "The option NetworkResource.reservedPorts is deprecated. Use port.<label>.static. reservedPorts is kept only for compatibility with older nix-nomad configurations." value;
       default = null;
+      description = "Deprecated: Use port.<label>.static. reservedPorts is kept only for compatibility with older nix-nomad configurations.";
     };
   });
   _module.types.ParameterizedJobConfig = with lib; with config._module.types; with lib.types; submodule ({
@@ -792,7 +808,9 @@
   _module.types.PeriodicConfig = with lib; with config._module.types; with lib.types; submodule ({
     options.cron = mkOption {
       type = (nullOr str);
+      apply = value: warnIf (value != null) "The option PeriodicConfig.cron is deprecated. Use crons instead." value;
       default = null;
+      description = "Deprecated: Use crons instead.";
     };
     options.crons = mkOption {
       type = (nullOr (listOf str));
@@ -900,7 +918,9 @@
     };
     options.iops = mkOption {
       type = (nullOr int);
+      apply = value: warnIf (value != null) "The option Resources.iops is deprecated. Nomad no longer uses iops. Remove this option." value;
       default = null;
+      description = "Deprecated: Nomad no longer uses iops. Remove this option.";
     };
     options.memory = mkOption {
       type = (nullOr int);
@@ -1119,7 +1139,7 @@
       default = null;
     };
     options.header = mkOption {
-      type = (nullOr (attrsOf str));
+      type = (nullOr (attrsOf (listOf str)));
       default = null;
     };
     options.initialStatus = mkOption {
@@ -1362,7 +1382,9 @@
     };
     options.scalings = mkOption {
       type = (nullOr (listOf ScalingPolicy));
+      apply = value: warnIf (value != null) "The option Task.scalings is deprecated. Use scaling.cpu or scaling.mem. scalings is kept only for JSON compatibility." value;
       default = null;
+      description = "Deprecated: Use scaling.cpu or scaling.mem. scalings is kept only for JSON compatibility.";
     };
     options.schedule = mkOption {
       type = (nullOr TaskSchedule);
@@ -1395,6 +1417,22 @@
     options.volumeMounts = mkOption {
       type = (nullOr (listOf VolumeMount));
       default = null;
+    };
+    options.scaling = mkOption {
+      type = (nullOr (submodule ({
+        options.cpu = mkOption {
+          type = (nullOr ScalingPolicy);
+          default = null;
+          description = "CPU scaling policy. It is emitted with the Nomad type vertical_cpu.";
+        };
+        options.mem = mkOption {
+          type = (nullOr ScalingPolicy);
+          default = null;
+          description = "Memory scaling policy. It is emitted with the Nomad type vertical_mem.";
+        };
+      })));
+      default = null;
+      description = "Task scaling policies, indexed by the HCL labels cpu and mem.";
     };
   });
   _module.types.TaskArtifact = with lib; with config._module.types; with lib.types; submodule ({
@@ -1476,7 +1514,9 @@
     };
     options.maxClientDisconnect = mkOption {
       type = (nullOr int);
+      apply = value: warnIf (value != null) "The option TaskGroup.maxClientDisconnect is deprecated. Use disconnect.lostAfter instead." value;
       default = null;
+      description = "Deprecated: Use disconnect.lostAfter instead.";
     };
     options.maxRunDuration = mkOption {
       type = (nullOr int);
@@ -1502,7 +1542,9 @@
     };
     options.preventRescheduleOnLost = mkOption {
       type = (nullOr bool);
+      apply = value: warnIf (value != null) "The option TaskGroup.preventRescheduleOnLost is deprecated. Use disconnect.replace instead." value;
       default = null;
+      description = "Deprecated: Use disconnect.replace instead.";
     };
     options.reschedule = mkOption {
       type = (nullOr ReschedulePolicy);
@@ -1530,7 +1572,9 @@
     };
     options.stopAfterClientDisconnect = mkOption {
       type = (nullOr int);
+      apply = value: warnIf (value != null) "The option TaskGroup.stopAfterClientDisconnect is deprecated. Use disconnect.stopOnClientAfter instead." value;
       default = null;
+      description = "Deprecated: Use disconnect.stopOnClientAfter instead.";
     };
     options.task = mkOption {
       type = (nullOr (attrsOf Task));
@@ -1543,6 +1587,16 @@
     options.volume = mkOption {
       type = (nullOr (attrsOf VolumeRequest));
       default = null;
+    };
+    options.secret = mkOption {
+      type = (nullOr (attrsOf Secret));
+      default = null;
+      description = "Secrets that are added to each task in the group. Task secrets are also kept.";
+    };
+    options.vault = mkOption {
+      type = (nullOr Vault);
+      default = null;
+      description = "Vault configuration for each task in the group. A task vault block overrides this value.";
     };
   });
   _module.types.TaskLifecycle = with lib; with config._module.types; with lib.types; submodule ({
@@ -1637,7 +1691,9 @@
     };
     options.vaultGrace = mkOption {
       type = (nullOr int);
+      apply = value: warnIf (value != null) "The option Template.vaultGrace is deprecated. Nomad no longer uses vaultGrace. Remove this option." value;
       default = null;
+      description = "Deprecated: Nomad no longer uses vaultGrace. Remove this option.";
     };
     options.wait = mkOption {
       type = (nullOr WaitConfig);
@@ -1679,7 +1735,9 @@
     };
     options.stagger = mkOption {
       type = (nullOr int);
+      apply = value: warnIf (value != null) "The option UpdateStrategy.stagger is deprecated. Use minHealthyTime instead." value;
       default = null;
+      description = "Deprecated: Use minHealthyTime instead.";
     };
   });
   _module.types.Vault = with lib; with config._module.types; with lib.types; submodule ({
@@ -2074,7 +2132,7 @@
     // (if attrs ? Config && attrs.Config != null then { config = attrs.Config; } else { })
     // (if attrs ? ConnectTimeout && attrs.ConnectTimeout != null then { connectTimeout = attrs.ConnectTimeout; } else { })
     // (if attrs ? EnvoyDNSDiscoveryType && attrs.EnvoyDNSDiscoveryType != null then { envoyDnsDiscoveryType = attrs.EnvoyDNSDiscoveryType; } else { })
-    // (if attrs ? EnvoyGatewayBindAddresses && builtins.isList attrs.EnvoyGatewayBindAddresses then { envoyGatewayBindAddresses = builtins.listToAttrs (builtins.map (v: nameValuePair v.Name (ConsulGatewayBindAddress.fromJSON v)) attrs.EnvoyGatewayBindAddresses); } else { })
+    // (if attrs ? EnvoyGatewayBindAddresses && builtins.isAttrs attrs.EnvoyGatewayBindAddresses then { envoyGatewayBindAddresses = mapAttrs (_: ConsulGatewayBindAddress.fromJSON) attrs.EnvoyGatewayBindAddresses; } else { })
     // (if attrs ? EnvoyGatewayBindTaggedAddresses && attrs.EnvoyGatewayBindTaggedAddresses != null then { envoyGatewayBindTaggedAddresses = attrs.EnvoyGatewayBindTaggedAddresses; } else { })
     // (if attrs ? EnvoyGatewayNoDefaultBind && attrs.EnvoyGatewayNoDefaultBind != null then { envoyGatewayNoDefaultBind = attrs.EnvoyGatewayNoDefaultBind; } else { })
   );
@@ -2422,28 +2480,41 @@
   # Convert a Job Nix module into a JSON object.
   _module.transformers.Job.toJSON = with lib; with config._module.transformers; attrs: if !(builtins.isAttrs attrs) then null else
   (
-    { }
-    // (if attrs ? affinities && builtins.isList attrs.affinities then { Affinities = builtins.map Affinity.toJSON attrs.affinities; } else { })
-    // (if attrs ? allAtOnce && attrs.allAtOnce != null then { AllAtOnce = attrs.allAtOnce; } else { })
-    // (if attrs ? constraints && builtins.isList attrs.constraints then { Constraints = builtins.map Constraint.toJSON attrs.constraints; } else { })
-    // (if attrs ? datacenters && attrs.datacenters != null then { Datacenters = attrs.datacenters; } else { })
-    // (if attrs ? group && builtins.isAttrs attrs.group then { TaskGroups = mapAttrsToList (_: TaskGroup.toJSON) attrs.group; } else { })
-    // (if attrs ? id && attrs.id != null then { ID = attrs.id; } else { })
-    // (if attrs ? meta && attrs.meta != null then { Meta = attrs.meta; } else { })
-    // (if attrs ? migrate && attrs.migrate != null then { Migrate = MigrateStrategy.toJSON attrs.migrate; } else { })
-    // (if attrs ? multiregion && attrs.multiregion != null then { Multiregion = Multiregion.toJSON attrs.multiregion; } else { })
-    // (if attrs ? name && attrs.name != null then { Name = attrs.name; } else { })
-    // (if attrs ? namespace && attrs.namespace != null then { Namespace = attrs.namespace; } else { })
-    // (if attrs ? nodePool && attrs.nodePool != null then { NodePool = attrs.nodePool; } else { })
-    // (if attrs ? parameterized && attrs.parameterized != null then { ParameterizedJob = ParameterizedJobConfig.toJSON attrs.parameterized; } else { })
-    // (if attrs ? periodic && attrs.periodic != null then { Periodic = PeriodicConfig.toJSON attrs.periodic; } else { })
-    // (if attrs ? priority && attrs.priority != null then { Priority = attrs.priority; } else { })
-    // (if attrs ? region && attrs.region != null then { Region = attrs.region; } else { })
-    // (if attrs ? reschedule && attrs.reschedule != null then { Reschedule = ReschedulePolicy.toJSON attrs.reschedule; } else { })
-    // (if attrs ? spreads && builtins.isList attrs.spreads then { Spreads = builtins.map Spread.toJSON attrs.spreads; } else { })
-    // (if attrs ? type && attrs.type != null then { Type = attrs.type; } else { })
-    // (if attrs ? ui && attrs.ui != null then { UI = JobUiConfig.toJSON attrs.ui; } else { })
-    // (if attrs ? update && attrs.update != null then { Update = UpdateStrategy.toJSON attrs.update; } else { })
+    let
+      jobVault = if attrs ? vault && attrs.vault != null then attrs.vault else null;
+      jobSecretScopes = if attrs ? secret && builtins.isAttrs attrs.secret then [ attrs.secret ] else [ ];
+    in
+    (
+      { }
+      // (if attrs ? affinities && builtins.isList attrs.affinities then { Affinities = builtins.map Affinity.toJSON attrs.affinities; } else { })
+      // (if attrs ? allAtOnce && attrs.allAtOnce != null then { AllAtOnce = attrs.allAtOnce; } else { })
+      // (if attrs ? constraints && builtins.isList attrs.constraints then { Constraints = builtins.map Constraint.toJSON attrs.constraints; } else { })
+      // (if attrs ? datacenters && attrs.datacenters != null then { Datacenters = attrs.datacenters; } else { })
+      // (if attrs ? id && attrs.id != null then { ID = attrs.id; } else { })
+      // (if attrs ? meta && attrs.meta != null then { Meta = attrs.meta; } else { })
+      // (if attrs ? migrate && attrs.migrate != null then { Migrate = MigrateStrategy.toJSON attrs.migrate; } else { })
+      // (if attrs ? multiregion && attrs.multiregion != null then { Multiregion = Multiregion.toJSON attrs.multiregion; } else { })
+      // (if attrs ? name && attrs.name != null then { Name = attrs.name; } else { })
+      // (if attrs ? namespace && attrs.namespace != null then { Namespace = attrs.namespace; } else { })
+      // (if attrs ? nodePool && attrs.nodePool != null then { NodePool = attrs.nodePool; } else { })
+      // (if attrs ? parameterized && attrs.parameterized != null then { ParameterizedJob = ParameterizedJobConfig.toJSON attrs.parameterized; } else { })
+      // (if attrs ? periodic && attrs.periodic != null then { Periodic = PeriodicConfig.toJSON attrs.periodic; } else { })
+      // (if attrs ? priority && attrs.priority != null then { Priority = attrs.priority; } else { })
+      // (if attrs ? region && attrs.region != null then { Region = attrs.region; } else { })
+      // (if attrs ? reschedule && attrs.reschedule != null then { Reschedule = ReschedulePolicy.toJSON attrs.reschedule; } else { })
+      // (if attrs ? spreads && builtins.isList attrs.spreads then { Spreads = builtins.map Spread.toJSON attrs.spreads; } else { })
+      // (if attrs ? type && attrs.type != null then { Type = attrs.type; } else { })
+      // (if attrs ? ui && attrs.ui != null then { UI = JobUiConfig.toJSON attrs.ui; } else { })
+      // (if attrs ? update && attrs.update != null then { Update = UpdateStrategy.toJSON attrs.update; } else { })
+      // (if attrs ? group && builtins.isAttrs attrs.group then {
+        TaskGroups = mapAttrsToList
+          (_: group: TaskGroup.toJSON (group // {
+            __nixNomadInheritedVault = jobVault;
+            __nixNomadInheritedSecretScopes = jobSecretScopes;
+          }))
+          attrs.group;
+      } else { })
+    )
   );
 
   # Convert a Job JSON object into a Nix module.
@@ -2687,12 +2758,22 @@
   # Convert a PeriodicConfig Nix module into a JSON object.
   _module.transformers.PeriodicConfig.toJSON = with lib; with config._module.transformers; attrs: if !(builtins.isAttrs attrs) then null else
   (
-    { }
-    // (if attrs ? cron && attrs.cron != null then { Spec = attrs.cron; } else { })
-    // (if attrs ? crons && attrs.crons != null then { Specs = attrs.crons; } else { })
-    // (if attrs ? enabled && attrs.enabled != null then { Enabled = attrs.enabled; } else { })
-    // (if attrs ? prohibitOverlap && attrs.prohibitOverlap != null then { ProhibitOverlap = attrs.prohibitOverlap; } else { })
-    // (if attrs ? timeZone && attrs.timeZone != null then { TimeZone = attrs.timeZone; } else { })
+    let
+      hasCron = attrs ? cron && attrs.cron != null;
+      hasCrons = attrs ? crons && attrs.crons != null;
+    in
+    if hasCron && hasCrons then
+      throw "PeriodicConfig cannot set both cron and crons"
+    else
+      (
+        { }
+        // (if attrs ? cron && attrs.cron != null then { Spec = attrs.cron; } else { })
+        // (if attrs ? crons && attrs.crons != null then { Specs = attrs.crons; } else { })
+        // (if attrs ? enabled && attrs.enabled != null then { Enabled = attrs.enabled; } else { })
+        // (if attrs ? prohibitOverlap && attrs.prohibitOverlap != null then { ProhibitOverlap = attrs.prohibitOverlap; } else { })
+        // (if attrs ? timeZone && attrs.timeZone != null then { TimeZone = attrs.timeZone; } else { })
+        // (if hasCron || hasCrons then { SpecType = "cron"; } else { })
+      )
   );
 
   # Convert a PeriodicConfig JSON object into a Nix module.
@@ -3065,72 +3146,151 @@
   # Convert a Task Nix module into a JSON object.
   _module.transformers.Task.toJSON = with lib; with config._module.transformers; attrs: if !(builtins.isAttrs attrs) then null else
   (
-    { }
-    // (if attrs ? action && builtins.isAttrs attrs.action then { Actions = mapAttrsToList (_: Action.toJSON) attrs.action; } else { })
-    // (if attrs ? affinities && builtins.isList attrs.affinities then { Affinities = builtins.map Affinity.toJSON attrs.affinities; } else { })
-    // (if attrs ? artifacts && builtins.isList attrs.artifacts then { Artifacts = builtins.map TaskArtifact.toJSON attrs.artifacts; } else { })
-    // (if attrs ? config && attrs.config != null then { Config = attrs.config; } else { })
-    // (if attrs ? constraints && builtins.isList attrs.constraints then { Constraints = builtins.map Constraint.toJSON attrs.constraints; } else { })
-    // (if attrs ? consul && attrs.consul != null then { Consul = Consul.toJSON attrs.consul; } else { })
-    // (if attrs ? csiPlugin && attrs.csiPlugin != null then { CSIPluginConfig = TaskCsiPluginConfig.toJSON attrs.csiPlugin; } else { })
-    // (if attrs ? dispatchPayload && attrs.dispatchPayload != null then { DispatchPayload = DispatchPayloadConfig.toJSON attrs.dispatchPayload; } else { })
-    // (if attrs ? driver && attrs.driver != null then { Driver = attrs.driver; } else { })
-    // (if attrs ? env && attrs.env != null then { Env = attrs.env; } else { })
-    // (if attrs ? identities && builtins.isList attrs.identities then { Identities = builtins.map WorkloadIdentity.toJSON attrs.identities; } else { })
-    // (if attrs ? killSignal && attrs.killSignal != null then { KillSignal = attrs.killSignal; } else { })
-    // (if attrs ? killTimeout && attrs.killTimeout != null then { KillTimeout = attrs.killTimeout; } else { })
-    // (if attrs ? kind && attrs.kind != null then { Kind = attrs.kind; } else { })
-    // (if attrs ? leader && attrs.leader != null then { Leader = attrs.leader; } else { })
-    // (if attrs ? lifecycle && attrs.lifecycle != null then { Lifecycle = TaskLifecycle.toJSON attrs.lifecycle; } else { })
-    // (if attrs ? logs && attrs.logs != null then { LogConfig = LogConfig.toJSON attrs.logs; } else { })
-    // (if attrs ? meta && attrs.meta != null then { Meta = attrs.meta; } else { })
-    // (if attrs ? name && attrs.name != null then { Name = attrs.name; } else { })
-    // (if attrs ? resources && attrs.resources != null then { Resources = Resources.toJSON attrs.resources; } else { })
-    // (if attrs ? restart && attrs.restart != null then { RestartPolicy = RestartPolicy.toJSON attrs.restart; } else { })
-    // (if attrs ? scalings && builtins.isList attrs.scalings then { ScalingPolicies = builtins.map ScalingPolicy.toJSON attrs.scalings; } else { })
-    // (if attrs ? schedule && attrs.schedule != null then { Schedule = TaskSchedule.toJSON attrs.schedule; } else { })
-    // (if attrs ? secret && builtins.isAttrs attrs.secret then { Secrets = mapAttrsToList (_: Secret.toJSON) attrs.secret; } else { })
-    // (if attrs ? services && builtins.isList attrs.services then { Services = builtins.map Service.toJSON attrs.services; } else { })
-    // (if attrs ? shutdownDelay && attrs.shutdownDelay != null then { ShutdownDelay = attrs.shutdownDelay; } else { })
-    // (if attrs ? templates && builtins.isList attrs.templates then { Templates = builtins.map Template.toJSON attrs.templates; } else { })
-    // (if attrs ? user && attrs.user != null then { User = attrs.user; } else { })
-    // (if attrs ? vault && attrs.vault != null then { Vault = Vault.toJSON attrs.vault; } else { })
-    // (if attrs ? volumeMounts && builtins.isList attrs.volumeMounts then { VolumeMounts = builtins.map VolumeMount.toJSON attrs.volumeMounts; } else { })
+    let
+      identityValues = if attrs ? identities && builtins.isList attrs.identities then attrs.identities else [ ];
+      isDefaultIdentity = identity:
+        let identityName = identity.name or null;
+        in identityName == null || identityName == "" || identityName == "default";
+      defaultIdentities = builtins.filter isDefaultIdentity identityValues;
+      namedIdentities = builtins.filter (identity: !(isDefaultIdentity identity)) identityValues;
+
+      legacyScalings = if attrs ? scalings && builtins.isList attrs.scalings then attrs.scalings else [ ];
+      legacyCPUPolicies = builtins.filter (policy: (policy.type or null) == "vertical_cpu") legacyScalings;
+      legacyMemPolicies = builtins.filter (policy: (policy.type or null) == "vertical_mem") legacyScalings;
+      cpuScaling = if attrs ? scaling && builtins.isAttrs attrs.scaling && attrs.scaling ? cpu then attrs.scaling.cpu else null;
+      memScaling = if attrs ? scaling && builtins.isAttrs attrs.scaling && attrs.scaling ? mem then attrs.scaling.mem else null;
+      cpuScalingType = if cpuScaling == null then null else (cpuScaling.type or null);
+      memScalingType = if memScaling == null then null else (memScaling.type or null);
+      cpuPolicy = if cpuScaling == null then null else ScalingPolicy.toJSON (cpuScaling // { type = "vertical_cpu"; });
+      memPolicy = if memScaling == null then null else ScalingPolicy.toJSON (memScaling // { type = "vertical_mem"; });
+      scalingPolicies =
+        builtins.map ScalingPolicy.toJSON legacyScalings
+        ++ optional (cpuPolicy != null) cpuPolicy
+        ++ optional (memPolicy != null) memPolicy;
+
+      inheritedVault = attrs.__nixNomadInheritedVault or null;
+      effectiveVault = if attrs ? vault && attrs.vault != null then attrs.vault else inheritedVault;
+      inheritedSecretScopes = attrs.__nixNomadInheritedSecretScopes or [ ];
+      taskSecrets = if attrs ? secret && builtins.isAttrs attrs.secret then mapAttrsToList (_: Secret.toJSON) attrs.secret else [ ];
+      inheritedSecrets = concatMap (scope: if builtins.isAttrs scope then mapAttrsToList (_: Secret.toJSON) scope else [ ]) inheritedSecretScopes;
+      secrets = taskSecrets ++ inheritedSecrets;
+    in
+    if builtins.length defaultIdentities > 1 then
+      throw "Task can define only one default identity"
+    else if builtins.length legacyCPUPolicies > 1 then
+      throw "Task can define only one CPU scaling policy"
+    else if builtins.length legacyMemPolicies > 1 then
+      throw "Task can define only one memory scaling policy"
+    else if cpuScaling != null && legacyCPUPolicies != [ ] then
+      throw "Task CPU scaling is defined in both scaling.cpu and scalings"
+    else if memScaling != null && legacyMemPolicies != [ ] then
+      throw "Task memory scaling is defined in both scaling.mem and scalings"
+    else if cpuScalingType != null && cpuScalingType != "vertical_cpu" then
+      throw "Task scaling.cpu cannot set a type other than vertical_cpu"
+    else if memScalingType != null && memScalingType != "vertical_mem" then
+      throw "Task scaling.mem cannot set a type other than vertical_mem"
+    else
+      (
+        { }
+        // (if attrs ? action && builtins.isAttrs attrs.action then { Actions = mapAttrsToList (_: Action.toJSON) attrs.action; } else { })
+        // (if attrs ? affinities && builtins.isList attrs.affinities then { Affinities = builtins.map Affinity.toJSON attrs.affinities; } else { })
+        // (if attrs ? artifacts && builtins.isList attrs.artifacts then { Artifacts = builtins.map TaskArtifact.toJSON attrs.artifacts; } else { })
+        // (if attrs ? config && attrs.config != null then { Config = attrs.config; } else { })
+        // (if attrs ? constraints && builtins.isList attrs.constraints then { Constraints = builtins.map Constraint.toJSON attrs.constraints; } else { })
+        // (if attrs ? consul && attrs.consul != null then { Consul = Consul.toJSON attrs.consul; } else { })
+        // (if attrs ? csiPlugin && attrs.csiPlugin != null then { CSIPluginConfig = TaskCsiPluginConfig.toJSON attrs.csiPlugin; } else { })
+        // (if attrs ? dispatchPayload && attrs.dispatchPayload != null then { DispatchPayload = DispatchPayloadConfig.toJSON attrs.dispatchPayload; } else { })
+        // (if attrs ? driver && attrs.driver != null then { Driver = attrs.driver; } else { })
+        // (if attrs ? env && attrs.env != null then { Env = attrs.env; } else { })
+        // (if attrs ? killSignal && attrs.killSignal != null then { KillSignal = attrs.killSignal; } else { })
+        // (if attrs ? killTimeout && attrs.killTimeout != null then { KillTimeout = attrs.killTimeout; } else { })
+        // (if attrs ? kind && attrs.kind != null then { Kind = attrs.kind; } else { })
+        // (if attrs ? leader && attrs.leader != null then { Leader = attrs.leader; } else { })
+        // (if attrs ? lifecycle && attrs.lifecycle != null then { Lifecycle = TaskLifecycle.toJSON attrs.lifecycle; } else { })
+        // (if attrs ? logs && attrs.logs != null then { LogConfig = LogConfig.toJSON attrs.logs; } else { })
+        // (if attrs ? meta && attrs.meta != null then { Meta = attrs.meta; } else { })
+        // (if attrs ? name && attrs.name != null then { Name = attrs.name; } else { })
+        // (if attrs ? resources && attrs.resources != null then { Resources = Resources.toJSON attrs.resources; } else { })
+        // (if attrs ? restart && attrs.restart != null then { RestartPolicy = RestartPolicy.toJSON attrs.restart; } else { })
+        // (if attrs ? schedule && attrs.schedule != null then { Schedule = TaskSchedule.toJSON attrs.schedule; } else { })
+        // (if attrs ? services && builtins.isList attrs.services then { Services = builtins.map Service.toJSON attrs.services; } else { })
+        // (if attrs ? shutdownDelay && attrs.shutdownDelay != null then { ShutdownDelay = attrs.shutdownDelay; } else { })
+        // (if attrs ? templates && builtins.isList attrs.templates then { Templates = builtins.map Template.toJSON attrs.templates; } else { })
+        // (if attrs ? user && attrs.user != null then { User = attrs.user; } else { })
+        // (if attrs ? volumeMounts && builtins.isList attrs.volumeMounts then { VolumeMounts = builtins.map VolumeMount.toJSON attrs.volumeMounts; } else { })
+        // (if defaultIdentities != [ ] then { Identity = WorkloadIdentity.toJSON (builtins.head defaultIdentities); } else { })
+        // (if namedIdentities != [ ] then { Identities = builtins.map WorkloadIdentity.toJSON namedIdentities; } else { })
+        // (if scalingPolicies != [ ] then { ScalingPolicies = scalingPolicies; } else { })
+        // (if secrets != [ ] then { Secrets = secrets; } else { })
+        // (if effectiveVault != null then { Vault = Vault.toJSON effectiveVault; } else { })
+      )
   );
 
   # Convert a Task JSON object into a Nix module.
-  _module.transformers.Task.fromJSON = with lib; with config._module.transformers; attrs: (
-    { }
-    // (if attrs ? Actions && builtins.isList attrs.Actions then { action = builtins.listToAttrs (builtins.map (v: nameValuePair v.Name (Action.fromJSON v)) attrs.Actions); } else { })
-    // (if attrs ? Affinities && builtins.isList attrs.Affinities then { affinities = builtins.map Affinity.fromJSON attrs.Affinities; } else { })
-    // (if attrs ? Artifacts && builtins.isList attrs.Artifacts then { artifacts = builtins.map TaskArtifact.fromJSON attrs.Artifacts; } else { })
-    // (if attrs ? Config && attrs.Config != null then { config = attrs.Config; } else { })
-    // (if attrs ? Constraints && builtins.isList attrs.Constraints then { constraints = builtins.map Constraint.fromJSON attrs.Constraints; } else { })
-    // (if attrs ? Consul && attrs.Consul != null then { consul = Consul.fromJSON attrs.Consul; } else { })
-    // (if attrs ? CSIPluginConfig && attrs.CSIPluginConfig != null then { csiPlugin = TaskCsiPluginConfig.fromJSON attrs.CSIPluginConfig; } else { })
-    // (if attrs ? DispatchPayload && attrs.DispatchPayload != null then { dispatchPayload = DispatchPayloadConfig.fromJSON attrs.DispatchPayload; } else { })
-    // (if attrs ? Driver && attrs.Driver != null then { driver = attrs.Driver; } else { })
-    // (if attrs ? Env && attrs.Env != null then { env = attrs.Env; } else { })
-    // (if attrs ? Identities && builtins.isList attrs.Identities then { identities = builtins.map WorkloadIdentity.fromJSON attrs.Identities; } else { })
-    // (if attrs ? KillSignal && attrs.KillSignal != null then { killSignal = attrs.KillSignal; } else { })
-    // (if attrs ? KillTimeout && attrs.KillTimeout != null then { killTimeout = attrs.KillTimeout; } else { })
-    // (if attrs ? Kind && attrs.Kind != null then { kind = attrs.Kind; } else { })
-    // (if attrs ? Leader && attrs.Leader != null then { leader = attrs.Leader; } else { })
-    // (if attrs ? Lifecycle && attrs.Lifecycle != null then { lifecycle = TaskLifecycle.fromJSON attrs.Lifecycle; } else { })
-    // (if attrs ? LogConfig && attrs.LogConfig != null then { logs = LogConfig.fromJSON attrs.LogConfig; } else { })
-    // (if attrs ? Meta && attrs.Meta != null then { meta = attrs.Meta; } else { })
-    // (if attrs ? Name && attrs.Name != null then { name = attrs.Name; } else { })
-    // (if attrs ? Resources && attrs.Resources != null then { resources = Resources.fromJSON attrs.Resources; } else { })
-    // (if attrs ? RestartPolicy && attrs.RestartPolicy != null then { restart = RestartPolicy.fromJSON attrs.RestartPolicy; } else { })
-    // (if attrs ? ScalingPolicies && builtins.isList attrs.ScalingPolicies then { scalings = builtins.map ScalingPolicy.fromJSON attrs.ScalingPolicies; } else { })
-    // (if attrs ? Schedule && attrs.Schedule != null then { schedule = TaskSchedule.fromJSON attrs.Schedule; } else { })
-    // (if attrs ? Secrets && builtins.isList attrs.Secrets then { secret = builtins.listToAttrs (builtins.map (v: nameValuePair v.Name (Secret.fromJSON v)) attrs.Secrets); } else { })
-    // (if attrs ? Services && builtins.isList attrs.Services then { services = builtins.map Service.fromJSON attrs.Services; } else { })
-    // (if attrs ? ShutdownDelay && attrs.ShutdownDelay != null then { shutdownDelay = attrs.ShutdownDelay; } else { })
-    // (if attrs ? Templates && builtins.isList attrs.Templates then { templates = builtins.map Template.fromJSON attrs.Templates; } else { })
-    // (if attrs ? User && attrs.User != null then { user = attrs.User; } else { })
-    // (if attrs ? Vault && attrs.Vault != null then { vault = Vault.fromJSON attrs.Vault; } else { })
-    // (if attrs ? VolumeMounts && builtins.isList attrs.VolumeMounts then { volumeMounts = builtins.map VolumeMount.fromJSON attrs.VolumeMounts; } else { })
+  _module.transformers.Task.fromJSON = with lib; with config._module.transformers; attrs: if !(builtins.isAttrs attrs) then { } else
+  (
+    let
+      hasIdentity = attrs ? Identity && attrs.Identity != null;
+      hasIdentities = attrs ? Identities && builtins.isList attrs.Identities;
+      identities =
+        optional hasIdentity (WorkloadIdentity.fromJSON attrs.Identity)
+        ++ (if hasIdentities then builtins.map WorkloadIdentity.fromJSON attrs.Identities else [ ]);
+
+      hasScalingPolicies = attrs ? ScalingPolicies && builtins.isList attrs.ScalingPolicies;
+      scalingPolicies = if hasScalingPolicies then builtins.map ScalingPolicy.fromJSON attrs.ScalingPolicies else [ ];
+      cpuPolicies = builtins.filter (policy: (policy.type or null) == "vertical_cpu") scalingPolicies;
+      memPolicies = builtins.filter (policy: (policy.type or null) == "vertical_mem") scalingPolicies;
+      compatibilityPolicies = builtins.filter
+        (policy:
+          let policyType = policy.type or null;
+          in policyType != "vertical_cpu" && policyType != "vertical_mem"
+        )
+        scalingPolicies;
+      cpuPolicy = if cpuPolicies == [ ] then null else removeAttrs (builtins.head cpuPolicies) [ "type" ];
+      memPolicy = if memPolicies == [ ] then null else removeAttrs (builtins.head memPolicies) [ "type" ];
+    in
+    if builtins.length cpuPolicies > 1 then
+      throw "Nomad Task JSON defines more than one vertical_cpu scaling policy"
+    else if builtins.length memPolicies > 1 then
+      throw "Nomad Task JSON defines more than one vertical_mem scaling policy"
+    else
+      (
+        { }
+        // (if attrs ? Actions && builtins.isList attrs.Actions then { action = builtins.listToAttrs (builtins.map (v: nameValuePair v.Name (Action.fromJSON v)) attrs.Actions); } else { })
+        // (if attrs ? Affinities && builtins.isList attrs.Affinities then { affinities = builtins.map Affinity.fromJSON attrs.Affinities; } else { })
+        // (if attrs ? Artifacts && builtins.isList attrs.Artifacts then { artifacts = builtins.map TaskArtifact.fromJSON attrs.Artifacts; } else { })
+        // (if attrs ? Config && attrs.Config != null then { config = attrs.Config; } else { })
+        // (if attrs ? Constraints && builtins.isList attrs.Constraints then { constraints = builtins.map Constraint.fromJSON attrs.Constraints; } else { })
+        // (if attrs ? Consul && attrs.Consul != null then { consul = Consul.fromJSON attrs.Consul; } else { })
+        // (if attrs ? CSIPluginConfig && attrs.CSIPluginConfig != null then { csiPlugin = TaskCsiPluginConfig.fromJSON attrs.CSIPluginConfig; } else { })
+        // (if attrs ? DispatchPayload && attrs.DispatchPayload != null then { dispatchPayload = DispatchPayloadConfig.fromJSON attrs.DispatchPayload; } else { })
+        // (if attrs ? Driver && attrs.Driver != null then { driver = attrs.Driver; } else { })
+        // (if attrs ? Env && attrs.Env != null then { env = attrs.Env; } else { })
+        // (if attrs ? KillSignal && attrs.KillSignal != null then { killSignal = attrs.KillSignal; } else { })
+        // (if attrs ? KillTimeout && attrs.KillTimeout != null then { killTimeout = attrs.KillTimeout; } else { })
+        // (if attrs ? Kind && attrs.Kind != null then { kind = attrs.Kind; } else { })
+        // (if attrs ? Leader && attrs.Leader != null then { leader = attrs.Leader; } else { })
+        // (if attrs ? Lifecycle && attrs.Lifecycle != null then { lifecycle = TaskLifecycle.fromJSON attrs.Lifecycle; } else { })
+        // (if attrs ? LogConfig && attrs.LogConfig != null then { logs = LogConfig.fromJSON attrs.LogConfig; } else { })
+        // (if attrs ? Meta && attrs.Meta != null then { meta = attrs.Meta; } else { })
+        // (if attrs ? Name && attrs.Name != null then { name = attrs.Name; } else { })
+        // (if attrs ? Resources && attrs.Resources != null then { resources = Resources.fromJSON attrs.Resources; } else { })
+        // (if attrs ? RestartPolicy && attrs.RestartPolicy != null then { restart = RestartPolicy.fromJSON attrs.RestartPolicy; } else { })
+        // (if attrs ? Schedule && attrs.Schedule != null then { schedule = TaskSchedule.fromJSON attrs.Schedule; } else { })
+        // (if attrs ? Secrets && builtins.isList attrs.Secrets then { secret = builtins.listToAttrs (builtins.map (v: nameValuePair v.Name (Secret.fromJSON v)) attrs.Secrets); } else { })
+        // (if attrs ? Services && builtins.isList attrs.Services then { services = builtins.map Service.fromJSON attrs.Services; } else { })
+        // (if attrs ? ShutdownDelay && attrs.ShutdownDelay != null then { shutdownDelay = attrs.ShutdownDelay; } else { })
+        // (if attrs ? Templates && builtins.isList attrs.Templates then { templates = builtins.map Template.fromJSON attrs.Templates; } else { })
+        // (if attrs ? User && attrs.User != null then { user = attrs.User; } else { })
+        // (if attrs ? Vault && attrs.Vault != null then { vault = Vault.fromJSON attrs.Vault; } else { })
+        // (if attrs ? VolumeMounts && builtins.isList attrs.VolumeMounts then { volumeMounts = builtins.map VolumeMount.fromJSON attrs.VolumeMounts; } else { })
+        // (if hasIdentity || hasIdentities then { inherit identities; } else { })
+        // (if cpuPolicy != null || memPolicy != null then {
+          scaling = optionalAttrs (cpuPolicy != null) { cpu = cpuPolicy; }
+          // optionalAttrs (memPolicy != null) { mem = memPolicy; };
+        } else { })
+        // (if compatibilityPolicies != [ ] then { scalings = compatibilityPolicies; } else { })
+      )
   );
 
   # Convert a TaskArtifact Nix module into a JSON object.
@@ -3182,30 +3342,45 @@
   # Convert a TaskGroup Nix module into a JSON object.
   _module.transformers.TaskGroup.toJSON = with lib; with config._module.transformers; attrs: if !(builtins.isAttrs attrs) then null else
   (
-    { }
-    // (if attrs ? affinities && builtins.isList attrs.affinities then { Affinities = builtins.map Affinity.toJSON attrs.affinities; } else { })
-    // (if attrs ? constraints && builtins.isList attrs.constraints then { Constraints = builtins.map Constraint.toJSON attrs.constraints; } else { })
-    // (if attrs ? consul && attrs.consul != null then { Consul = Consul.toJSON attrs.consul; } else { })
-    // (if attrs ? count && attrs.count != null then { Count = attrs.count; } else { })
-    // (if attrs ? disconnect && attrs.disconnect != null then { Disconnect = DisconnectStrategy.toJSON attrs.disconnect; } else { })
-    // (if attrs ? ephemeralDisk && attrs.ephemeralDisk != null then { EphemeralDisk = EphemeralDisk.toJSON attrs.ephemeralDisk; } else { })
-    // (if attrs ? maxClientDisconnect && attrs.maxClientDisconnect != null then { MaxClientDisconnect = attrs.maxClientDisconnect; } else { })
-    // (if attrs ? maxRunDuration && attrs.maxRunDuration != null then { MaxRunDuration = attrs.maxRunDuration; } else { })
-    // (if attrs ? meta && attrs.meta != null then { Meta = attrs.meta; } else { })
-    // (if attrs ? migrate && attrs.migrate != null then { Migrate = MigrateStrategy.toJSON attrs.migrate; } else { })
-    // (if attrs ? name && attrs.name != null then { Name = attrs.name; } else { })
-    // (if attrs ? networks && builtins.isList attrs.networks then { Networks = builtins.map NetworkResource.toJSON attrs.networks; } else { })
-    // (if attrs ? preventRescheduleOnLost && attrs.preventRescheduleOnLost != null then { PreventRescheduleOnLost = attrs.preventRescheduleOnLost; } else { })
-    // (if attrs ? reschedule && attrs.reschedule != null then { ReschedulePolicy = ReschedulePolicy.toJSON attrs.reschedule; } else { })
-    // (if attrs ? restart && attrs.restart != null then { RestartPolicy = RestartPolicy.toJSON attrs.restart; } else { })
-    // (if attrs ? scaling && attrs.scaling != null then { Scaling = ScalingPolicy.toJSON attrs.scaling; } else { })
-    // (if attrs ? services && builtins.isList attrs.services then { Services = builtins.map Service.toJSON attrs.services; } else { })
-    // (if attrs ? shutdownDelay && attrs.shutdownDelay != null then { ShutdownDelay = attrs.shutdownDelay; } else { })
-    // (if attrs ? spreads && builtins.isList attrs.spreads then { Spreads = builtins.map Spread.toJSON attrs.spreads; } else { })
-    // (if attrs ? stopAfterClientDisconnect && attrs.stopAfterClientDisconnect != null then { StopAfterClientDisconnect = attrs.stopAfterClientDisconnect; } else { })
-    // (if attrs ? task && builtins.isAttrs attrs.task then { Tasks = mapAttrsToList (_: Task.toJSON) attrs.task; } else { })
-    // (if attrs ? update && attrs.update != null then { Update = UpdateStrategy.toJSON attrs.update; } else { })
-    // (if attrs ? volume && builtins.isAttrs attrs.volume then { Volumes = mapAttrs (_: VolumeRequest.toJSON) attrs.volume; } else { })
+    let
+      inheritedVault = attrs.__nixNomadInheritedVault or null;
+      effectiveVault = if attrs ? vault && attrs.vault != null then attrs.vault else inheritedVault;
+      inheritedSecretScopes = attrs.__nixNomadInheritedSecretScopes or [ ];
+      secretScopes = (if attrs ? secret && builtins.isAttrs attrs.secret then [ attrs.secret ] else [ ]) ++ inheritedSecretScopes;
+    in
+    (
+      { }
+      // (if attrs ? affinities && builtins.isList attrs.affinities then { Affinities = builtins.map Affinity.toJSON attrs.affinities; } else { })
+      // (if attrs ? constraints && builtins.isList attrs.constraints then { Constraints = builtins.map Constraint.toJSON attrs.constraints; } else { })
+      // (if attrs ? consul && attrs.consul != null then { Consul = Consul.toJSON attrs.consul; } else { })
+      // (if attrs ? count && attrs.count != null then { Count = attrs.count; } else { })
+      // (if attrs ? disconnect && attrs.disconnect != null then { Disconnect = DisconnectStrategy.toJSON attrs.disconnect; } else { })
+      // (if attrs ? ephemeralDisk && attrs.ephemeralDisk != null then { EphemeralDisk = EphemeralDisk.toJSON attrs.ephemeralDisk; } else { })
+      // (if attrs ? maxClientDisconnect && attrs.maxClientDisconnect != null then { MaxClientDisconnect = attrs.maxClientDisconnect; } else { })
+      // (if attrs ? maxRunDuration && attrs.maxRunDuration != null then { MaxRunDuration = attrs.maxRunDuration; } else { })
+      // (if attrs ? meta && attrs.meta != null then { Meta = attrs.meta; } else { })
+      // (if attrs ? migrate && attrs.migrate != null then { Migrate = MigrateStrategy.toJSON attrs.migrate; } else { })
+      // (if attrs ? name && attrs.name != null then { Name = attrs.name; } else { })
+      // (if attrs ? networks && builtins.isList attrs.networks then { Networks = builtins.map NetworkResource.toJSON attrs.networks; } else { })
+      // (if attrs ? preventRescheduleOnLost && attrs.preventRescheduleOnLost != null then { PreventRescheduleOnLost = attrs.preventRescheduleOnLost; } else { })
+      // (if attrs ? reschedule && attrs.reschedule != null then { ReschedulePolicy = ReschedulePolicy.toJSON attrs.reschedule; } else { })
+      // (if attrs ? restart && attrs.restart != null then { RestartPolicy = RestartPolicy.toJSON attrs.restart; } else { })
+      // (if attrs ? scaling && attrs.scaling != null then { Scaling = ScalingPolicy.toJSON attrs.scaling; } else { })
+      // (if attrs ? services && builtins.isList attrs.services then { Services = builtins.map Service.toJSON attrs.services; } else { })
+      // (if attrs ? shutdownDelay && attrs.shutdownDelay != null then { ShutdownDelay = attrs.shutdownDelay; } else { })
+      // (if attrs ? spreads && builtins.isList attrs.spreads then { Spreads = builtins.map Spread.toJSON attrs.spreads; } else { })
+      // (if attrs ? stopAfterClientDisconnect && attrs.stopAfterClientDisconnect != null then { StopAfterClientDisconnect = attrs.stopAfterClientDisconnect; } else { })
+      // (if attrs ? update && attrs.update != null then { Update = UpdateStrategy.toJSON attrs.update; } else { })
+      // (if attrs ? volume && builtins.isAttrs attrs.volume then { Volumes = mapAttrs (_: VolumeRequest.toJSON) attrs.volume; } else { })
+      // (if attrs ? task && builtins.isAttrs attrs.task then {
+        Tasks = mapAttrsToList
+          (_: task: Task.toJSON (task // {
+            __nixNomadInheritedVault = effectiveVault;
+            __nixNomadInheritedSecretScopes = secretScopes;
+          }))
+          attrs.task;
+      } else { })
+    )
   );
 
   # Convert a TaskGroup JSON object into a Nix module.
@@ -3233,7 +3408,7 @@
     // (if attrs ? StopAfterClientDisconnect && attrs.StopAfterClientDisconnect != null then { stopAfterClientDisconnect = attrs.StopAfterClientDisconnect; } else { })
     // (if attrs ? Tasks && builtins.isList attrs.Tasks then { task = builtins.listToAttrs (builtins.map (v: nameValuePair v.Name (Task.fromJSON v)) attrs.Tasks); } else { })
     // (if attrs ? Update && attrs.Update != null then { update = UpdateStrategy.fromJSON attrs.Update; } else { })
-    // (if attrs ? Volumes && builtins.isList attrs.Volumes then { volume = builtins.listToAttrs (builtins.map (v: nameValuePair v.Name (VolumeRequest.fromJSON v)) attrs.Volumes); } else { })
+    // (if attrs ? Volumes && builtins.isAttrs attrs.Volumes then { volume = mapAttrs (_: VolumeRequest.fromJSON) attrs.Volumes; } else { })
   );
 
   # Convert a TaskLifecycle Nix module into a JSON object.

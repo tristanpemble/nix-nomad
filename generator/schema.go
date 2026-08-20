@@ -22,13 +22,14 @@ type nixType struct {
 }
 
 type nixField struct {
-	goName      string
-	name        string
-	typeExpr    string
-	defaultExpr string
-	nestedType  *nixType
-	container   goContainerKind
-	collection  nixCollectionKind
+	goName             string
+	name               string
+	typeExpr           string
+	defaultExpr        string
+	deprecationMessage string
+	nestedType         *nixType
+	container          goContainerKind
+	collection         nixCollectionKind
 
 	label bool
 }
@@ -233,12 +234,33 @@ func (a schemaAnalyzer) analyzeField(parent reflect.Type, goField reflect.Struct
 	if field.collection == nixCollectionList && baseType.Kind() == reflect.Struct {
 		field.name = a.pluralizer.Plural(field.name)
 	}
-	field.typeExpr, field.defaultExpr = fieldTypeExpressions(field.collection, tag.block, tag.optional || tag.block, baseType)
+	field.typeExpr, field.defaultExpr = fieldTypeExpressions(field.collection, tag.block, tag.optional || tag.block, collectionElementType(goField.Type))
+	field.deprecationMessage = nomadFieldDeprecation(parent, goField)
 	return field, nil
 }
 
-func fieldTypeExpressions(collection nixCollectionKind, block, optional bool, baseType reflect.Type) (string, string) {
-	typeExpr := nixPrimitiveType(baseType)
+func nomadFieldDeprecation(parent reflect.Type, field reflect.StructField) string {
+	if parent.PkgPath() != "github.com/hashicorp/nomad/api" {
+		return ""
+	}
+
+	return map[string]string{
+		"LogConfig.Enabled":                   "Use disabled. Nomad keeps enabled only for compatibility with older job JSON.",
+		"NetworkResource.MBits":               "Nomad no longer uses mbits. Remove this option.",
+		"NetworkResource.ReservedPorts":       "Use port.<label>.static. reservedPorts is kept only for compatibility with older nix-nomad configurations.",
+		"PeriodicConfig.Spec":                 "Use crons instead.",
+		"Resources.IOPS":                      "Nomad no longer uses iops. Remove this option.",
+		"Task.ScalingPolicies":                "Use scaling.cpu or scaling.mem. scalings is kept only for JSON compatibility.",
+		"TaskGroup.MaxClientDisconnect":       "Use disconnect.lostAfter instead.",
+		"TaskGroup.PreventRescheduleOnLost":   "Use disconnect.replace instead.",
+		"TaskGroup.StopAfterClientDisconnect": "Use disconnect.stopOnClientAfter instead.",
+		"Template.VaultGrace":                 "Nomad no longer uses vaultGrace. Remove this option.",
+		"UpdateStrategy.Stagger":              "Use minHealthyTime instead.",
+	}[parent.Name()+"."+field.Name]
+}
+
+func fieldTypeExpressions(collection nixCollectionKind, block, optional bool, elementType reflect.Type) (string, string) {
+	typeExpr := nixTypeExpression(elementType)
 	defaultExpr := ""
 
 	if collection == nixCollectionAttrs {
@@ -258,6 +280,37 @@ func fieldTypeExpressions(collection nixCollectionKind, block, optional bool, ba
 	}
 
 	return typeExpr, defaultExpr
+}
+
+func nixTypeExpression(goType reflect.Type) string {
+	for goType != nil && goType.Kind() == reflect.Ptr {
+		goType = goType.Elem()
+	}
+	if goType == nil {
+		return "anything"
+	}
+
+	switch goType.Kind() {
+	case reflect.Slice:
+		return fmt.Sprintf("(listOf %s)", nixTypeExpression(goType.Elem()))
+	case reflect.Map:
+		return fmt.Sprintf("(attrsOf %s)", nixTypeExpression(goType.Elem()))
+	default:
+		return nixPrimitiveType(goType)
+	}
+}
+
+func collectionElementType(goType reflect.Type) reflect.Type {
+	for goType != nil && goType.Kind() == reflect.Ptr {
+		goType = goType.Elem()
+	}
+	if goType == nil {
+		return nil
+	}
+	if goType.Kind() == reflect.Slice || goType.Kind() == reflect.Map {
+		return goType.Elem()
+	}
+	return goType
 }
 
 func nixPrimitiveType(goType reflect.Type) string {

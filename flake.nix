@@ -33,6 +33,9 @@
         checks.network-ports = pkgs.writeText "network-port-tests" (import ./tests/network-ports.nix {
           inherit self pkgs;
         });
+        checks.hcl-json-parity = pkgs.writeText "hcl-json-parity-tests" (import ./tests/hcl-json-parity.nix {
+          inherit self pkgs;
+        });
       }) // {
     lib = import ./lib/without-pkgs.nix { inherit self nixpkgs nixpkgs-lib; };
     overlays.default = final: prev: {

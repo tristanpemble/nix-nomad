@@ -139,6 +139,20 @@ func TestNomadJobIdentityFieldsAreLabels(t *testing.T) {
 	}
 }
 
+func TestAnalyzeSchemaPreservesNestedCollectionTypes(t *testing.T) {
+	t.Parallel()
+
+	schema, err := analyzeSchema(reflect.TypeOf(api.Job{}))
+	if err != nil {
+		t.Fatalf("analyzeSchema() error = %v", err)
+	}
+
+	header := requireField(t, requireType(t, schema, "ServiceCheck"), "header")
+	if got, want := header.typeExpr, "(nullOr (attrsOf (listOf str)))"; got != want {
+		t.Errorf("ServiceCheck.header type = %q, want %q", got, want)
+	}
+}
+
 func typeNames(schema *nixSchema) string {
 	names := make([]string, 0, len(schema.types))
 	for _, typeModel := range schema.types {

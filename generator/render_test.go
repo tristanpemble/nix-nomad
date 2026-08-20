@@ -80,6 +80,160 @@ func TestRenderNomadNetworkResourcePorts(t *testing.T) {
 	}
 }
 
+func TestRenderMapBackedLabeledBlocksFromJSON(t *testing.T) {
+	t.Parallel()
+
+	schema, err := analyzeSchema(reflect.TypeOf(api.Job{}))
+	if err != nil {
+		t.Fatalf("analyzeSchema() error = %v", err)
+	}
+
+	tests := []struct {
+		typeName string
+		fragment string
+	}{
+		{
+			typeName: "TaskGroup",
+			fragment: "if attrs ? Volumes && builtins.isAttrs attrs.Volumes then { volume = mapAttrs (_: VolumeRequest.fromJSON) attrs.Volumes; } else {}",
+		},
+		{
+			typeName: "ConsulGatewayProxy",
+			fragment: "if attrs ? EnvoyGatewayBindAddresses && builtins.isAttrs attrs.EnvoyGatewayBindAddresses then { envoyGatewayBindAddresses = mapAttrs (_: ConsulGatewayBindAddress.fromJSON) attrs.EnvoyGatewayBindAddresses; } else {}",
+		},
+	}
+
+	for _, test := range tests {
+		test := test
+		t.Run(test.typeName, func(t *testing.T) {
+			t.Parallel()
+			generated := renderFromJSON(requireType(t, schema, test.typeName))
+			if !strings.Contains(generated, test.fragment) {
+				t.Errorf("%s.fromJSON does not contain %q", test.typeName, test.fragment)
+			}
+		})
+	}
+}
+
+func TestRenderNomadTaskIdentityAndScalingCompatibility(t *testing.T) {
+	t.Parallel()
+
+	schema, err := analyzeSchema(reflect.TypeOf(api.Job{}))
+	if err != nil {
+		t.Fatalf("analyzeSchema() error = %v", err)
+	}
+	task := requireType(t, schema, "Task")
+
+	renderedType := renderType(task)
+	for _, fragment := range []string{
+		"options.scaling = mkOption",
+		"options.cpu = mkOption",
+		"options.mem = mkOption",
+		"The option Task.scalings is deprecated.",
+	} {
+		if !strings.Contains(renderedType, fragment) {
+			t.Errorf("Task type does not contain %q", fragment)
+		}
+	}
+
+	toJSON := renderToJSON(task)
+	for _, fragment := range []string{
+		"defaultIdentities = builtins.filter isDefaultIdentity identityValues;",
+		"Identity = WorkloadIdentity.toJSON (builtins.head defaultIdentities);",
+		"Identities = builtins.map WorkloadIdentity.toJSON namedIdentities;",
+		`type = "vertical_cpu";`,
+		`type = "vertical_mem";`,
+		"Task CPU scaling is defined in both scaling.cpu and scalings",
+	} {
+		if !strings.Contains(toJSON, fragment) {
+			t.Errorf("Task.toJSON does not contain %q", fragment)
+		}
+	}
+
+	fromJSON := renderFromJSON(task)
+	for _, fragment := range []string{
+		"attrs ? Identity && attrs.Identity != null",
+		"optional hasIdentity (WorkloadIdentity.fromJSON attrs.Identity)",
+		`(policy.type or null) == "vertical_cpu"`,
+		`(policy.type or null) == "vertical_mem"`,
+		`removeAttrs (builtins.head cpuPolicies) [ "type" ]`,
+		"scalings = compatibilityPolicies;",
+	} {
+		if !strings.Contains(fromJSON, fragment) {
+			t.Errorf("Task.fromJSON does not contain %q", fragment)
+		}
+	}
+}
+
+func TestRenderNomadPeriodicConfigAddsSpecType(t *testing.T) {
+	t.Parallel()
+
+	schema, err := analyzeSchema(reflect.TypeOf(api.Job{}))
+	if err != nil {
+		t.Fatalf("analyzeSchema() error = %v", err)
+	}
+	periodic := requireType(t, schema, "PeriodicConfig")
+	rendered := renderToJSON(periodic)
+	for _, fragment := range []string{
+		"hasCron = attrs ? cron && attrs.cron != null;",
+		"hasCrons = attrs ? crons && attrs.crons != null;",
+		"PeriodicConfig cannot set both cron and crons",
+		`SpecType = "cron";`,
+	} {
+		if !strings.Contains(rendered, fragment) {
+			t.Errorf("PeriodicConfig.toJSON does not contain %q", fragment)
+		}
+	}
+}
+
+func TestRenderNomadJobAndGroupScopes(t *testing.T) {
+	t.Parallel()
+
+	schema, err := analyzeSchema(reflect.TypeOf(api.Job{}))
+	if err != nil {
+		t.Fatalf("analyzeSchema() error = %v", err)
+	}
+
+	jobType := renderType(requireType(t, schema, "Job"))
+	groupType := renderType(requireType(t, schema, "TaskGroup"))
+	for name, rendered := range map[string]string{"Job": jobType, "TaskGroup": groupType} {
+		for _, fragment := range []string{"options.secret = mkOption", "options.vault = mkOption"} {
+			if !strings.Contains(rendered, fragment) {
+				t.Errorf("%s type does not contain %q", name, fragment)
+			}
+		}
+	}
+
+	jobToJSON := renderToJSON(requireType(t, schema, "Job"))
+	for _, fragment := range []string{
+		"__nixNomadInheritedVault = jobVault;",
+		"__nixNomadInheritedSecretScopes = jobSecretScopes;",
+	} {
+		if !strings.Contains(jobToJSON, fragment) {
+			t.Errorf("Job.toJSON does not contain %q", fragment)
+		}
+	}
+
+	groupToJSON := renderToJSON(requireType(t, schema, "TaskGroup"))
+	for _, fragment := range []string{
+		"effectiveVault = if attrs ? vault && attrs.vault != null then attrs.vault else inheritedVault;",
+		"__nixNomadInheritedSecretScopes = secretScopes;",
+	} {
+		if !strings.Contains(groupToJSON, fragment) {
+			t.Errorf("TaskGroup.toJSON does not contain %q", fragment)
+		}
+	}
+
+	taskToJSON := renderToJSON(requireType(t, schema, "Task"))
+	for _, fragment := range []string{
+		"secrets = taskSecrets ++ inheritedSecrets;",
+		"Vault = Vault.toJSON effectiveVault;",
+	} {
+		if !strings.Contains(taskToJSON, fragment) {
+			t.Errorf("Task.toJSON does not contain %q", fragment)
+		}
+	}
+}
+
 func TestWriteNixModulePropagatesWriterFailures(t *testing.T) {
 	t.Parallel()
 
