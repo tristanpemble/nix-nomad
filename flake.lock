@@ -102,29 +102,13 @@
         "type": "github"
       }
     },
-    "nmd": {
-      "locked": {
-        "lastModified": 1759339018,
-        "narHash": "sha256-13x2gvgnnr3cJ5qp7zz7ZnUSrg0DF/sU9KiwZkML6J0=",
-        "owner": "gvolpe",
-        "repo": "nmd",
-        "rev": "5ecbe493e22de649e79c8e51dc5e92659940e081",
-        "type": "github"
-      },
-      "original": {
-        "owner": "gvolpe",
-        "repo": "nmd",
-        "type": "github"
-      }
-    },
     "root": {
       "inputs": {
         "flake-compat": "flake-compat",
         "flake-utils": "flake-utils",
         "gomod2nix": "gomod2nix",
         "nixpkgs": "nixpkgs_2",
-        "nixpkgs-lib": "nixpkgs-lib",
-        "nmd": "nmd"
+        "nixpkgs-lib": "nixpkgs-lib"
       }
     },
     "systems": {

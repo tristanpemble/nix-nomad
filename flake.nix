@@ -7,14 +7,13 @@
     gomod2nix.inputs.flake-utils.follows = "flake-utils";
     nixpkgs-lib.url = "github:nix-community/nixpkgs.lib";
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
-    nmd.url = github:gvolpe/nmd;
   };
 
-  outputs = { self, nixpkgs, nixpkgs-lib, flake-utils, gomod2nix, nmd, ... }: flake-utils.lib.eachDefaultSystem
+  outputs = { self, nixpkgs, nixpkgs-lib, flake-utils, gomod2nix, ... }: flake-utils.lib.eachDefaultSystem
     (system:
       let
         pkgs = import nixpkgs {
-          inherit system; overlays = [ gomod2nix.overlays.default nmd.overlays.default ];
+          inherit system; overlays = [ gomod2nix.overlays.default ];
           config.allowUnfreePredicate = pkg: builtins.elem (pkgs.lib.getName pkg) [ "nomad" ];
         };
         nomad = pkgs.callPackage ./nomad.nix { };
