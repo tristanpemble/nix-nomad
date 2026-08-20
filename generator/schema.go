@@ -5,9 +5,6 @@ import (
 	"reflect"
 	"sort"
 	"strings"
-
-	"github.com/gertd/go-pluralize"
-	"github.com/stoewer/go-strcase"
 )
 
 type nixSchema struct {
@@ -50,9 +47,7 @@ const (
 	nixCollectionAttrs
 )
 
-type schemaAnalyzer struct {
-	pluralizer *pluralize.Client
-}
+type schemaAnalyzer struct{}
 
 type parsedHCLTag struct {
 	name     string
@@ -62,8 +57,7 @@ type parsedHCLTag struct {
 }
 
 func analyzeSchema(root reflect.Type) (*nixSchema, error) {
-	analyzer := schemaAnalyzer{pluralizer: pluralize.NewClient()}
-	return analyzer.analyze(root)
+	return (schemaAnalyzer{}).analyze(root)
 }
 
 func (a schemaAnalyzer) analyze(root reflect.Type) (*nixSchema, error) {
@@ -77,7 +71,7 @@ func (a schemaAnalyzer) analyze(root reflect.Type) (*nixSchema, error) {
 	byNixName := make(map[string]reflect.Type, len(goTypes))
 
 	for _, goType := range goTypes {
-		name := strcase.UpperCamelCase(goType.Name())
+		name := upperCamelCase(goType.Name())
 		if name == "" {
 			return nil, fmt.Errorf("type %s has no usable Nix type name", goType)
 		}
@@ -196,7 +190,7 @@ func (a schemaAnalyzer) analyzeField(parent reflect.Type, goField reflect.Struct
 	if name == "" {
 		name = goField.Name
 	}
-	field.name = strcase.LowerCamelCase(name)
+	field.name = lowerCamelCase(name)
 	if field.name == "" {
 		return nixField{}, fmt.Errorf("tag name %q has no usable Nix option name", tag.name)
 	}
@@ -232,7 +226,7 @@ func (a schemaAnalyzer) analyzeField(parent reflect.Type, goField reflect.Struct
 		field.collection = nixCollectionList
 	}
 	if field.collection == nixCollectionList && baseType.Kind() == reflect.Struct {
-		field.name = a.pluralizer.Plural(field.name)
+		field.name = pluralize(field.name)
 	}
 	field.typeExpr, field.defaultExpr = fieldTypeExpressions(field.collection, tag.block, tag.optional || tag.block, collectionElementType(goField.Type))
 	field.deprecationMessage = nomadFieldDeprecation(parent, goField)
@@ -324,7 +318,7 @@ func nixPrimitiveType(goType reflect.Type) string {
 	case reflect.Bool:
 		return "bool"
 	case reflect.Struct:
-		if name := strcase.UpperCamelCase(goType.Name()); name != "" {
+		if name := upperCamelCase(goType.Name()); name != "" {
 			return name
 		}
 	}

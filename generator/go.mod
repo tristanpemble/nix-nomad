@@ -3,9 +3,7 @@ module pemble.dev/nix-nomad
 go 1.25
 
 require (
-	github.com/gertd/go-pluralize v0.2.1
 	github.com/hashicorp/nomad/api v0.0.0-20260812182241-5c8612bba6eb
-	github.com/stoewer/go-strcase v1.3.0
 )
 
 require (

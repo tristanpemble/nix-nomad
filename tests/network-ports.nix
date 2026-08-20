@@ -1,8 +1,17 @@
-{ self, pkgs }:
+{ api, nomad, pkgs, system }:
 
 let
+  evaluate = modules:
+    (api.nomadConfiguration {
+      inherit modules;
+      nomad = _: nomad;
+    }).${system};
+
+  readJob = evaluated: name:
+    builtins.fromJSON (builtins.readFile "${evaluated.jobsPackage}/${name}.json");
+
   mkJob = network: {
-    job.test = {
+    jobs.test = {
       datacenters = [ "dc1" ];
       group.servers = {
         networks = [ network ];
@@ -16,24 +25,18 @@ let
 
   evalNetwork = network:
     let
-      evaluated = self.lib.evalNomadJobs {
-        inherit pkgs;
-        config = mkJob network;
-      };
-      job = evaluated.nomad.build.apiJob.test;
+      evaluated = evaluate [ (mkJob network) ];
+      job = readJob evaluated "test";
     in
     builtins.head ((builtins.head job.TaskGroups).Networks);
 
   evalFromJSON = value:
-    (self.lib.evalNomadJobs {
-      inherit pkgs;
-      config = { config, lib, ... }: {
+    (evaluate [ ({ config, lib, ... }: {
         options.test.network = lib.mkOption {
           type = lib.types.raw;
         };
         config.test.network = config._module.transformers.NetworkResource.fromJSON value;
-      };
-    }).test.network;
+      }) ]).config.test.network;
 
   dynamic = evalNetwork {
     port.http.to = 8080;

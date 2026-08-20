@@ -1,47 +1,81 @@
 {
-  inputs = {
-    flake-compat.url = "github:edolstra/flake-compat";
-    flake-compat.flake = false;
-    flake-utils.url = "github:numtide/flake-utils";
-    gomod2nix.url = "github:tweag/gomod2nix";
-    gomod2nix.inputs.flake-utils.follows = "flake-utils";
-    nixpkgs-lib.url = "github:nix-community/nixpkgs.lib";
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
-  };
+  inputs.nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
 
-  outputs = { self, nixpkgs, nixpkgs-lib, flake-utils, gomod2nix, ... }: flake-utils.lib.eachDefaultSystem
-    (system:
-      let
-        pkgs = import nixpkgs {
-          inherit system; overlays = [ gomod2nix.overlays.default ];
-          config.allowUnfreePredicate = pkg: builtins.elem (pkgs.lib.getName pkg) [ "nomad" ];
+  outputs = { self, nixpkgs }:
+    let
+      systems = [
+        "aarch64-darwin"
+        "aarch64-linux"
+        "x86_64-linux"
+      ];
+
+      forAllSystems = nixpkgs.lib.genAttrs systems;
+
+      pkgsFor = system: import nixpkgs {
+        inherit system;
+        config.allowUnfreePredicate = package:
+          builtins.elem (nixpkgs.lib.getName package) [ "nomad" ];
+      };
+
+      packagesFor = system:
+        let
+          pkgs = pkgsFor system;
+        in
+        {
+          docs = pkgs.callPackage ./docs.nix { inherit self; };
         };
-        nomad = pkgs.callPackage ./nomad.nix { };
-      in
-      {
-        packages.default = self.packages.${system}.generator;
-        packages.generator = pkgs.callPackage ./generator { };
-        packages.nomad = nomad;
-        packages.docs = pkgs.callPackage ./docs.nix {
-          inherit self;
-        };
-        devShells.default = pkgs.callPackage ./shell.nix { inherit nomad; };
-        checks.hello = self.lib.mkNomadJobs {
-          inherit system pkgs;
-          config = [ ./examples/hello.nix ./examples/goodbye.nix ./examples/docs.nix ];
-        };
-        checks.network-ports = pkgs.writeText "network-port-tests" (import ./tests/network-ports.nix {
-          inherit self pkgs;
-        });
-        checks.hcl-json-parity = pkgs.writeText "hcl-json-parity-tests" (import ./tests/hcl-json-parity.nix {
-          inherit self pkgs;
-        });
-      }) // {
-    lib = import ./lib/without-pkgs.nix { inherit self nixpkgs nixpkgs-lib; };
-    overlays.default = final: prev: {
-      lib = prev.lib
-        // (import ./lib/without-pkgs.nix { inherit self nixpkgs nixpkgs-lib; })
-        // (import ./lib/with-pkgs.nix { inherit (prev) lib; pkgs = final; });
+    in
+    {
+      lib = import ./lib {
+        inherit pkgsFor systems;
+        inherit (nixpkgs) lib;
+      };
+
+      packages = forAllSystems packagesFor;
+
+      devShells = forAllSystems
+        (system:
+          let
+            pkgs = pkgsFor system;
+            nomad = pkgs.callPackage ./nomad.nix { };
+          in
+          {
+            default = pkgs.callPackage ./shell.nix { inherit nomad; };
+          });
+
+      checks = forAllSystems
+        (system:
+          let
+            pkgs = pkgsFor system;
+            nomad = pkgs.callPackage ./nomad.nix { };
+          in
+          {
+            hello = (self.lib.nomadConfiguration {
+              modules = [
+                ./examples/hello.nix
+                ./examples/goodbye.nix
+                ./examples/docs.nix
+              ];
+            }).${system}.jobsPackage;
+
+            network-ports = pkgs.writeText "network-port-tests" (import ./tests/network-ports.nix {
+              inherit nomad pkgs system;
+              api = self.lib;
+            });
+
+            hcl-json-parity = pkgs.writeText "hcl-json-parity-tests" (import ./tests/hcl-json-parity.nix {
+              inherit nomad pkgs system;
+              api = self.lib;
+            });
+
+            api = pkgs.writeText "api-tests" (import ./tests/api.nix {
+              inherit nomad pkgs system;
+              api = self.lib;
+            });
+
+            non-flake = pkgs.writeText "non-flake-tests" (import ./tests/non-flake.nix {
+              inherit pkgs;
+            });
+          });
     };
-  };
 }

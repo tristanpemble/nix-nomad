@@ -1,10 +1,15 @@
-{ nixpkgs, lib, nomad, evalNomadJobs }:
+{ pkgs }:
 
-{ system ? null
-, pkgs ? import nixpkgs.legacyPackages.${system}
-, config
-}:
+jobs:
 
-let evaluatedConfig = evalNomadJobs { inherit config pkgs system; }; in
-let jobs = lib.mapAttrs (_: job: job.drv) evaluatedConfig.job; in
-jobs
+let
+  jobFiles = pkgs.lib.mapAttrs
+    (name: job: pkgs.writeText "${name}.json" (builtins.toJSON job))
+    jobs;
+in
+pkgs.linkFarm "nomad-jobs" (pkgs.lib.mapAttrsToList
+  (name: path: {
+    name = "${name}.json";
+    inherit path;
+  })
+  jobFiles)

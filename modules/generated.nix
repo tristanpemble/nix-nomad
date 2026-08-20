@@ -2509,8 +2509,8 @@
       // (if attrs ? group && builtins.isAttrs attrs.group then {
         TaskGroups = mapAttrsToList
           (_: group: TaskGroup.toJSON (group // {
-            __nixNomadInheritedVault = jobVault;
-            __nixNomadInheritedSecretScopes = jobSecretScopes;
+            __nix-nomadInheritedVault = jobVault;
+            __nix-nomadInheritedSecretScopes = jobSecretScopes;
           }))
           attrs.group;
       } else { })
@@ -3168,9 +3168,9 @@
         ++ optional (cpuPolicy != null) cpuPolicy
         ++ optional (memPolicy != null) memPolicy;
 
-      inheritedVault = attrs.__nixNomadInheritedVault or null;
+      inheritedVault = attrs.__nix-nomadInheritedVault or null;
       effectiveVault = if attrs ? vault && attrs.vault != null then attrs.vault else inheritedVault;
-      inheritedSecretScopes = attrs.__nixNomadInheritedSecretScopes or [ ];
+      inheritedSecretScopes = attrs.__nix-nomadInheritedSecretScopes or [ ];
       taskSecrets = if attrs ? secret && builtins.isAttrs attrs.secret then mapAttrsToList (_: Secret.toJSON) attrs.secret else [ ];
       inheritedSecrets = concatMap (scope: if builtins.isAttrs scope then mapAttrsToList (_: Secret.toJSON) scope else [ ]) inheritedSecretScopes;
       secrets = taskSecrets ++ inheritedSecrets;
@@ -3343,9 +3343,9 @@
   _module.transformers.TaskGroup.toJSON = with lib; with config._module.transformers; attrs: if !(builtins.isAttrs attrs) then null else
   (
     let
-      inheritedVault = attrs.__nixNomadInheritedVault or null;
+      inheritedVault = attrs.__nix-nomadInheritedVault or null;
       effectiveVault = if attrs ? vault && attrs.vault != null then attrs.vault else inheritedVault;
-      inheritedSecretScopes = attrs.__nixNomadInheritedSecretScopes or [ ];
+      inheritedSecretScopes = attrs.__nix-nomadInheritedSecretScopes or [ ];
       secretScopes = (if attrs ? secret && builtins.isAttrs attrs.secret then [ attrs.secret ] else [ ]) ++ inheritedSecretScopes;
     in
     (
@@ -3375,8 +3375,8 @@
       // (if attrs ? task && builtins.isAttrs attrs.task then {
         Tasks = mapAttrsToList
           (_: task: Task.toJSON (task // {
-            __nixNomadInheritedVault = effectiveVault;
-            __nixNomadInheritedSecretScopes = secretScopes;
+            __nix-nomadInheritedVault = effectiveVault;
+            __nix-nomadInheritedSecretScopes = secretScopes;
           }))
           attrs.task;
       } else { })

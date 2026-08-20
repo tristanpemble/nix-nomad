@@ -1,8 +1,8 @@
 {
-  job.hello.type = "batch";
-  job.hello.datacenters = [ "dc1" ];
+  jobs.hello.type = "batch";
+  jobs.hello.datacenters = [ "dc1" ];
 
-  job.hello.group.webs = {
+  jobs.hello.group.webs = {
     count = 1;
 
     task.frontend = {

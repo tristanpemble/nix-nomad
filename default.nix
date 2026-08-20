@@ -1,11 +1,19 @@
-(import
-  (
-    let
-      lock = builtins.fromJSON (builtins.readFile ./flake.lock);
-    in
-    fetchTarball {
-      url = "https://github.com/edolstra/flake-compat/archive/${lock.nodes.flake-compat.locked.rev}.tar.gz";
-      sha256 = lock.nodes.flake-compat.locked.narHash;
-    }
-  )
-  { src = ./.; }).defaultNix
+{ pkgs }:
+
+let
+  system = pkgs.stdenv.hostPlatform.system;
+  pkgsFor = requestedSystem:
+    if requestedSystem == system then
+      pkgs
+    else
+      throw "nix-nomad was initialized for ${system}, not ${requestedSystem}";
+
+  api = import ./lib {
+    inherit pkgsFor;
+    inherit (pkgs) lib;
+    systems = [ system ];
+  };
+in
+{
+  lib = api;
+}

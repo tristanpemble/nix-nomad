@@ -1,9 +1,16 @@
-{ self, pkgs }:
+{ api, nomad, pkgs, system }:
 
 let
-  evaluated = self.lib.evalNomadJobs {
-    inherit pkgs;
-    config = ({ config, lib, ... }: {
+  evaluate = modules:
+    (api.nomadConfiguration {
+      inherit modules;
+      nomad = _: nomad;
+    }).${system};
+
+  readJob = evaluated: name:
+    builtins.fromJSON (builtins.readFile "${evaluated.jobsPackage}/${name}.json");
+
+  evaluated = evaluate [ ({ config, lib, ... }: {
       options.audit = {
         importedGroup = lib.mkOption { type = lib.types.raw; };
         importedGateway = lib.mkOption { type = lib.types.raw; };
@@ -50,7 +57,7 @@ let
           ];
         };
 
-        job.audit = {
+        jobs.audit = {
           datacenters = [ "dc1" ];
           periodic.crons = [ "0 0 * * *" ];
           secret.job = {
@@ -107,10 +114,9 @@ let
           };
         };
       };
-    });
-  };
+    }) ];
 
-  job = evaluated.nomad.build.apiJob.audit;
+  job = readJob evaluated "audit";
   groups = builtins.listToAttrs (map
     (group: {
       name = group.Name;
@@ -127,10 +133,9 @@ let
   task = groupTasks.audit;
 
   evalInvalidTask = taskConfig:
-    (self.lib.evalNomadJobs {
-      inherit pkgs;
-      config.job.invalid.group.invalid.task.invalid = taskConfig;
-    }).nomad.build.apiJob.invalid;
+    readJob (evaluate [{
+        jobs.invalid.group.invalid.task.invalid = taskConfig;
+      }]) "invalid";
   duplicateDefaultIdentity = builtins.tryEval (builtins.deepSeq
     (evalInvalidTask {
       identities = [{ } { name = "default"; }];
@@ -143,13 +148,12 @@ let
     true);
   conflictingPeriodicForms = builtins.tryEval (builtins.deepSeq
     (
-      (self.lib.evalNomadJobs {
-        inherit pkgs;
-        config.job.invalid.periodic = {
-          cron = "0 0 * * *";
-          crons = [ "0 1 * * *" ];
-        };
-      }).nomad.build.apiJob.invalid
+      readJob (evaluate [{
+          jobs.invalid.periodic = {
+            cron = "0 0 * * *";
+            crons = [ "0 1 * * *" ];
+          };
+        }]) "invalid"
     )
     true);
 in
@@ -170,13 +174,13 @@ assert task.Vault.ChangeSignal == "SIGHUP";
 assert groupTasks.override.Vault.ChangeMode == "noop";
 assert map (secret: secret.Name) task.Secrets == [ "task" "group" "job" ];
 assert (builtins.head (builtins.head task.Services).Checks).Header."X-Test" == [ "one" "two" ];
-assert evaluated.audit.importedGroup.volume.data.source == "data-source";
-assert evaluated.audit.importedGateway.envoyGatewayBindAddresses.public.address == "0.0.0.0";
-assert evaluated.audit.importedGateway.envoyGatewayBindAddresses.public.port == 8443;
-assert map (identity: identity.name) evaluated.audit.importedTask.identities == [ "default" "metrics" ];
-assert evaluated.audit.importedTask.scaling.cpu.enabled;
-assert !evaluated.audit.importedTask.scaling.mem.enabled;
-assert map (policy: policy.type) evaluated.audit.importedTask.scalings == [ "future_type" ];
+assert evaluated.config.audit.importedGroup.volume.data.source == "data-source";
+assert evaluated.config.audit.importedGateway.envoyGatewayBindAddresses.public.address == "0.0.0.0";
+assert evaluated.config.audit.importedGateway.envoyGatewayBindAddresses.public.port == 8443;
+assert map (identity: identity.name) evaluated.config.audit.importedTask.identities == [ "default" "metrics" ];
+assert evaluated.config.audit.importedTask.scaling.cpu.enabled;
+assert !evaluated.config.audit.importedTask.scaling.mem.enabled;
+assert map (policy: policy.type) evaluated.config.audit.importedTask.scalings == [ "future_type" ];
 assert !duplicateDefaultIdentity.success;
 assert !invalidCPUScalingType.success;
 assert !conflictingPeriodicForms.success;

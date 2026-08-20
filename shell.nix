@@ -3,7 +3,6 @@
 mkShell {
   buildInputs = [
     go
-    gomod2nix
     jq
     nomad
   ];

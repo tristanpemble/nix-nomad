@@ -1,33 +1,50 @@
-{ self, nixpkgs, nixpkgs-lib, nomad }:
-
-{ system ? builtins.currentSystem
-, pkgs ? import nixpkgs.legacyPackages.${system}
-, config
-, extraArgs ? { }
+{ coreModule
+, defaultNomad
+, hcl
+, lib
+, schemaFor
+, time
 }:
 
+{ modules
+, nomad ? defaultNomad
+, extraSpecialArgs ? { }
+}:
+
+assert lib.assertMsg (builtins.isList modules) "evalNomadJobs modules must be a list";
+
 let
-  inherit (pkgs) lib;
+  schemaModule = schemaFor nomad;
+  normalize = evaluated:
+    evaluated // {
+      config = builtins.removeAttrs evaluated.config [ "_nix-nomad" ];
+      jobs = evaluated.config._nix-nomad.jobs;
+      extendModules = args: normalize (evaluated.extendModules args);
+    };
   evaluated = lib.evalModules {
-    specialArgs = extraArgs // {
-      lib = pkgs.lib
-        // (import ./without-pkgs.nix { inherit self nixpkgs nixpkgs-lib; })
-        // (import ./with-pkgs.nix { inherit pkgs; inherit (pkgs) lib; })
-        // {
-        importNomadModule = path: vars: { config, lib, ... }:
-          let
-            job = config._module.transformers.Job.fromJSON (lib.importNomadHCL path vars).Job;
-          in
-          {
-            job.${job.name} = builtins.removeAttrs job [ "id" "name" ];
-          };
+    class = "nomad";
+    specialArgs = extraSpecialArgs // {
+      inherit nomad;
+      nix-nomad = {
+        inherit hcl time;
       };
     };
-
     modules = [
-      ({ _module.args = { inherit pkgs; inherit (nomad) time; }; })
-      ../modules
-    ] ++ (lib.toList config);
+      coreModule
+      schemaModule
+      ({ config, lib, ... }: {
+        options._nix-nomad.jobs = lib.mkOption {
+          type = with lib.types; attrsOf raw;
+          internal = true;
+          visible = false;
+          readOnly = true;
+        };
+
+        config._nix-nomad.jobs = lib.mapAttrs
+          (_: config._module.transformers.Job.toJSON)
+          config.jobs;
+      })
+    ] ++ modules;
   };
 in
-evaluated.config
+normalize evaluated

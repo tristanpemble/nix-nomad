@@ -2,7 +2,7 @@
   _class = "nomad";
 
   imports = [
-    ./core.nix
-    ./generated.nix
+    ./lib.nix
+    ./jobset.nix
   ];
 }

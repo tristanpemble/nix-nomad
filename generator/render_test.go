@@ -205,8 +205,8 @@ func TestRenderNomadJobAndGroupScopes(t *testing.T) {
 
 	jobToJSON := renderToJSON(requireType(t, schema, "Job"))
 	for _, fragment := range []string{
-		"__nixNomadInheritedVault = jobVault;",
-		"__nixNomadInheritedSecretScopes = jobSecretScopes;",
+		"__nix-nomadInheritedVault = jobVault;",
+		"__nix-nomadInheritedSecretScopes = jobSecretScopes;",
 	} {
 		if !strings.Contains(jobToJSON, fragment) {
 			t.Errorf("Job.toJSON does not contain %q", fragment)
@@ -216,7 +216,7 @@ func TestRenderNomadJobAndGroupScopes(t *testing.T) {
 	groupToJSON := renderToJSON(requireType(t, schema, "TaskGroup"))
 	for _, fragment := range []string{
 		"effectiveVault = if attrs ? vault && attrs.vault != null then attrs.vault else inheritedVault;",
-		"__nixNomadInheritedSecretScopes = secretScopes;",
+		"__nix-nomadInheritedSecretScopes = secretScopes;",
 	} {
 		if !strings.Contains(groupToJSON, fragment) {
 			t.Errorf("TaskGroup.toJSON does not contain %q", fragment)

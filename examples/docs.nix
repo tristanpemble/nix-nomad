@@ -1,9 +1,12 @@
-{ lib, ... }:
+{ lib, nix-nomad, nomad, ... }:
 
 {
   imports = [
-    (lib.importNomadModule ./docs.hcl { })
+    (nix-nomad.hcl.importModule {
+      inherit nomad;
+      path = ./docs.hcl;
+    })
   ];
 
-  job.docs.region = lib.mkForce "global";
+  jobs.docs.region = lib.mkForce "global";
 }

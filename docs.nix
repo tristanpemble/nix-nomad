@@ -10,13 +10,13 @@
 
 let
   evaluatedModules = lib.evalModules {
+    class = "nomad";
     modules = [
       {
         options._module.args = lib.mkOption { visible = false; };
       }
       ./modules
     ];
-    specialArgs = { inherit pkgs; };
   };
 
   options = nixosOptionsDoc {
@@ -50,7 +50,7 @@ let
     };
   };
 
-  documentationSource = writeTextDir "index.md" (builtins.readFile ./DOCUMENTATION.md);
+  documentationSource = writeTextDir "index.md" (builtins.readFile ./README.md);
 
   ndgConfig = writers.writeTOML "ndg.toml" {
     highlight_code = true;
