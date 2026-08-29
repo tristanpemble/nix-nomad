@@ -103,6 +103,10 @@ let
                   name = "headers";
                   type = "http";
                 }];
+                connect.sidecarService.proxy.upstreams = [{
+                  destinationName = "database";
+                  localBindPort = 5432;
+                }];
                 name = "audit";
               }];
             };
@@ -174,6 +178,7 @@ assert task.Vault.ChangeSignal == "SIGHUP";
 assert groupTasks.override.Vault.ChangeMode == "noop";
 assert map (secret: secret.Name) task.Secrets == [ "task" "group" "job" ];
 assert (builtins.head (builtins.head task.Services).Checks).Header."X-Test" == [ "one" "two" ];
+assert (builtins.head (builtins.head task.Services).Connect.SidecarService.Proxy.Upstreams).DestinationName == "database";
 assert evaluated.config.audit.importedGroup.volume.data.source == "data-source";
 assert evaluated.config.audit.importedGateway.envoyGatewayBindAddresses.public.address == "0.0.0.0";
 assert evaluated.config.audit.importedGateway.envoyGatewayBindAddresses.public.port == 8443;

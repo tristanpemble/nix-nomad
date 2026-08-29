@@ -225,7 +225,7 @@ func (a schemaAnalyzer) analyzeField(parent reflect.Type, goField reflect.Struct
 	case field.container == goContainerSlice:
 		field.collection = nixCollectionList
 	}
-	if field.collection == nixCollectionList && baseType.Kind() == reflect.Struct {
+	if field.collection == nixCollectionList && baseType.Kind() == reflect.Struct && field.name != lowerCamelCase(goField.Name) {
 		field.name = pluralize(field.name)
 	}
 	field.typeExpr, field.defaultExpr = fieldTypeExpressions(field.collection, tag.block, tag.optional || tag.block, collectionElementType(goField.Type))

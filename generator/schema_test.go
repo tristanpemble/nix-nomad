@@ -9,11 +9,12 @@ import (
 )
 
 type fixtureRoot struct {
-	Tasks    []*fixtureTask    `hcl:"task,block"`
-	Metadata map[string]string `hcl:"meta,optional"`
-	Lock     *string           `hcl:",lock,optional"`
-	Skipped  string            `hcl:"-"`
-	Untagged string
+	Tasks     []*fixtureTask    `hcl:"task,block"`
+	Upstreams []*fixtureStep    `hcl:"upstreams,block"`
+	Metadata  map[string]string `hcl:"meta,optional"`
+	Lock      *string           `hcl:",lock,optional"`
+	Skipped   string            `hcl:"-"`
+	Untagged  string
 }
 
 type fixtureTask struct {
@@ -81,12 +82,20 @@ func TestAnalyzeSchemaCyclesAndCollections(t *testing.T) {
 		t.Error("FixtureTask.steps was not modeled as a list of FixtureStep")
 	}
 
+	upstreams := requireField(t, root, "upstreams")
+	if got, want := upstreams.typeExpr, "(nullOr (listOf FixtureStep))"; got != want {
+		t.Errorf("FixtureRoot.upstreams type = %q, want %q", got, want)
+	}
+	if upstreams.collection != nixCollectionList || upstreams.nestedType != step {
+		t.Error("FixtureRoot.upstreams was not modeled as a list of FixtureStep")
+	}
+
 	lock := requireField(t, root, "lock")
 	if got, want := lock.typeExpr, "(nullOr str)"; got != want {
 		t.Errorf("FixtureRoot.lock type = %q, want %q", got, want)
 	}
-	if len(root.fields) != 3 {
-		t.Errorf("FixtureRoot field count = %d, want 3; hcl:\"-\" and untagged fields must be skipped", len(root.fields))
+	if len(root.fields) != 4 {
+		t.Errorf("FixtureRoot field count = %d, want 4; hcl:\"-\" and untagged fields must be skipped", len(root.fields))
 	}
 }
 
