@@ -57,7 +57,7 @@ let
           ];
         };
 
-        jobs.audit = {
+        job.audit = {
           datacenters = [ "dc1" ];
           periodic.crons = [ "0 0 * * *" ];
           secret.job = {
@@ -138,7 +138,7 @@ let
 
   evalInvalidTask = taskConfig:
     readJob (evaluate [{
-        jobs.invalid.group.invalid.task.invalid = taskConfig;
+        job.invalid.group.invalid.task.invalid = taskConfig;
       }]) "invalid";
   duplicateDefaultIdentity = builtins.tryEval (builtins.deepSeq
     (evalInvalidTask {
@@ -153,7 +153,7 @@ let
   conflictingPeriodicForms = builtins.tryEval (builtins.deepSeq
     (
       readJob (evaluate [{
-          jobs.invalid.periodic = {
+          job.invalid.periodic = {
             cron = "0 0 * * *";
             crons = [ "0 1 * * *" ];
           };

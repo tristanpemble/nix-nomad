@@ -4,7 +4,7 @@ let
   nix-nomad = import ../default.nix { inherit pkgs; };
   system = pkgs.stdenv.hostPlatform.system;
   modules = [{
-    jobs.test = {
+    job.test = {
       type = "batch";
       datacenters = [ "dc1" ];
       group.test.task.test = {

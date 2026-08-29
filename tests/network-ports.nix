@@ -11,7 +11,7 @@ let
     builtins.fromJSON (builtins.readFile "${evaluated.jobsPackage}/${name}.json");
 
   mkJob = network: {
-    jobs.test = {
+    job.test = {
       datacenters = [ "dc1" ];
       group.servers = {
         networks = [ network ];

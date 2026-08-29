@@ -63,7 +63,7 @@ Then export a module through `nomadModules` and evaluate it through
   in
   {
     nomadModules.default = {
-      jobs.hello = {
+      job.hello = {
         type = "batch";
         datacenters = [ "dc1" ];
 
@@ -143,7 +143,7 @@ For example, a shared module can set defaults for an organization:
 { lib, nix-nomad, ... }:
 
 {
-  jobs.api = {
+  job.api = {
     datacenters = lib.mkDefault [ "dc1" ];
     update = with nix-nomad.lib.time; {
       healthyDeadline = lib.mkDefault (15 * minute);
@@ -153,8 +153,8 @@ For example, a shared module can set defaults for an organization:
 }
 ```
 
-The job module defines the tasks and services in `jobs.api`. A production
-environment module can set `jobs.api.datacenters` to a value with a higher
+The job module defines the tasks and services in `job.api`. A production
+environment module can set `job.api.datacenters` to a value with a higher
 priority. Large configurations can define options for an organization and use
 them to produce Nomad jobs. nix-nomad provides the Nomad types and JSON
 conversion. Local modules provide the interface for the organization.
@@ -257,7 +257,7 @@ You can include an existing HCL job in the same module evaluation:
     })
   ];
 
-  jobs.my-job.region = lib.mkForce "global";
+  job.my-job.region = lib.mkForce "global";
 }
 ```
 

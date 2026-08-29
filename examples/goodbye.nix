@@ -1,8 +1,8 @@
 {
-  jobs.goodbye.type = "batch";
-  jobs.goodbye.datacenters = [ "dc1" ];
+  job.goodbye.type = "batch";
+  job.goodbye.datacenters = [ "dc1" ];
 
-  jobs.goodbye.group.webs = {
+  job.goodbye.group.webs = {
     count = 1;
 
     task.frontend = {

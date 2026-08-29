@@ -42,7 +42,7 @@ let
 
         config._nix-nomad.jobs = lib.mapAttrs
           (_: config._module.transformers.Job.toJSON)
-          config.jobs;
+          config.job;
       })
     ] ++ modules;
   };

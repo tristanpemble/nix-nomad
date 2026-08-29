@@ -26,6 +26,6 @@
       job = config._module.transformers.Job.fromJSON parsed.Job;
     in
     {
-      jobs.${job.name} = builtins.removeAttrs job [ "id" "name" ];
+      job.${job.name} = builtins.removeAttrs job [ "id" "name" ];
     };
 }
