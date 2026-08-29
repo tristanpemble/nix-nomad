@@ -109,26 +109,37 @@ Install the `nix-nomad` package, or run it from this flake. The command reads
 job files and the Nomad package that the configuration selects.
 
 ```console
-$ nix-nomad --flake .#default build
-$ nix-nomad --flake .#default validate
-$ nix-nomad --flake .#default plan
-$ nix-nomad --flake .#default apply
+$ nix-nomad --flake .#default build hello
+$ nix-nomad --flake .#default validate hello
+$ nix-nomad --flake .#default plan hello
+$ nix-nomad --flake .#default run hello
+$ nix-nomad --flake .#default run --all
 ```
 
 If you do not specify a flake, the command uses `.#default`. It uses
 `builtins.currentSystem` because it must run the selected Nomad package.
-`build` creates the `result` link. The other commands process all JSON files in
-the job package in name order. Before `apply` submits any job, it validates all
-jobs. If you do not give a command, `nix-nomad` shows help.
+Each command requires one job name or `--all`. `build` creates the `result`
+link. For one job, the link points to its JSON file. With `--all`, the link
+points to a directory that contains every JSON file. Commands that select all
+jobs process them in name order. `run` does not validate jobs first; use the
+separate `validate` command when you need that check. If you do not give a
+command, `nix-nomad` shows help.
+
+For `validate`, `plan`, and `run`, arguments after `--` pass to the
+corresponding Nomad job command:
+
+```console
+$ nix-nomad --flake .#production run api -- -policy-override
+```
 
 Use the standard Nomad environment variables to configure the cluster
 connection and authentication. These variables include `NOMAD_ADDR`,
 `NOMAD_NAMESPACE`, `NOMAD_TOKEN`, and the Nomad TLS variables.
 
-`apply` has two important limits:
+`run` has two important limits:
 
 - It does not remove jobs that are not in the configuration.
-- An apply operation for multiple jobs is not atomic.
+- A run operation for multiple jobs is not atomic.
 
 See the [option reference](https://tristanpemble.github.io/nix-nomad/) for the
 full list of Nomad job options.

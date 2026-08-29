@@ -11,6 +11,8 @@ import (
 	"reflect"
 	"strings"
 	"testing"
+
+	"github.com/alecthomas/kong"
 )
 
 func TestSplitFlakeReference(t *testing.T) {
@@ -59,8 +61,70 @@ func TestSelectionAttributes(t *testing.T) {
 	if got, want := selection.jobsPackage(), `.#nomadConfigurations."production"."x86_64-linux".jobsPackage`; got != want {
 		t.Fatalf("jobs package selector = %q, want %q", got, want)
 	}
+	if got, want := selection.jobPackage(`api.v2`), `.#nomadConfigurations."production"."x86_64-linux".jobsPackages."api.v2"`; got != want {
+		t.Fatalf("job package selector = %q, want %q", got, want)
+	}
 	if got, want := selection.nomad(), `.#nomadConfigurations."production"."x86_64-linux".nomad`; got != want {
 		t.Fatalf("Nomad selector = %q, want %q", got, want)
+	}
+}
+
+func TestJobTarget(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name      string
+		target    jobTarget
+		wantError bool
+	}{
+		{name: "one job", target: jobTarget{Job: "api"}},
+		{name: "all jobs", target: jobTarget{All: true}},
+		{name: "no selection", wantError: true},
+		{name: "conflicting selection", target: jobTarget{All: true, Job: "api"}, wantError: true},
+	}
+
+	for _, test := range tests {
+		test := test
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+			err := test.target.validate()
+			if test.wantError {
+				var exitError *ExitError
+				if !errors.As(err, &exitError) || exitError.Code != 2 {
+					t.Fatalf("target error = %v, want usage error", err)
+				}
+				return
+			}
+			if err != nil {
+				t.Fatalf("validate target: %v", err)
+			}
+		})
+	}
+}
+
+func TestSplitNomadArguments(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name      string
+		arguments []string
+		cli       []string
+		nomad     []string
+	}{
+		{name: "no separator", arguments: []string{"run", "api"}, cli: []string{"run", "api"}},
+		{name: "arguments", arguments: []string{"run", "api", "--", "-namespace=prod", "-detach"}, cli: []string{"run", "api"}, nomad: []string{"-namespace=prod", "-detach"}},
+		{name: "empty arguments", arguments: []string{"validate", "api", "--"}, cli: []string{"validate", "api"}},
+	}
+
+	for _, test := range tests {
+		test := test
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+			cli, nomad := splitNomadArguments(test.arguments)
+			if !reflect.DeepEqual(cli, test.cli) || !reflect.DeepEqual(nomad, test.nomad) {
+				t.Fatalf("split arguments = (%q, %q), want (%q, %q)", cli, nomad, test.cli, test.nomad)
+			}
+		})
 	}
 }
 
@@ -95,6 +159,25 @@ func TestJobFilesRejectsEmptyPackage(t *testing.T) {
 	}
 }
 
+func TestSelectedJobFile(t *testing.T) {
+	t.Parallel()
+
+	path := filepath.Join(t.TempDir(), "api.json")
+	if err := os.WriteFile(path, []byte("{}"), 0o600); err != nil {
+		t.Fatalf("write fixture: %v", err)
+	}
+	got, err := selectedJobFiles(path, false)
+	if err != nil {
+		t.Fatalf("select job file: %v", err)
+	}
+	if want := []string{path}; !reflect.DeepEqual(got, want) {
+		t.Fatalf("selected job files = %q, want %q", got, want)
+	}
+	if _, err := selectedJobFiles(filepath.Dir(path), false); err == nil {
+		t.Fatal("expected a directory error")
+	}
+}
+
 func TestHelpCommandMatchesDefaultAndIsHidden(t *testing.T) {
 	t.Parallel()
 
@@ -116,9 +199,62 @@ func TestHelpCommandMatchesDefaultAndIsHidden(t *testing.T) {
 	if strings.Contains(defaultHelp, "\n  help") {
 		t.Fatalf("hidden help command is listed:\n%s", defaultHelp)
 	}
+	if !strings.Contains(defaultHelp, "\n  run [flags] <job_name>") || strings.Contains(defaultHelp, "\n  apply") {
+		t.Fatalf("help does not show the run command rename:\n%s", defaultHelp)
+	}
 }
 
-func TestApplyValidatesAllJobsBeforeSubmission(t *testing.T) {
+func TestNomadStyleCommandHelp(t *testing.T) {
+	t.Parallel()
+
+	var stdout bytes.Buffer
+	var stderr bytes.Buffer
+	parser, err := kong.New(&cli{}, kong.Name("nix-nomad"), kong.Writers(&stdout, &stderr))
+	if err != nil {
+		t.Fatalf("create parser: %v", err)
+	}
+	context, err := parser.Parse([]string{"run", "api"})
+	if err != nil {
+		t.Fatalf("parse command: %v", err)
+	}
+	if err := nomadStyleHelp(kong.HelpOptions{}, context); err != nil {
+		t.Fatalf("print help: %v", err)
+	}
+	help := stdout.String()
+	if !strings.HasPrefix(help, "Usage: nix-nomad run [flags] <job_name>\n") {
+		t.Fatalf("run usage is not Nomad-style:\n%s", help)
+	}
+	if !strings.Contains(help, "\n  <job_name>    Name of one generated job.") {
+		t.Fatalf("run argument is shown as optional:\n%s", help)
+	}
+	if !strings.Contains(help, "Required unless --all is specified.") {
+		t.Fatalf("run help does not explain when job_name is required:\n%s", help)
+	}
+	if !strings.Contains(help, "Use all configured jobs instead of <job_name>.") {
+		t.Fatalf("run help does not explain --all:\n%s", help)
+	}
+}
+
+func TestCommandSelectionUsageErrors(t *testing.T) {
+	t.Parallel()
+
+	tests := [][]string{
+		{"validate"},
+		{"plan", "--all", "api"},
+		{"build", "api", "--", "-unused"},
+	}
+	for _, arguments := range tests {
+		var stdout bytes.Buffer
+		var stderr bytes.Buffer
+		err := Run(context.Background(), "test", arguments, strings.NewReader(""), &stdout, &stderr)
+		var exitError *ExitError
+		if !errors.As(err, &exitError) || exitError.Code != 2 {
+			t.Fatalf("run %q error = %v, want usage error", arguments, err)
+		}
+	}
+}
+
+func TestRunAllJobsAndCommandExitCodes(t *testing.T) {
 	t.Parallel()
 
 	directory := t.TempDir()
@@ -135,6 +271,7 @@ func TestApplyValidatesAllJobsBeforeSubmission(t *testing.T) {
 			t.Fatalf("write job fixture: %v", err)
 		}
 	}
+	alphaPath := filepath.Join(jobsDirectory, "alpha.json")
 
 	logPath := filepath.Join(directory, "nomad.log")
 	failPath := filepath.Join(directory, "fail-nomad")
@@ -151,6 +288,10 @@ func TestApplyValidatesAllJobsBeforeSubmission(t *testing.T) {
 	if err != nil {
 		t.Fatalf("marshal jobs build output: %v", err)
 	}
+	jobBuildOutput, err := json.Marshal([]nixBuildResult{{Outputs: map[string]string{"out": alphaPath}}})
+	if err != nil {
+		t.Fatalf("marshal job build output: %v", err)
+	}
 	nomadBuildOutput, err := json.Marshal([]nixBuildResult{{Outputs: map[string]string{"out": nomadDirectory}}})
 	if err != nil {
 		t.Fatalf("marshal Nomad build output: %v", err)
@@ -163,6 +304,7 @@ case "$1" in
     ;;
   build)
     case "$*" in
+      *jobsPackages*) ln -s %q "$4"; printf '%%s' %q ;;
       *jobsPackage*) ln -s %q "$4"; printf '%%s' %q ;;
       *nomad*) ln -s %q "$4"; printf '%%s' %q ;;
       *) exit 2 ;;
@@ -170,15 +312,15 @@ case "$1" in
     ;;
   *) exit 2 ;;
 esac
-`, nixLogPath, jobsDirectory, jobsBuildOutput, nomadDirectory, nomadBuildOutput)
+`, nixLogPath, alphaPath, jobBuildOutput, jobsDirectory, jobsBuildOutput, nomadDirectory, nomadBuildOutput)
 	if err := os.WriteFile(nixPath, []byte(nixScript), 0o700); err != nil {
 		t.Fatalf("write Nix fixture: %v", err)
 	}
 
 	var stdout bytes.Buffer
 	var stderr bytes.Buffer
-	if err := Run(context.Background(), "test", []string{"--nix", nixPath, "apply", "--detach"}, strings.NewReader(""), &stdout, &stderr); err != nil {
-		t.Fatalf("run apply: %v\nstderr: %s", err, stderr.String())
+	if err := Run(context.Background(), "test", []string{"--nix", nixPath, "run", "--all", "--detach", "--", "-policy-override"}, strings.NewReader(""), &stdout, &stderr); err != nil {
+		t.Fatalf("run all jobs: %v\nstderr: %s", err, stderr.String())
 	}
 
 	log, err := os.ReadFile(logPath)
@@ -186,10 +328,8 @@ esac
 		t.Fatalf("read Nomad log: %v", err)
 	}
 	want := strings.Join([]string{
-		"job validate -json " + filepath.Join(jobsDirectory, "alpha.json"),
-		"job validate -json " + filepath.Join(jobsDirectory, "zeta.json"),
-		"job run -json -detach " + filepath.Join(jobsDirectory, "alpha.json"),
-		"job run -json -detach " + filepath.Join(jobsDirectory, "zeta.json"),
+		"job run -json -detach -policy-override " + filepath.Join(jobsDirectory, "alpha.json"),
+		"job run -json -detach -policy-override " + filepath.Join(jobsDirectory, "zeta.json"),
 		"",
 	}, "\n")
 	if string(log) != want {
@@ -203,13 +343,23 @@ esac
 	if err := os.WriteFile(nixLogPath, nil, 0o600); err != nil {
 		t.Fatalf("reset Nix log: %v", err)
 	}
+	if err := os.WriteFile(logPath, nil, 0o600); err != nil {
+		t.Fatalf("reset Nomad log: %v", err)
+	}
 	stderr.Reset()
-	err = Run(context.Background(), "test", []string{"--nix", nixPath, "validate"}, strings.NewReader(""), &stdout, &stderr)
+	err = Run(context.Background(), "test", []string{"--nix", nixPath, "validate", "alpha", "--", "-namespace=prod"}, strings.NewReader(""), &stdout, &stderr)
 	var exitError *ExitError
 	if !errors.As(err, &exitError) || exitError.Code != 7 {
 		t.Fatalf("validate error = %v, want exit code 7", err)
 	}
 	assertTemporaryRootsRemoved(t, nixLogPath)
+	log, err = os.ReadFile(logPath)
+	if err != nil {
+		t.Fatalf("read Nomad log: %v", err)
+	}
+	if want := "job validate -json -namespace=prod " + alphaPath + "\n"; string(log) != want {
+		t.Fatalf("validate call = %q, want %q", log, want)
+	}
 
 	if err := os.Remove(failPath); err != nil {
 		t.Fatalf("disable Nomad failure: %v", err)
@@ -221,7 +371,7 @@ esac
 		t.Fatalf("reset Nix log: %v", err)
 	}
 	stderr.Reset()
-	err = Run(context.Background(), "test", []string{"--nix", nixPath, "plan"}, strings.NewReader(""), &stdout, &stderr)
+	err = Run(context.Background(), "test", []string{"--nix", nixPath, "plan", "--all"}, strings.NewReader(""), &stdout, &stderr)
 	exitError = nil
 	if !errors.As(err, &exitError) || exitError.Code != 1 || exitError.Err != nil {
 		t.Fatalf("plan error = %#v, want quiet exit code 1", err)

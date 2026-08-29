@@ -22,23 +22,34 @@ type cli struct {
 	Flake   string           `default:".#default" help:"Flake reference and nomadConfigurations name." placeholder:"URI#NAME"`
 	Nix     string           `default:"nix" help:"Nix executable." hidden:""`
 
-	Build    buildCommand    `cmd:"" help:"Build the generated Nomad job files."`
-	Validate validateCommand `cmd:"" help:"Validate every generated job."`
-	Plan     planCommand     `cmd:"" help:"Plan every generated job against the cluster."`
-	Apply    applyCommand    `cmd:"" help:"Validate and submit every generated job."`
+	Build    buildCommand    `cmd:"" help:"Build the selected Nomad job files."`
+	Validate validateCommand `cmd:"" help:"Validate the selected Nomad jobs."`
+	Plan     planCommand     `cmd:"" help:"Plan the selected Nomad jobs against the cluster."`
+	Run      runCommand      `cmd:"" help:"Run the selected Nomad jobs."`
 	Help     helpCommand     `cmd:"" hidden:""`
 }
 
-type buildCommand struct {
-	OutLink string `default:"result" help:"Path for the result symlink." placeholder:"PATH"`
+type jobTarget struct {
+	All bool   `help:"Use all configured jobs instead of <job_name>."`
+	Job string `arg:"" optional:"" name:"job_name" help:"Name of one generated job. Required unless --all is specified."`
 }
 
-type validateCommand struct{}
+type buildCommand struct {
+	Target  jobTarget `embed:""`
+	OutLink string    `default:"result" help:"Path for the result symlink." placeholder:"PATH"`
+}
 
-type planCommand struct{}
+type validateCommand struct {
+	Target jobTarget `embed:""`
+}
 
-type applyCommand struct {
-	Detach bool `help:"Return after each job is submitted instead of monitoring it."`
+type planCommand struct {
+	Target jobTarget `embed:""`
+}
+
+type runCommand struct {
+	Target jobTarget `embed:""`
+	Detach bool      `help:"Return after each job is submitted instead of monitoring it."`
 }
 
 type helpCommand struct{}
@@ -58,16 +69,18 @@ func (e *ExitError) Error() string {
 }
 
 type runtime struct {
-	config *cli
-	stdin  io.Reader
-	stdout io.Writer
-	stderr io.Writer
+	config         *cli
+	nomadArguments []string
+	stdin          io.Reader
+	stdout         io.Writer
+	stderr         io.Writer
 }
 
 func Run(ctx context.Context, version string, args []string, stdin io.Reader, stdout, stderr io.Writer) error {
 	if len(args) == 0 {
 		args = []string{"help"}
 	}
+	cliArguments, nomadArguments := splitNomadArguments(args)
 
 	configuration := &cli{}
 	parser, err := kong.New(
@@ -75,6 +88,7 @@ func Run(ctx context.Context, version string, args []string, stdin io.Reader, st
 		kong.Name("nix-nomad"),
 		kong.Description("Build and deploy Nomad jobs from a nix-nomad flake."),
 		kong.UsageOnError(),
+		kong.Help(nomadStyleHelp),
 		kong.Vars{"version": version},
 		kong.Writers(stdout, stderr),
 	)
@@ -82,16 +96,17 @@ func Run(ctx context.Context, version string, args []string, stdin io.Reader, st
 		return fmt.Errorf("create command parser: %w", err)
 	}
 
-	parsed, err := parser.Parse(args)
+	parsed, err := parser.Parse(cliArguments)
 	if err != nil {
 		return &ExitError{Code: 2}
 	}
 
 	execution := &runtime{
-		config: configuration,
-		stdin:  stdin,
-		stdout: stdout,
-		stderr: stderr,
+		config:         configuration,
+		nomadArguments: nomadArguments,
+		stdin:          stdin,
+		stdout:         stdout,
+		stderr:         stderr,
 	}
 	parsed.BindTo(ctx, (*context.Context)(nil))
 	if err := parsed.Run(execution); err != nil {
@@ -105,22 +120,71 @@ func (*helpCommand) Run(context *kong.Context) error {
 	return context.PrintUsage(false)
 }
 
+func nomadStyleHelp(options kong.HelpOptions, context *kong.Context) error {
+	var output bytes.Buffer
+	stdout := context.Stdout
+	context.Stdout = &output
+	err := kong.DefaultHelpPrinter(options, context)
+	context.Stdout = stdout
+	if err != nil {
+		return err
+	}
+
+	help := output.String()
+	if command := context.Selected(); command != nil && len(command.Positional) != 0 {
+		oldUsage := "Usage: " + context.Model.Name + " " + command.Summary()
+		newUsage := "Usage: " + context.Model.Name + " " + flagsBeforeArguments(command)
+		help = strings.Replace(help, oldUsage, newUsage, 1)
+	}
+	for _, command := range context.Model.Leaves(true) {
+		oldSummary := "\n  " + command.Summary() + "\n"
+		newSummary := "\n  " + flagsBeforeArguments(command) + "\n"
+		help = strings.Replace(help, oldSummary, newSummary, 1)
+	}
+	help = strings.ReplaceAll(help, "[<job_name>]", "<job_name>")
+	_, err = io.WriteString(stdout, help)
+	return err
+}
+
+func flagsBeforeArguments(command *kong.Command) string {
+	summary := command.Summary()
+	const flags = " [flags]"
+	if !strings.HasSuffix(summary, flags) {
+		return summary
+	}
+
+	summary = strings.TrimSuffix(summary, flags)
+	path := command.Path()
+	return path + flags + strings.TrimPrefix(summary, path)
+}
+
 func (command *buildCommand) Run(ctx context.Context, runtime *runtime) error {
+	if err := command.Target.validate(); err != nil {
+		return err
+	}
+	if len(runtime.nomadArguments) != 0 {
+		return usageError("build does not run Nomad and cannot accept arguments after '--'")
+	}
 	selection, err := runtime.selection(ctx)
 	if err != nil {
 		return err
 	}
 
-	if err := runtime.run(ctx, runtime.config.Nix, "build", "--out-link", command.OutLink, selection.jobsPackage()); err != nil {
-		return preserveExitCode(err, "build jobs package")
+	if err := runtime.run(ctx, runtime.config.Nix, "build", "--out-link", command.OutLink, command.Target.installable(selection)); err != nil {
+		return preserveExitCode(err, "build selected jobs")
 	}
 	return nil
 }
 
-func (*validateCommand) Run(ctx context.Context, runtime *runtime) error {
-	return runtime.withArtifacts(ctx, func(artifacts commandArtifacts) error {
+func (command *validateCommand) Run(ctx context.Context, runtime *runtime) error {
+	if err := command.Target.validate(); err != nil {
+		return err
+	}
+	return runtime.withArtifacts(ctx, command.Target, func(artifacts commandArtifacts) error {
 		for _, job := range artifacts.jobs {
-			if err := runtime.run(ctx, artifacts.nomad, "job", "validate", "-json", job); err != nil {
+			arguments := append([]string{"job", "validate", "-json"}, runtime.nomadArguments...)
+			arguments = append(arguments, job)
+			if err := runtime.run(ctx, artifacts.nomad, arguments...); err != nil {
 				return preserveExitCode(err, "validate %s", filepath.Base(job))
 			}
 		}
@@ -128,11 +192,16 @@ func (*validateCommand) Run(ctx context.Context, runtime *runtime) error {
 	})
 }
 
-func (*planCommand) Run(ctx context.Context, runtime *runtime) error {
-	return runtime.withArtifacts(ctx, func(artifacts commandArtifacts) error {
+func (command *planCommand) Run(ctx context.Context, runtime *runtime) error {
+	if err := command.Target.validate(); err != nil {
+		return err
+	}
+	return runtime.withArtifacts(ctx, command.Target, func(artifacts commandArtifacts) error {
 		changed := false
 		for _, job := range artifacts.jobs {
-			err := runtime.run(ctx, artifacts.nomad, "job", "plan", "-json", job)
+			arguments := append([]string{"job", "plan", "-json"}, runtime.nomadArguments...)
+			arguments = append(arguments, job)
+			err := runtime.run(ctx, artifacts.nomad, arguments...)
 			if err == nil {
 				continue
 			}
@@ -152,26 +221,47 @@ func (*planCommand) Run(ctx context.Context, runtime *runtime) error {
 	})
 }
 
-func (command *applyCommand) Run(ctx context.Context, runtime *runtime) error {
-	return runtime.withArtifacts(ctx, func(artifacts commandArtifacts) error {
-		for _, job := range artifacts.jobs {
-			if err := runtime.run(ctx, artifacts.nomad, "job", "validate", "-json", job); err != nil {
-				return preserveExitCode(err, "validate %s", filepath.Base(job))
-			}
-		}
-
+func (command *runCommand) Run(ctx context.Context, runtime *runtime) error {
+	if err := command.Target.validate(); err != nil {
+		return err
+	}
+	return runtime.withArtifacts(ctx, command.Target, func(artifacts commandArtifacts) error {
 		for _, job := range artifacts.jobs {
 			arguments := []string{"job", "run", "-json"}
 			if command.Detach {
 				arguments = append(arguments, "-detach")
 			}
+			arguments = append(arguments, runtime.nomadArguments...)
 			arguments = append(arguments, job)
 			if err := runtime.run(ctx, artifacts.nomad, arguments...); err != nil {
-				return preserveExitCode(err, "apply %s", filepath.Base(job))
+				return preserveExitCode(err, "run %s", filepath.Base(job))
 			}
 		}
 		return nil
 	})
+}
+
+func splitNomadArguments(arguments []string) ([]string, []string) {
+	for index, argument := range arguments {
+		if argument == "--" {
+			return arguments[:index], append([]string(nil), arguments[index+1:]...)
+		}
+	}
+	return arguments, nil
+}
+
+func (target jobTarget) validate() error {
+	if target.All && target.Job != "" {
+		return usageError("--all cannot be used with <job_name>")
+	}
+	if !target.All && target.Job == "" {
+		return usageError("provide <job_name> or use --all")
+	}
+	return nil
+}
+
+func usageError(format string, arguments ...any) error {
+	return &ExitError{Code: 2, Err: fmt.Errorf(format, arguments...)}
 }
 
 func preserveExitCode(err error, format string, arguments ...any) error {
@@ -242,8 +332,19 @@ func (selection selection) jobsPackage() string {
 	return selection.attribute("jobsPackage")
 }
 
+func (selection selection) jobPackage(name string) string {
+	return selection.attribute("jobsPackages." + strconv.Quote(name))
+}
+
 func (selection selection) nomad() string {
 	return selection.attribute("nomad")
+}
+
+func (target jobTarget) installable(selection selection) string {
+	if target.All {
+		return selection.jobsPackage()
+	}
+	return selection.jobPackage(target.Job)
 }
 
 type commandArtifacts struct {
@@ -251,7 +352,7 @@ type commandArtifacts struct {
 	nomad string
 }
 
-func (runtime *runtime) withArtifacts(ctx context.Context, action func(commandArtifacts) error) (err error) {
+func (runtime *runtime) withArtifacts(ctx context.Context, target jobTarget, action func(commandArtifacts) error) (err error) {
 	rootDirectory, err := os.MkdirTemp("", "nix-nomad-")
 	if err != nil {
 		return fmt.Errorf("create temporary GC roots: %w", err)
@@ -268,29 +369,29 @@ func (runtime *runtime) withArtifacts(ctx context.Context, action func(commandAr
 		}
 	}()
 
-	artifacts, err := runtime.artifacts(ctx, rootDirectory)
+	artifacts, err := runtime.artifacts(ctx, rootDirectory, target)
 	if err != nil {
 		return err
 	}
 	return action(artifacts)
 }
 
-func (runtime *runtime) artifacts(ctx context.Context, rootDirectory string) (commandArtifacts, error) {
+func (runtime *runtime) artifacts(ctx context.Context, rootDirectory string, target jobTarget) (commandArtifacts, error) {
 	selection, err := runtime.selection(ctx)
 	if err != nil {
 		return commandArtifacts{}, err
 	}
 
-	jobsPackage, err := runtime.buildStorePath(ctx, selection.jobsPackage(), filepath.Join(rootDirectory, "jobs"))
+	jobsPackage, err := runtime.buildStorePath(ctx, target.installable(selection), filepath.Join(rootDirectory, "jobs"))
 	if err != nil {
-		return commandArtifacts{}, fmt.Errorf("build jobs package: %w", err)
+		return commandArtifacts{}, fmt.Errorf("build selected jobs: %w", err)
 	}
 	nomadPackage, err := runtime.buildStorePath(ctx, selection.nomad(), filepath.Join(rootDirectory, "nomad"))
 	if err != nil {
 		return commandArtifacts{}, fmt.Errorf("build Nomad package: %w", err)
 	}
 
-	jobs, err := jobFiles(jobsPackage)
+	jobs, err := selectedJobFiles(jobsPackage, target.All)
 	if err != nil {
 		return commandArtifacts{}, err
 	}
@@ -304,6 +405,21 @@ func (runtime *runtime) artifacts(ctx context.Context, rootDirectory string) (co
 	}
 
 	return commandArtifacts{jobs: jobs, nomad: nomad}, nil
+}
+
+func selectedJobFiles(path string, all bool) ([]string, error) {
+	if all {
+		return jobFiles(path)
+	}
+
+	info, err := os.Stat(path)
+	if err != nil {
+		return nil, fmt.Errorf("find selected job file: %w", err)
+	}
+	if info.IsDir() || filepath.Ext(path) != ".json" {
+		return nil, fmt.Errorf("selected job is not a JSON file: %s", path)
+	}
+	return []string{path}, nil
 }
 
 type nixBuildResult struct {
