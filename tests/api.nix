@@ -36,10 +36,14 @@ assert builtins.attrNames api == [ "nomadConfiguration" "time" ];
 assert evaluated.config.jobs.test.type == "batch";
 assert evaluated.config.testValue == "passed";
 assert !(evaluated.config ? _nix-nomad);
-assert !(evaluated ? jobs);
+assert evaluated.jobs.test.Type == "batch";
 assert evaluated.nomad == nomad;
+assert builtins.attrNames evaluated.jobsPackages == [ "test" ];
+assert pkgs.lib.isDerivation evaluated.jobsPackages.test;
 assert pkgs.lib.isDerivation evaluated.jobsPackage;
 assert extended.config.jobs.test.priority == 10;
+assert extended.jobs.test.Priority == 10;
 assert extended.nomad == nomad;
+assert pkgs.lib.isDerivation extended.jobsPackages.test;
 assert pkgs.lib.isDerivation extended.jobsPackage;
 "ok"

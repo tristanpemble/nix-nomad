@@ -39,21 +39,24 @@ let
           inherit defaultNomad hcl lib schemaFor time;
           coreModule = ../modules/core.nix;
         };
-        mkNomadJobsFromJobs = import ./mkNomadJobs.nix {
+        mkNomadJobOutputs = import ./mkNomadJobs.nix {
           inherit pkgs;
         };
         nomadConfiguration =
           args@{ nomad ? defaultNomad, ... }:
           let
-            withJobsPackage = evaluated:
-              builtins.removeAttrs evaluated [ "jobs" ] // {
+            withJobOutputs = evaluated:
+              let
+                jobOutputs = mkNomadJobOutputs evaluated.jobs;
+              in
+              evaluated // {
                 inherit nomad;
-                jobsPackage = mkNomadJobsFromJobs evaluated.jobs;
+                inherit (jobOutputs) jobsPackage jobsPackages;
                 extendModules = extendArgs:
-                  withJobsPackage (evaluated.extendModules extendArgs);
+                  withJobOutputs (evaluated.extendModules extendArgs);
               };
           in
-          withJobsPackage (evalNomadJobs (args // { inherit nomad; }));
+          withJobOutputs (evalNomadJobs (args // { inherit nomad; }));
       in
       nomadConfiguration
     );

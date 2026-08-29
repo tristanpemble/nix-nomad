@@ -194,11 +194,24 @@ value for each system has these fields:
 
 - `config`: The evaluated Nix configuration.
 - `options`: The evaluated option declarations and metadata.
+- `jobs`: An attribute set containing each rendered Nomad JSON job as a Nix
+  value.
+- `jobsPackages`: An attribute set containing one derivation for each rendered
+  `<job-name>.json` file.
 - `jobsPackage`: A derivation that contains one `<job-name>.json` file for each
   job.
 - `nomad`: The selected Nomad package.
 - `extendModules`: A function that adds more modules to the evaluation and
   returns the same type of result.
+
+Use `jobs` to evaluate one job without building a derivation. Use
+`jobsPackages` to build one JSON file, or `jobsPackage` to build all JSON files:
+
+```console
+$ nix eval --json .#nomadConfigurations.default.x86_64-linux.jobs.hello
+$ nix build .#nomadConfigurations.default.x86_64-linux.jobsPackages.hello
+$ nix build .#nomadConfigurations.default.x86_64-linux.jobsPackage
+```
 
 Each Nomad module also receives `nomad` and `nix-nomad`. `nix-nomad` contains
 the duration constants and the HCL import helper.

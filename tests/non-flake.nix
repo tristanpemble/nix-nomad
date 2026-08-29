@@ -19,5 +19,7 @@ assert builtins.attrNames nix-nomad == [ "lib" ];
 assert builtins.attrNames nix-nomad.lib == [ "nomadConfiguration" "time" ];
 assert !(nix-nomad ? packages);
 assert builtins.attrNames configuration == [ system ];
+assert configuration.${system}.jobs.test.Type == "batch";
+assert pkgs.lib.isDerivation configuration.${system}.jobsPackages.test;
 assert pkgs.lib.isDerivation configuration.${system}.jobsPackage;
 "ok"
